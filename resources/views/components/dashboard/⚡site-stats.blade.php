@@ -19,8 +19,9 @@ new class extends Component
 
     public function getChartData()
     {
-        // Views over time
+        // Views over time (only non-quiet views)
         $viewsByDate = $this->site->siteViews()
+            ->where('is_quiet', false)
             ->where('created_at', '>=', now()->subDays($this->period))
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy('date')
@@ -46,7 +47,9 @@ new class extends Component
 
     public function getDeviceData()
     {
+        // Only non-quiet views for device distribution
         $views = $this->site->siteViews()
+            ->where('is_quiet', false)
             ->where('created_at', '>=', now()->subDays($this->period))
             ->get();
 
@@ -76,9 +79,9 @@ new class extends Component
 
     public function render()
     {
-        $recentViews = $this->site->siteViews()->latest()->take(10)->get();
-        $totalViews = $this->site->siteViews()->count();
-        $uniqueVisitors = $this->site->siteViews()->distinct('ip_address')->count();
+        $recentViews = $this->site->siteViews()->latest()->take(20)->get();
+        $totalViews = $this->site->siteViews()->where('is_quiet', false)->count();
+        $uniqueVisitors = $this->site->siteViews()->where('is_quiet', false)->distinct('ip_address')->count();
 
         return view('components.dashboard.⚡site-stats', [
             'recentViews' => $recentViews,
@@ -227,10 +230,11 @@ new class extends Component
 
     <!-- Recent Visits Table -->
     <flux:card>
-        <h3 class="font-bold mb-6">Recent Visits</h3>
+        <h3 class="font-bold mb-6">Recent Activity</h3>
         <div class="overflow-x-auto">
             <flux:table>
                 <flux:table.columns>
+                    <flux:table.column>Type</flux:table.column>
                     <flux:table.column>Time</flux:table.column>
                     <flux:table.column>IP Address</flux:table.column>
                     <flux:table.column>Referer</flux:table.column>
@@ -240,6 +244,11 @@ new class extends Component
                 <flux:table.rows>
                     @forelse($recentViews as $view)
                         <flux:table.row>
+                            <flux:table.cell>
+                                <flux:badge size="sm" :color="$view->is_quiet ? 'zinc' : 'blue'">
+                                    {{ $view->is_quiet ? 'Asset' : 'Page' }}
+                                </flux:badge>
+                            </flux:table.cell>
                             <flux:table.cell class="text-sm text-zinc-500">{{ $view->created_at->diffForHumans() }}</flux:table.cell>
                             <flux:table.cell class="text-sm font-mono">{{ $view->ip_address }}</flux:table.cell>
                             <flux:table.cell class="text-sm truncate max-w-xs">{{ $view->referer ?: 'Direct' }}</flux:table.cell>
@@ -247,7 +256,7 @@ new class extends Component
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="4" class="text-center py-8 text-zinc-500">No views recorded yet.</flux:table.cell>
+                            <flux:table.cell colspan="5" class="text-center py-8 text-zinc-500">No views recorded yet.</flux:table.cell>
                         </flux:table.row>
                     @endforelse
                 </flux:table.rows>
