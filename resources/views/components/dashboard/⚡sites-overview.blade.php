@@ -183,7 +183,7 @@ new class extends Component
                                             <flux:menu.separator />
                                             
                                             <flux:menu.submenu icon="clock">
-                                                <flux:menu.submenu.heading>Extend Expiry</flux:menu.submenu.heading>
+                                                <flux:menu.heading>Extend Expiry</flux:menu.heading>
                                                 <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 7)">Add 7 Days</flux:menu.item>
                                                 <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 30)">Add 30 Days</flux:menu.item>
                                                 <flux:menu.item wire:click="$dispatch('toast', { text: 'Premium feature: Permanent sites' })" class="text-purple-600">Make Permanent</flux:menu.item>
