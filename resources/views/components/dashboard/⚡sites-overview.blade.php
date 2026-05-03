@@ -27,6 +27,27 @@ new class extends Component
         $this->dispatch('site-deleted');
     }
 
+    public function extendExpiry($id, $days)
+    {
+        $site = auth()->user()->sites()->findOrFail($id);
+        
+        $site->expires_at = ($site->expires_at && $site->expires_at->isFuture()) 
+            ? $site->expires_at->addDays($days) 
+            : now()->addDays($days);
+            
+        $site->save();
+        
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'site_id' => $site->id,
+            'action' => 'expiry_extended',
+            'description' => "Extended expiry by {$days} days for site: {$site->slug}",
+            'ip_address' => request()->ip(),
+        ]);
+        
+        Flux::toast("Expiry extended by {$days} days.");
+    }
+
     public function render()
     {
         $sites = auth()->user()->sites()->latest()->get();
@@ -85,8 +106,22 @@ new class extends Component
     <flux:card>
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold">Your Sites</h2>
-            <flux:button :href="route('home')" variant="primary" size="sm" wire:navigate>Upload New Site</flux:button>
+            
+            <flux:modal.trigger name="upload-site-modal">
+                <flux:button variant="primary" size="sm" icon="plus">Upload New Site</flux:button>
+            </flux:modal.trigger>
         </div>
+
+        <flux:modal name="upload-site-modal" class="md:w-[600px]">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Upload New Site</flux:heading>
+                    <flux:subheading>Drop your HTML or ZIP file here. Your site will be published instantly.</flux:subheading>
+                </div>
+
+                <livewire:file-uploader @site-published="Flux.modal('upload-site-modal').close()" />
+            </div>
+        </flux:modal>
 
         @if($sites->isEmpty())
             <div class="py-8 text-center text-zinc-500">
@@ -98,7 +133,7 @@ new class extends Component
                     <flux:table.columns>
                         <flux:table.column>Name / Slug</flux:table.column>
                         <flux:table.column>Views</flux:table.column>
-                        <flux:table.column>Uploaded</flux:table.column>
+                        <flux:table.column>Expires In</flux:table.column>
                         <flux:table.column>Status</flux:table.column>
                         <flux:table.column class="text-right">Actions</flux:table.column>
                     </flux:table.columns>
@@ -113,7 +148,37 @@ new class extends Component
                                     </div>
                                 </flux:table.cell>
                                 <flux:table.cell>{{ number_format($site->views) }}</flux:table.cell>
-                                <flux:table.cell>{{ $site->created_at->diffForHumans() }}</flux:table.cell>
+                                <flux:table.cell>
+                                    @if($site->is_permanent)
+                                        <flux:badge size="sm" color="purple">Permanent</flux:badge>
+                                    @elseif($site->expires_at)
+                                        <div class="text-sm {{ $site->expires_at->isPast() ? 'text-red-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-500') }}" 
+                                             x-data="{ 
+                                                expiresAt: {{ $site->expires_at->timestamp * 1000 }},
+                                                now: Date.now(),
+                                                timer: null,
+                                                get countdown() {
+                                                    let diff = this.expiresAt - this.now;
+                                                    if (diff <= 0) return 'Expired';
+                                                    
+                                                    let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                                                    let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                                    let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                                    let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                                                    
+                                                    if (days > 0) return `${days}d ${hours}h`;
+                                                    return `${hours}h ${minutes}m ${seconds}s`;
+                                                }
+                                             }"
+                                             x-init="timer = setInterval(() => { now = Date.now() }, 1000)"
+                                             x-on:destroy="clearInterval(timer)"
+                                        >
+                                            <span x-text="countdown"></span>
+                                        </div>
+                                    @else
+                                        <span class="text-zinc-400">-</span>
+                                    @endif
+                                </flux:table.cell>
                                 <flux:table.cell>
                                     <flux:badge size="sm" :color="$site->status === 'active' ? 'green' : 'red'">
                                         {{ ucfirst($site->status) }}
@@ -129,6 +194,15 @@ new class extends Component
                                             <flux:menu.item icon="code-bracket" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Edit Files</flux:menu.item>
                                             <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Manage Domains</flux:menu.item>
                                             
+                                            <flux:menu.separator />
+                                            
+                                            <flux:menu.submenu icon="clock">
+                                                <flux:menu.heading>Extend Expiry</flux:menu.heading>
+                                                <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 7)">Add 7 Days</flux:menu.item>
+                                                <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 30)">Add 30 Days</flux:menu.item>
+                                                <flux:menu.item wire:click="$dispatch('toast', { text: 'Premium feature: Permanent sites' })" class="text-purple-600">Make Permanent</flux:menu.item>
+                                            </flux:menu.submenu>
+
                                             <flux:menu.separator />
                                             <flux:menu.item icon="trash" wire:click="deleteSite({{ $site->id }})" wire:confirm="Are you sure you want to delete this site? This action cannot be undone." class="text-red-600">Delete</flux:menu.item>
                                         </flux:menu>

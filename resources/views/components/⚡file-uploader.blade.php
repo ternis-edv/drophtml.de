@@ -56,6 +56,7 @@ new class extends Component
                 'original_name' => $originalName,
                 'path' => $path,
                 'user_id' => auth()->id(),
+                'expires_at' => auth()->check() ? now()->addDays(30) : now()->addHours(24),
             ]);
 
             if (auth()->check()) {
@@ -92,37 +93,73 @@ new class extends Component
 ?>
 
 <div 
-    x-data="{ dragging: false }"
+    x-data="{ 
+        dragging: false,
+        uploading: false,
+        progress: 0,
+        handleDrop(e) {
+            let files = e.dataTransfer.files;
+            if (files.length > 0) {
+                this.uploadFiles(files[0]);
+            }
+        },
+        handleSelect(e) {
+            let files = e.target.files;
+            if (files.length > 0) {
+                this.uploadFiles(files[0]);
+            }
+        },
+        uploadFiles(file) {
+            this.uploading = true;
+            this.progress = 0;
+            @this.upload('file', file, (uploadedName) => {
+                this.uploading = false;
+                @this.upload(); // Trigger the backend upload logic
+            }, () => {
+                this.uploading = false;
+                Flux.toast({ variant: 'danger', text: 'Upload failed.' });
+            }, (event) => {
+                this.progress = event.detail.progress;
+            });
+        }
+    }"
     @dragover.prevent="dragging = true"
     @dragleave.prevent="dragging = false"
-    @drop.prevent="dragging = false"
+    @drop.prevent="dragging = false; handleDrop($event)"
     class="relative"
 >
     <div
         :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900/20': dragging, 'border-gray-300 dark:border-gray-700': !dragging }"
         class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        @click="$refs.fileInput.click()"
     >
-        <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                </svg>
-                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">HTML, ZIP or Folder (max. 50MB)</p>
-            </div>
-            <input id="dropzone-file" type="file" class="hidden" wire:model="file" />
-        </label>
+        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+            <template x-if="!uploading">
+                <div class="flex flex-col items-center justify-center">
+                    <flux:icon.cloud-arrow-up class="w-12 h-12 mb-4 text-zinc-400" />
+                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400 font-medium">Click or drag and drop your files</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">HTML, ZIP or Folder (max. 50MB)</p>
+                </div>
+            </template>
+
+            <template x-if="uploading">
+                <div class="flex flex-col items-center justify-center w-full px-12">
+                    <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 mb-4 overflow-hidden">
+                        <div class="bg-blue-600 h-2 transition-all duration-300" :style="`width: ${progress}%`"></div >
+                    </div>
+                    <p class="text-sm text-zinc-500">Uploading... <span x-text="progress"></span>%</p>
+                </div>
+            </template>
+        </div>
+        <input type="file" class="hidden" x-ref="fileInput" @change="handleSelect($event)" />
     </div>
 
-    @if ($uploading)
-        <div class="mt-4 text-center text-blue-500">
-            Uploading and publishing...
-        </div>
-    @endif
-
     @if ($message)
-        <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg">
-            {!! $message !!}
+        <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg shadow-sm border border-green-200 dark:border-green-800 flex items-center justify-between">
+            <div class="flex-1">
+                {!! $message !!}
+            </div>
+            <flux:button variant="ghost" size="sm" icon="x-mark" wire:click="$set('message', '')" />
         </div>
     @endif
 </div>

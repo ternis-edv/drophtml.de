@@ -13,8 +13,14 @@ class SiteController extends Controller
     {
         $site = Site::where('slug', $slug)->firstOrFail();
         
-        // Simple increment for views.
-        // For higher traffic, consider moving this to a queued job or Redis.
+        // Detailed view tracking
+        $site->siteViews()->create([
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'referer' => request()->header('referer'),
+        ]);
+
+        // Still incrementing for quick overview
         $site->increment('views');
         
         if (empty($path)) {

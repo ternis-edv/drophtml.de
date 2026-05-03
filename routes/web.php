@@ -23,6 +23,7 @@ Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback']
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::view('dashboard/sites/upload', 'dashboard.sites-upload')->name('dashboard.sites.upload');
     Route::view('dashboard/sites/{site}/edit', 'dashboard.site-editor')->name('dashboard.sites.edit');
     Route::view('dashboard/sites/{site}/domains', 'dashboard.site-domains')->name('dashboard.sites.domains');
     Route::view('dashboard/activity', 'dashboard.activity')->name('dashboard.activity');
