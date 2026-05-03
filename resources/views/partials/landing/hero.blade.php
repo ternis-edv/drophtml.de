@@ -13,10 +13,10 @@
     </p>
 
     <div class="flex flex-col sm:flex-row gap-4 mt-4">
-        <flux:button size="lg" variant="primary" class="px-8 shadow-lg shadow-blue-500/20" @click="document.getElementById('upload-section').scrollIntoView({ behavior: 'smooth' })">
+        <flux:button size="base" variant="primary" class="px-8 shadow-lg shadow-blue-500/20" @click="document.getElementById('upload-section').scrollIntoView({ behavior: 'smooth' })">
             Get Started for Free
         </flux:button>
-        <flux:button size="lg" variant="ghost" icon="github" href="https://github.com/ternis-edv/drophtml.de" target="_blank">
+        <flux:button size="base" variant="ghost" icon="github" href="https://github.com/ternis-edv/drophtml.de" target="_blank">
             Star on GitHub
         </flux:button>
     </div>
