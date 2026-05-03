@@ -51,11 +51,22 @@ new class extends Component
                 // For now, SiteController handles index.html default.
             }
             
-            Site::create([
+            $site = Site::create([
                 'slug' => $slug,
                 'original_name' => $originalName,
                 'path' => $path,
+                'user_id' => auth()->id(),
             ]);
+
+            if (auth()->check()) {
+                \App\Models\ActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'site_id' => $site->id,
+                    'action' => 'site_uploaded',
+                    'description' => "Uploaded site: {$originalName}",
+                    'ip_address' => request()->ip(),
+                ]);
+            }
             
             $host = parse_url(config('app.url'), PHP_URL_HOST);
             $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?? 'http';
