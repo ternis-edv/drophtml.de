@@ -13,6 +13,10 @@ class SiteController extends Controller
     {
         $site = Site::where('slug', $slug)->firstOrFail();
         
+        // Simple increment for views.
+        // For higher traffic, consider moving this to a queued job or Redis.
+        $site->increment('views');
+        
         if (empty($path)) {
             // Try to find index.html
             if (Storage::disk('public')->exists("{$site->path}/index.html")) {
