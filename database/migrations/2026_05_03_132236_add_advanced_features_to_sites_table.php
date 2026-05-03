@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sites', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedBigInteger('views')->default(0);
             $table->boolean('is_permanent')->default(false);
             $table->string('status')->default('active'); // active, suspended, etc.

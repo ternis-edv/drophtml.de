@@ -204,6 +204,7 @@ new class extends Component
                                         <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
                                         
                                         <flux:menu>
+                                            <flux:menu.item icon="chart-bar" :href="route('dashboard.sites.stats', $site->id)" wire:navigate>Statistics</flux:menu.item>
                                             <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank">View Site</flux:menu.item>
                                             <!-- Preparing for file editor & domains feature -->
                                             <flux:menu.item icon="code-bracket" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Edit Files</flux:menu.item>
