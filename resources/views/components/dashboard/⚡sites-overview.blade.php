@@ -107,21 +107,31 @@ new class extends Component
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold">Your Sites</h2>
             
-            <flux:modal.trigger name="upload-site-modal">
-                <flux:button variant="primary" size="sm" icon="plus">Upload New Site</flux:button>
-            </flux:modal.trigger>
+            <div class="flex gap-2">
+                @if(auth()->user()->github_id)
+                    <flux:modal.trigger name="github-deploy-modal">
+                        <flux:button variant="ghost" size="sm" icon="github">Deploy from GitHub</flux:button>
+                    </flux:modal.trigger>
+                @endif
+
+                <flux:modal.trigger name="upload-site-modal">
+                    <flux:button variant="primary" size="sm" icon="plus">Upload New Site</flux:button>
+                </flux:modal.trigger>
+            </div>
         </div>
 
-        <flux:modal name="upload-site-modal" class="md:w-[600px]">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">Upload New Site</flux:heading>
-                    <flux:subheading>Drop your HTML or ZIP file here. Your site will be published instantly.</flux:subheading>
-                </div>
+        @if(auth()->user()->github_id)
+            <flux:modal name="github-deploy-modal" class="md:w-[700px]">
+                <div class="space-y-6">
+                    <div>
+                        <flux:heading size="lg">Deploy from GitHub</flux:heading>
+                        <flux:subheading>Select a repository to deploy as a new site.</flux:subheading>
+                    </div>
 
-                <livewire:file-uploader @site-published="Flux.modal('upload-site-modal').close()" />
-            </div>
-        </flux:modal>
+                    <livewire:dashboard.github-deploy @site-published="Flux.modal('github-deploy-modal').close()" />
+                </div>
+            </flux:modal>
+        @endif
 
         @if($sites->isEmpty())
             <div class="py-8 text-center text-zinc-500">

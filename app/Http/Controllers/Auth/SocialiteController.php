@@ -14,6 +14,12 @@ class SocialiteController extends Controller
 {
     public function redirect(string $provider)
     {
+        if ($provider === 'github') {
+            return Socialite::driver($provider)
+                ->scopes(['repo', 'read:org'])
+                ->redirect();
+        }
+
         return Socialite::driver($provider)->redirect();
     }
 
