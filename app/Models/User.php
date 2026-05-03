@@ -12,12 +12,17 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+
 #[Fillable(['name', 'email', 'password', 'github_id', 'github_token', 'github_refresh_token'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasUuids;
+
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     /**
      * Get the attributes that should be cast.

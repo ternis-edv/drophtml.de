@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('domains', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('site_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->string('site_id');
+            $table->foreign('site_id')->references('id')->on('sites')->cascadeOnDelete();
             $table->string('domain')->unique();
             $table->boolean('is_custom')->default(true);
             $table->timestamp('verified_at')->nullable();
