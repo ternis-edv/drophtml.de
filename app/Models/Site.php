@@ -31,11 +31,16 @@ class Site extends Model
         'is_permanent',
         'status',
         'expires_at',
+        'github_repo_full_name',
+        'github_branch',
+        'auto_deploy',
+        'github_webhook_id',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
         'is_permanent' => 'boolean',
+        'auto_deploy' => 'boolean',
     ];
 
     public function user()
@@ -56,5 +61,10 @@ class Site extends Model
     public function siteViews()
     {
         return $this->hasMany(View::class);
+    }
+
+    public function deployments()
+    {
+        return $this->hasMany(Deployment::class);
     }
 }

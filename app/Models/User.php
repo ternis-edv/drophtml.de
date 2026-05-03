@@ -14,7 +14,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-#[Fillable(['name', 'email', 'password', 'github_id', 'github_token', 'github_refresh_token'])]
+#[Fillable(['name', 'email', 'password', 'github_id', 'github_token', 'github_refresh_token', 'password_set_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -34,6 +34,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'password_set_at' => 'datetime',
         ];
     }
 

@@ -59,6 +59,7 @@ new #[Title('Security settings')] class extends Component {
 
         Auth::user()->update([
             'password' => $validated['password'],
+            'password_set_at' => now(),
         ]);
 
         $this->reset('current_password', 'password', 'password_confirmation');
@@ -91,16 +92,18 @@ new #[Title('Security settings')] class extends Component {
 
     <flux:heading class="sr-only">{{ __('Security settings') }}</flux:heading>
 
-    <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
+    <x-pages::settings.layout :heading="!auth()->user()->password_set_at ? __('Set password') : __('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
         <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
-            <flux:input
-                wire:model="current_password"
-                :label="__('Current password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                viewable
-            />
+            @if(auth()->user()->password_set_at)
+                <flux:input
+                    wire:model="current_password"
+                    :label="__('Current password')"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    viewable
+                />
+            @endif
             <flux:input
                 wire:model="password"
                 :label="__('New password')"

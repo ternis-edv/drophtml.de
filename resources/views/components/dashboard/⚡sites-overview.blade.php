@@ -199,12 +199,14 @@ new class extends Component
                                         {{ ucfirst($site->status) }}
                                     </flux:badge>
                                 </flux:table.cell>
-                                <flux:table.cell class="text-right">
+                                <flux:table.cell class="text-right flex justify-end gap-2">
+                                    <flux:button variant="ghost" size="sm" icon="clipboard" @click="navigator.clipboard.writeText('{{ url('/s/' . $site->slug) }}'); Flux.toast('URL copied to clipboard!')" />
                                     <flux:dropdown>
                                         <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
                                         
                                         <flux:menu>
                                             <flux:menu.item icon="chart-bar" :href="route('dashboard.sites.stats', $site->id)" wire:navigate>Statistics</flux:menu.item>
+                                            <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>
                                             <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank">View Site</flux:menu.item>
                                             <!-- Preparing for file editor & domains feature -->
                                             <flux:menu.item icon="code-bracket" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Edit Files</flux:menu.item>

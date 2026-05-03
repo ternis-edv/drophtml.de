@@ -24,6 +24,9 @@ trait PasswordValidationRules
      */
     protected function currentPasswordRules(): array
     {
+        if (auth()->check() && !auth()->user()->password_set_at) {
+            return ['nullable'];
+        }
         return ['required', 'string', 'current_password'];
     }
 }

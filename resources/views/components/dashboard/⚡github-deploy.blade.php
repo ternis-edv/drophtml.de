@@ -14,6 +14,7 @@ new class extends Component
     public $error = null;
     public $deploying = false;
     public $search = '';
+    public $autoDeploy = true;
 
     public function mount()
     {
@@ -112,7 +113,22 @@ new class extends Component
                 'path' => $path,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addDays(30),
+                'github_repo_full_name' => $fullName,
+                'github_branch' => $repo['default_branch'],
+                'auto_deploy' => $this->autoDeploy,
             ]);
+
+            // Track deployment
+            $site->deployments()->create([
+                'status' => 'success',
+                'source' => 'github_manual',
+                'commit_hash' => $repo['default_branch'],
+                'commit_message' => "Initial deployment from GitHub",
+            ]);
+
+            if ($this->autoDeploy) {
+                $this->setupWebhook($fullName, $token);
+            }
 
             ActivityLog::create([
                 'user_id' => auth()->id(),
@@ -129,6 +145,35 @@ new class extends Component
         }
 
         $this->deploying = false;
+    }
+
+    public function setupWebhook($fullName, $token)
+    {
+        try {
+            $webhookUrl = url('/api/webhooks/github');
+            
+            $response = Http::withToken($token)->post("https://api.github.com/repos/{$fullName}/hooks", [
+                'name' => 'web',
+                'active' => true,
+                'events' => ['push'],
+                'config' => [
+                    'url' => $webhookUrl,
+                    'content_type' => 'json',
+                    'insecure_ssl' => '0',
+                ],
+            ]);
+
+            if ($response->successful()) {
+                $hookData = $response->json();
+                Site::where('github_repo_full_name', $fullName)
+                    ->where('user_id', auth()->id())
+                    ->latest()
+                    ->first()
+                    ?->update(['github_webhook_id' => $hookData['id'] ?? null]);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed to setup GitHub webhook for {$fullName}: " . $e->getMessage());
+        }
     }
 
     public function render()
@@ -153,6 +198,10 @@ new class extends Component
 
     <div class="relative">
         <flux:input wire:model.live="search" placeholder="Search repositories..." icon="magnifying-glass" />
+    </div>
+
+    <div class="flex items-center gap-2 py-2">
+        <flux:checkbox wire:model="autoDeploy" :label="__('Auto-deploy on push (default branch)')" />
     </div>
 
     <div class="max-h-[400px] overflow-y-auto space-y-2 pr-2">
