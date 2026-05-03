@@ -57,7 +57,15 @@
             </div>
         </main>
 
-        <footer class="mt-auto pt-12 text-gray-400 text-xs text-center">
+        <footer class="mt-auto pt-12 pb-8 text-gray-400 text-xs text-center">
+            <div class="flex flex-wrap justify-center gap-4 mb-4">
+                <a href="https://ternis-edv.de" target="_blank" class="hover:text-gray-600">ternis-edv.de</a>
+                <a href="https://xpsystems.eu" target="_blank" class="hover:text-gray-600">xpsystems.eu</a>
+                <a href="https://xpsystems.de" target="_blank" class="hover:text-gray-600">xpsystems.de</a>
+                <a href="https://europehost.eu" target="_blank" class="hover:text-gray-600">europehost.eu</a>
+                <a href="https://dnbx.de" target="_blank" class="hover:text-gray-600">dnbx.de</a>
+                <a href="https://github.com/ternis-edv/drophtml.de" target="_blank" class="hover:text-gray-600">GitHub</a>
+            </div>
             &copy; {{ date('Y') }} DropHTML.de - Drag, Drop, Done.
         </footer>
     </body>

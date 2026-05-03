@@ -16,6 +16,11 @@ Route::view('/', 'welcome')->name('home');
 
 Route::get('/s/{slug}/{path?}', [SiteController::class, 'show'])->where('path', '.*');
 
+use App\Http\Controllers\Auth\SocialiteController;
+
+Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])->name('social.redirect');
+Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('social.callback');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 });
