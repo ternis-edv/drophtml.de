@@ -170,6 +170,43 @@ new class extends Component
         </flux:card>
     </div>
 
+    <!-- Deployment History -->
+    <flux:card class="mb-8">
+        <h3 class="font-bold mb-6">Deployment History</h3>
+        <div class="overflow-x-auto">
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>Status</flux:table.column>
+                    <flux:table.column>Source</flux:table.column>
+                    <flux:table.column>Commit</flux:table.column>
+                    <flux:table.column>Date</flux:table.column>
+                </flux:table.columns>
+
+                <flux:table.rows>
+                    @forelse($site->deployments()->latest()->take(10)->get() as $deployment)
+                        <flux:table.row>
+                            <flux:table.cell>
+                                <flux:badge size="sm" :color="$deployment->status === 'success' ? 'green' : 'red'">
+                                    {{ ucfirst($deployment->status) }}
+                                </flux:badge>
+                            </flux:table.cell>
+                            <flux:table.cell class="text-sm">{{ str_replace('_', ' ', ucfirst($deployment->source)) }}</flux:table.cell>
+                            <flux:table.cell>
+                                <div class="text-sm font-medium">{{ Str::limit($deployment->commit_message, 40) }}</div>
+                                <div class="text-xs font-mono text-zinc-400">{{ $deployment->commit_hash }}</div>
+                            </flux:table.cell>
+                            <flux:table.cell class="text-sm text-zinc-500">{{ $deployment->created_at->diffForHumans() }}</flux:table.cell>
+                        </flux:table.row>
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="4" class="text-center py-8 text-zinc-500">No deployments recorded yet.</flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </flux:table>
+        </div>
+    </flux:card>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Main Traffic Chart -->
         <flux:card class="lg:col-span-2">

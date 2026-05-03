@@ -31,16 +31,24 @@ class SocialiteController extends Controller
             return redirect()->route('login')->withErrors(['oauth' => 'Authentication failed.']);
         }
 
-        $user = User::updateOrCreate([
-            'github_id' => $socialUser->id,
-        ], [
-            'name' => $socialUser->name ?? $socialUser->nickname,
-            'email' => $socialUser->email,
-            'github_token' => $socialUser->token,
-            'github_refresh_token' => $socialUser->refreshToken,
-            // If it's a new user, we might need to set a dummy password
-            'password' => Hash::make(Str::random(24)),
-        ]);
+        $user = User::where('github_id', $socialUser->id)->first();
+
+        if (!$user) {
+            $user = User::create([
+                'github_id' => $socialUser->id,
+                'name' => $socialUser->name ?? $socialUser->nickname,
+                'email' => $socialUser->email,
+                'github_token' => $socialUser->token,
+                'github_refresh_token' => $socialUser->refreshToken,
+                'password' => Hash::make(Str::random(24)),
+                'password_set_at' => null, // Explicitly null for new OAuth users
+            ]);
+        } else {
+            $user->update([
+                'github_token' => $socialUser->token,
+                'github_refresh_token' => $socialUser->refreshToken,
+            ]);
+        }
 
         Auth::login($user);
 
