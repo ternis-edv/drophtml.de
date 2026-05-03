@@ -18,6 +18,9 @@ new class extends Component
     
     public $newFileName = '';
     public $uploadFile = null;
+
+    public $oldFileName = '';
+    public $newRenameName = '';
     
     public function mount($siteId)
     {
@@ -141,6 +144,49 @@ new class extends Component
         Flux::toast('File uploaded.');
     }
 
+    public function startRename($filename)
+    {
+        $this->oldFileName = $filename;
+        $this->newRenameName = $filename;
+        Flux::modal('rename-file-modal')->show();
+    }
+
+    public function renameFile()
+    {
+        $this->validate(['newRenameName' => 'required|string']);
+
+        if ($this->oldFileName === $this->newRenameName) {
+            Flux::modal('rename-file-modal')->close();
+            return;
+        }
+
+        $oldPath = "{$this->site->path}/{$this->oldFileName}";
+        $newPath = "{$this->site->path}/{$this->newRenameName}";
+
+        if (Storage::disk('public')->exists($newPath)) {
+            Flux::toast(variant: 'danger', text: 'File already exists.');
+            return;
+        }
+
+        Storage::disk('public')->move($oldPath, $newPath);
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'site_id' => $this->site->id,
+            'action' => 'file_renamed',
+            'description' => "Renamed file from {$this->oldFileName} to {$this->newRenameName}",
+            'ip_address' => request()->ip(),
+        ]);
+
+        if ($this->currentFile === $this->oldFileName) {
+            $this->currentFile = $this->newRenameName;
+        }
+
+        $this->loadFiles();
+        Flux::modal('rename-file-modal')->close();
+        Flux::toast('File renamed.');
+    }
+
     public function render()
     {
         return view('components.dashboard.⚡site-editor');
@@ -189,6 +235,7 @@ new class extends Component
                             <flux:dropdown>
                                 <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" class="opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <flux:menu>
+                                    <flux:menu.item icon="pencil-square" wire:click="startRename('{{ $file }}')">Rename</flux:menu.item>
                                     <flux:menu.item icon="trash" wire:click="deleteFile('{{ $file }}')" wire:confirm="Delete this file?" class="text-red-600">Delete</flux:menu.item>
                                 </flux:menu>
                             </flux:dropdown>
@@ -244,6 +291,25 @@ new class extends Component
                     <flux:button variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
                 <flux:button type="submit" variant="primary">Create File</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+
+    <!-- Rename File Modal -->
+    <flux:modal name="rename-file-modal" class="md:w-[400px]">
+        <form wire:submit="renameFile" class="space-y-6">
+            <div>
+                <flux:heading size="lg">Rename File</flux:heading>
+                <flux:subheading>Enter a new name for your file.</flux:subheading>
+            </div>
+
+            <flux:input wire:model="newRenameName" autofocus />
+
+            <div class="flex gap-2 justify-end">
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <flux:button type="submit" variant="primary">Rename</flux:button>
             </div>
         </form>
     </flux:modal>
