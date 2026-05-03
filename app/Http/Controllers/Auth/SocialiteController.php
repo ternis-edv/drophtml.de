@@ -38,10 +38,11 @@ class SocialiteController extends Controller
                 'github_id' => $socialUser->id,
                 'name' => $socialUser->name ?? $socialUser->nickname,
                 'email' => $socialUser->email,
+                'email_verified_at' => now(), // Mark as verified
                 'github_token' => $socialUser->token,
                 'github_refresh_token' => $socialUser->refreshToken,
                 'password' => Hash::make(Str::random(24)),
-                'password_set_at' => null, // Explicitly null for new OAuth users
+                'password_set_at' => null,
             ]);
         } else {
             $user->update([
