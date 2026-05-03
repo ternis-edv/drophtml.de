@@ -106,8 +106,22 @@ new class extends Component
     <flux:card>
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold">Your Sites</h2>
-            <flux:button :href="route('home')" variant="primary" size="sm" wire:navigate>Upload New Site</flux:button>
+            
+            <flux:modal.trigger name="upload-site-modal">
+                <flux:button variant="primary" size="sm" icon="plus">Upload New Site</flux:button>
+            </flux:modal.trigger>
         </div>
+
+        <flux:modal name="upload-site-modal" class="md:w-[600px]">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Upload New Site</flux:heading>
+                    <flux:subheading>Drop your HTML or ZIP file here. Your site will be published instantly.</flux:subheading>
+                </div>
+
+                <livewire:file-uploader @site-published="Flux.modal('upload-site-modal').close()" />
+            </div>
+        </flux:modal>
 
         @if($sites->isEmpty())
             <div class="py-8 text-center text-zinc-500">
