@@ -27,6 +27,27 @@ new class extends Component
         $this->dispatch('site-deleted');
     }
 
+    public function extendExpiry($id, $days)
+    {
+        $site = auth()->user()->sites()->findOrFail($id);
+        
+        $site->expires_at = ($site->expires_at && $site->expires_at->isFuture()) 
+            ? $site->expires_at->addDays($days) 
+            : now()->addDays($days);
+            
+        $site->save();
+        
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'site_id' => $site->id,
+            'action' => 'expiry_extended',
+            'description' => "Extended expiry by {$days} days for site: {$site->slug}",
+            'ip_address' => request()->ip(),
+        ]);
+        
+        Flux::toast("Expiry extended by {$days} days.");
+    }
+
     public function render()
     {
         $sites = auth()->user()->sites()->latest()->get();
@@ -159,6 +180,15 @@ new class extends Component
                                             <flux:menu.item icon="code-bracket" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Edit Files</flux:menu.item>
                                             <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Manage Domains</flux:menu.item>
                                             
+                                            <flux:menu.separator />
+                                            
+                                            <flux:menu.submenu icon="clock">
+                                                <flux:menu.submenu.heading>Extend Expiry</flux:menu.submenu.heading>
+                                                <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 7)">Add 7 Days</flux:menu.item>
+                                                <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 30)">Add 30 Days</flux:menu.item>
+                                                <flux:menu.item wire:click="$dispatch('toast', { text: 'Premium feature: Permanent sites' })" class="text-purple-600">Make Permanent</flux:menu.item>
+                                            </flux:menu.submenu>
+
                                             <flux:menu.separator />
                                             <flux:menu.item icon="trash" wire:click="deleteSite({{ $site->id }})" wire:confirm="Are you sure you want to delete this site? This action cannot be undone." class="text-red-600">Delete</flux:menu.item>
                                         </flux:menu>
