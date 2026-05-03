@@ -15,6 +15,9 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="arrow-up-tray" :href="route('dashboard.sites.upload')" :current="request()->routeIs('dashboard.sites.upload')" wire:navigate>
+                        {{ __('Upload Site') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="clipboard-document-list" :href="route('dashboard.activity')" :current="request()->routeIs('dashboard.activity')" wire:navigate>
                         {{ __('Activity Log') }}
                     </flux:sidebar.item>

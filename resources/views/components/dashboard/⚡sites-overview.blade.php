@@ -98,7 +98,7 @@ new class extends Component
                     <flux:table.columns>
                         <flux:table.column>Name / Slug</flux:table.column>
                         <flux:table.column>Views</flux:table.column>
-                        <flux:table.column>Uploaded</flux:table.column>
+                        <flux:table.column>Expires In</flux:table.column>
                         <flux:table.column>Status</flux:table.column>
                         <flux:table.column class="text-right">Actions</flux:table.column>
                     </flux:table.columns>
@@ -113,7 +113,37 @@ new class extends Component
                                     </div>
                                 </flux:table.cell>
                                 <flux:table.cell>{{ number_format($site->views) }}</flux:table.cell>
-                                <flux:table.cell>{{ $site->created_at->diffForHumans() }}</flux:table.cell>
+                                <flux:table.cell>
+                                    @if($site->is_permanent)
+                                        <flux:badge size="sm" color="purple">Permanent</flux:badge>
+                                    @elseif($site->expires_at)
+                                        <div class="text-sm {{ $site->expires_at->isPast() ? 'text-red-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-500') }}" 
+                                             x-data="{ 
+                                                expiresAt: {{ $site->expires_at->timestamp * 1000 }},
+                                                now: Date.now(),
+                                                timer: null,
+                                                get countdown() {
+                                                    let diff = this.expiresAt - this.now;
+                                                    if (diff <= 0) return 'Expired';
+                                                    
+                                                    let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                                                    let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                                    let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                                    let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                                                    
+                                                    if (days > 0) return `${days}d ${hours}h`;
+                                                    return `${hours}h ${minutes}m ${seconds}s`;
+                                                }
+                                             }"
+                                             x-init="timer = setInterval(() => { now = Date.now() }, 1000)"
+                                             x-on:destroy="clearInterval(timer)"
+                                        >
+                                            <span x-text="countdown"></span>
+                                        </div>
+                                    @else
+                                        <span class="text-zinc-400">-</span>
+                                    @endif
+                                </flux:table.cell>
                                 <flux:table.cell>
                                     <flux:badge size="sm" :color="$site->status === 'active' ? 'green' : 'red'">
                                         {{ ucfirst($site->status) }}

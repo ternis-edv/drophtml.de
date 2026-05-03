@@ -14,6 +14,12 @@ class Site extends Model
         'views',
         'is_permanent',
         'status',
+        'expires_at',
+    ];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'is_permanent' => 'boolean',
     ];
 
     public function user()
@@ -29,5 +35,10 @@ class Site extends Model
     public function activityLogs()
     {
         return $this->hasMany(ActivityLog::class);
+    }
+
+    public function siteViews()
+    {
+        return $this->hasMany(View::class);
     }
 }

@@ -56,6 +56,7 @@ new class extends Component
                 'original_name' => $originalName,
                 'path' => $path,
                 'user_id' => auth()->id(),
+                'expires_at' => auth()->check() ? now()->addDays(30) : now()->addHours(24),
             ]);
 
             if (auth()->check()) {
