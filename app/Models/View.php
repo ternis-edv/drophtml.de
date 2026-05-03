@@ -19,6 +19,11 @@ class View extends Model
         'ip_address',
         'user_agent',
         'referer',
+        'is_quiet',
+    ];
+
+    protected $casts = [
+        'is_quiet' => 'boolean',
     ];
 
     public function site()

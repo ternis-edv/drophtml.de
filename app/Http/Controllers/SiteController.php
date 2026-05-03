@@ -17,48 +17,54 @@ class SiteController extends Controller
             abort(403, 'This site is currently inactive or not deployed.');
         }
 
-        // Detailed view tracking
-        $site->siteViews()->create([
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'referer' => request()->header('referer'),
-        ]);
-
-        // Still incrementing for quick overview
-        $site->increment('views');
-        
-        if (empty($path)) {
+        // Determine actual file path first
+        $requestedPath = $path;
+        if (empty($requestedPath)) {
             // Try to find index.html
             if (Storage::disk('public')->exists("{$site->path}/index.html")) {
-                $path = 'index.html';
+                $requestedPath = 'index.html';
             } else {
                 // Find the first .html file
                 $files = Storage::disk('public')->files($site->path);
                 $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
                 
                 if (!empty($htmlFiles)) {
-                    $path = basename(reset($htmlFiles));
+                    $requestedPath = basename(reset($htmlFiles));
                 } else {
                     abort(404, 'No HTML file found.');
                 }
             }
         }
 
-        $fullPath = "{$site->path}/{$path}";
+        $fullPath = "{$site->path}/{$requestedPath}";
 
         if (!Storage::disk('public')->exists($fullPath)) {
             // If it's a directory request
             if (Storage::disk('public')->exists("{$fullPath}/index.html")) {
-                return redirect("/s/{$slug}/{$path}/index.html");
+                return redirect("/s/{$slug}/{$requestedPath}/index.html");
             }
             abort(404);
+        }
+
+        $isHtml = str_ends_with(strtolower($requestedPath), '.html');
+
+        // Detailed view tracking
+        $site->siteViews()->create([
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'referer' => request()->header('referer'),
+            'is_quiet' => !$isHtml,
+        ]);
+
+        if ($isHtml) {
+            $site->increment('views');
         }
 
         $file = Storage::disk('public')->get($fullPath);
         $mime = Storage::disk('public')->mimeType($fullPath);
 
         // Ensure we serve .html files as text/html even if mimeType fails
-        if (str_ends_with(strtolower($path), '.html')) {
+        if ($isHtml) {
             $mime = 'text/html';
             
             // Inject <base> tag for proper asset loading on path-based URLs
