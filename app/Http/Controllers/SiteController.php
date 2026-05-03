@@ -13,6 +13,10 @@ class SiteController extends Controller
     {
         $site = Site::where('slug', $slug)->firstOrFail();
         
+        if ($site->status !== 'active') {
+            abort(403, 'This site is currently inactive or not deployed.');
+        }
+
         // Detailed view tracking
         $site->siteViews()->create([
             'ip_address' => request()->ip(),
@@ -56,6 +60,16 @@ class SiteController extends Controller
         // Ensure we serve .html files as text/html even if mimeType fails
         if (str_ends_with(strtolower($path), '.html')) {
             $mime = 'text/html';
+            
+            // Inject <base> tag for proper asset loading on path-based URLs
+            $baseUrl = url("/s/{$slug}/") . '/';
+            $baseTag = "<base href=\"{$baseUrl}\">";
+            
+            if (str_contains($file, '<head>')) {
+                $file = str_replace('<head>', "<head>\n    {$baseTag}", $file);
+            } else {
+                $file = "{$baseTag}\n" . $file;
+            }
         }
 
         return response($file, 200)->header('Content-Type', $mime);
