@@ -56,8 +56,20 @@ new class extends Component
                 'original_name' => $originalName,
                 'path' => $path,
             ]);
+            
+            $host = parse_url(config('app.url'), PHP_URL_HOST);
+            $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?? 'http';
+            
+            $pathUrl = url("/s/{$slug}");
+            $subdomainUrl = ($host && $host !== 'localhost') ? "{$scheme}://{$slug}.{$host}" : null;
 
-            $this->message = "Site published! Access it at: " . url("/s/{$slug}");
+            $this->message = "Site published!";
+            if ($subdomainUrl) {
+                $this->message .= " Access it at: <a href='{$subdomainUrl}' class='underline' target='_blank'>{$subdomainUrl}</a> or <a href='{$pathUrl}' class='underline' target='_blank'>{$pathUrl}</a>";
+            } else {
+                $this->message .= " Access it at: <a href='{$pathUrl}' class='underline' target='_blank'>{$pathUrl}</a>";
+            }
+            
             $this->dispatch('site-published', slug: $slug);
         } catch (\Exception $e) {
             $this->message = "Error: " . $e->getMessage();
@@ -99,7 +111,7 @@ new class extends Component
 
     @if ($message)
         <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg">
-            {{ $message }}
+            {!! $message !!}
         </div>
     @endif
 </div>

@@ -4,9 +4,13 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\SiteController;
 
-Route::domain('{slug}.' . config('app.url_base', 'drophtml.test'))->group(function () {
-    Route::get('/{path?}', [SiteController::class, 'show'])->where('path', '.*');
-});
+$host = parse_url(config('app.url'), PHP_URL_HOST);
+
+if ($host && $host !== 'localhost') {
+    Route::domain('{slug}.' . $host)->group(function () {
+        Route::get('/{path?}', [SiteController::class, 'show'])->where('path', '.*');
+    });
+}
 
 Route::view('/', 'welcome')->name('home');
 
