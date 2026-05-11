@@ -5,7 +5,7 @@
                 <flux:icon.information-circle class="size-4" />
                 <span>You haven't set a password yet. Setting a password allows you to log in without GitHub.</span>
             </div>
-            <flux:button size="xs" variant="primary" class="bg-white text-blue-600 border-none hover:bg-blue-50" :href="route('profile.edit')" wire:navigate>
+            <flux:button size="xs" variant="primary" class="bg-white text-blue-600 border-none hover:bg-blue-50" :href="route('security.edit')" wire:navigate>
                 Set Password
             </flux:button>
         </div>
