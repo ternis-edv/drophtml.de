@@ -99,20 +99,20 @@
                 <div class="space-y-4">
                     <h4 class="font-bold uppercase text-xs tracking-widest text-zinc-400">Platform</h4>
                     <nav class="flex flex-col gap-2">
-                        <a href="https://ternis-edv.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">ternis-edv.de</a>
-                        <a href="https://xpsystems.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">xpsystems.de</a>
-                        <a href="https://europehost.eu" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">europehost.eu</a>
-                        <a href="https://dnbx.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">dnbx.de</a>
+                        <a href="#features" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Features</a>
+                        <a href="#analytics" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Analytics</a>
+                        <a href="{{ route('register') }}" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Pricing</a>
+                        <a href="https://github.com/ternis-edv/drophtml.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Open Source</a>
                     </nav>
                 </div>
 
                 <div class="space-y-4">
                     <h4 class="font-bold uppercase text-xs tracking-widest text-zinc-400">Legal</h4>
                     <nav class="flex flex-col gap-2">
-                        <a href="#" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Privacy Policy</a>
-                        <a href="#" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Terms of Service</a>
+                        <a href="https://ternis-edv.de/impressum" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Impressum</a>
+                        <a href="https://ternis-edv.de/datenschutz" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Privacy Policy</a>
                         <div class="mt-4 text-zinc-400 text-xs">
-                            &copy; {{ date('Y') }} DropHTML.de
+                            &copy; {{ date('Y') }} DropHTML.de - A <a href="https://ternis-edv.de" target="_blank" class="hover:text-blue-500">ternis-edv.de</a> project
                         </div>
                     </nav>
                 </div>
