@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ConfirmPasswordIfSet;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -13,13 +14,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit');
 
     Route::livewire('settings/security', 'pages::settings.security')
-        ->middleware(
-            when(
-                Features::canManageTwoFactorAuthentication()
-                    && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
-                ['password.confirm'],
-                [],
-            ),
-        )
+        ->middleware([ConfirmPasswordIfSet::class])
         ->name('security.edit');
 });
