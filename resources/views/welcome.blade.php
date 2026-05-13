@@ -101,7 +101,7 @@
                     <nav class="flex flex-col gap-2">
                         <a href="#features" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Features</a>
                         <a href="#analytics" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Analytics</a>
-                        <a href="{{ route('register') }}" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Pricing</a>
+                        <a href="#features" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">100% Free</a>
                         <a href="https://github.com/ternis-edv/drophtml.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Open Source</a>
                     </nav>
                 </div>

@@ -10,7 +10,7 @@
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <flux:button size="base" variant="primary" class="bg-white text-blue-600 hover:bg-blue-50 border-none px-10 shadow-xl font-bold" :href="route('register')">
-                    Create your free account
+                    Create your 100% free account
                 </flux:button>
                 <flux:button size="base" variant="ghost" class="text-white hover:bg-white/10 border-white/20" :href="route('login')">
                     Existing user? Log in
