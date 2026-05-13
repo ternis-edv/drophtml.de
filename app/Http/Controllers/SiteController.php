@@ -17,33 +17,7 @@ class SiteController extends Controller
             abort(403, 'This site is currently inactive or not deployed.');
         }
 
-        // Determine actual file path first
-        $requestedPath = $path;
-        if (empty($requestedPath)) {
-            if ($site->entry_path) {
-                $requestedPath = $site->entry_path;
-            } else {
-                // Fallback for sites deployed before this optimization
-                // Try to find index.html
-                if (Storage::disk('public')->exists("{$site->path}/index.html")) {
-                    $requestedPath = 'index.html';
-                } else {
-                    // Find the first .html file
-                    $files = Storage::disk('public')->files($site->path);
-                    $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
-
-                    if (!empty($htmlFiles)) {
-                        $requestedPath = basename(reset($htmlFiles));
-                    } else {
-                        abort(404, 'No HTML file found.');
-                    }
-                }
-
-                // Cache it for next time
-                $site->update(['entry_path' => $requestedPath]);
-            }
-        }
-
+        $requestedPath = $this->resolveFilePath($site, $path);
         $fullPath = "{$site->path}/{$requestedPath}";
 
         if (!Storage::disk('public')->exists($fullPath)) {
@@ -68,6 +42,43 @@ class SiteController extends Controller
             $site->increment('views');
         }
 
+        return $this->buildResponse($fullPath, $slug, $isHtml);
+    }
+
+    private function resolveFilePath(Site $site, ?string $path): string
+    {
+        if (!empty($path)) {
+            return $path;
+        }
+
+        if ($site->entry_path) {
+            return $site->entry_path;
+        }
+
+        // Fallback for sites deployed before this optimization
+        // Try to find index.html
+        if (Storage::disk('public')->exists("{$site->path}/index.html")) {
+            $requestedPath = 'index.html';
+        } else {
+            // Find the first .html file
+            $files = Storage::disk('public')->files($site->path);
+            $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+
+            if (!empty($htmlFiles)) {
+                $requestedPath = basename(reset($htmlFiles));
+            } else {
+                abort(404, 'No HTML file found.');
+            }
+        }
+
+        // Cache it for next time
+        $site->update(['entry_path' => $requestedPath]);
+
+        return $requestedPath;
+    }
+
+    private function buildResponse(string $fullPath, string $slug, bool $isHtml)
+    {
         $file = Storage::disk('public')->get($fullPath);
         $mime = Storage::disk('public')->mimeType($fullPath);
 
