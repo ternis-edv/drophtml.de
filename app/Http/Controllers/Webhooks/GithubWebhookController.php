@@ -42,81 +42,112 @@ class GithubWebhookController extends Controller
             $user = $site->user;
             if (!$user || !$user->github_token) return;
 
-            $fullName = $site->github_repo_full_name;
-            $branch = $site->github_branch;
-            $token = $user->github_token;
+            $tempPath = $this->downloadArchive($site, $user->github_token);
+            $this->extractAndProcessArchive($tempPath, $site);
 
-            $archiveUrl = "https://api.github.com/repos/{$fullName}/zipball/{$branch}";
-            $response = Http::withToken($token)->get($archiveUrl);
-
-            if ($response->failed()) throw new \Exception("Failed to download archive");
-
-            $tempPath = storage_path("app/temp_webhook_{$site->slug}.zip");
-            file_put_contents($tempPath, $response->body());
-
-            // Extract to public storage
-            $zip = new \ZipArchive;
-            if ($zip->open($tempPath) === TRUE) {
-                $extractPath = Storage::disk('public')->path($site->path);
-                
-                // Clear old files
-                Storage::disk('public')->deleteDirectory($site->path);
-                Storage::disk('public')->makeDirectory($site->path);
-
-                $zip->extractTo($extractPath);
-                $zip->close();
-
-                // Hoisting logic: if ZIP contains a single top-level directory, move its contents up
-                $items = array_diff(scandir($extractPath), ['.', '..']);
-                if (count($items) === 1) {
-                    $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
-                    if (is_dir($innerDir)) {
-                        $files = array_diff(scandir($innerDir), ['.', '..']);
-                        foreach ($files as $file) {
-                            rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
-                        }
-                        rmdir($innerDir);
-                    }
-                }
-
-                // Determine entry path
-                $entryPath = null;
-                if (Storage::disk('public')->exists("{$site->path}/index.html")) {
-                    $entryPath = 'index.html';
-                } else {
-                    $files = Storage::disk('public')->files($site->path);
-                    $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
-                    if (!empty($htmlFiles)) {
-                        $entryPath = basename(reset($htmlFiles));
-                    }
-                }
-                $site->update(['entry_path' => $entryPath]);
+            if (file_exists($tempPath)) {
+                unlink($tempPath);
             }
 
-            unlink($tempPath);
-
-            $site->deployments()->create([
-                'status' => 'success',
-                'source' => 'github_webhook',
-                'commit_hash' => $payload['after'] ?? null,
-                'commit_message' => $payload['head_commit']['message'] ?? 'Auto-deploy from push',
-                'metadata' => $payload,
-            ]);
-
-            ActivityLog::create([
-                'user_id' => $user->id,
-                'site_id' => $site->id,
-                'action' => 'github_auto_deployed',
-                'description' => "Auto-deployed from GitHub: {$fullName} ({$branch})",
-                'ip_address' => request()->ip(),
-            ]);
+            $this->logDeployment($site, $payload);
 
         } catch (\Exception $e) {
+            $this->logDeployment($site, $payload, $e);
+        }
+    }
+
+    protected function downloadArchive(Site $site, string $token): string
+    {
+        $fullName = $site->github_repo_full_name;
+        $branch = $site->github_branch;
+
+        $archiveUrl = "https://api.github.com/repos/{$fullName}/zipball/{$branch}";
+        $response = Http::withToken($token)->get($archiveUrl);
+
+        if ($response->failed()) {
+            throw new \Exception("Failed to download archive");
+        }
+
+        $tempPath = storage_path("app/temp_webhook_{$site->slug}.zip");
+        file_put_contents($tempPath, $response->body());
+
+        return $tempPath;
+    }
+
+    protected function extractAndProcessArchive(string $tempPath, Site $site): void
+    {
+        $zip = new \ZipArchive;
+        if ($zip->open($tempPath) === TRUE) {
+            $extractPath = Storage::disk('public')->path($site->path);
+
+            // Clear old files
+            Storage::disk('public')->deleteDirectory($site->path);
+            Storage::disk('public')->makeDirectory($site->path);
+
+            $zip->extractTo($extractPath);
+            $zip->close();
+
+            $this->hoistDirectory($extractPath);
+            $this->determineAndUpdateEntryPath($site);
+        }
+    }
+
+    protected function hoistDirectory(string $extractPath): void
+    {
+        // Hoisting logic: if ZIP contains a single top-level directory, move its contents up
+        $items = array_diff(scandir($extractPath), ['.', '..']);
+        if (count($items) === 1) {
+            $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
+            if (is_dir($innerDir)) {
+                $files = array_diff(scandir($innerDir), ['.', '..']);
+                foreach ($files as $file) {
+                    rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
+                }
+                rmdir($innerDir);
+            }
+        }
+    }
+
+    protected function determineAndUpdateEntryPath(Site $site): void
+    {
+        $entryPath = null;
+        if (Storage::disk('public')->exists("{$site->path}/index.html")) {
+            $entryPath = 'index.html';
+        } else {
+            $files = Storage::disk('public')->files($site->path);
+            $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+            if (!empty($htmlFiles)) {
+                $entryPath = basename(reset($htmlFiles));
+            }
+        }
+        $site->update(['entry_path' => $entryPath]);
+    }
+
+    protected function logDeployment(Site $site, array $payload, ?\Exception $e = null): void
+    {
+        if ($e) {
             $site->deployments()->create([
                 'status' => 'failed',
                 'source' => 'github_webhook',
                 'commit_message' => "Auto-deploy failed: " . $e->getMessage(),
             ]);
+            return;
         }
+
+        $site->deployments()->create([
+            'status' => 'success',
+            'source' => 'github_webhook',
+            'commit_hash' => $payload['after'] ?? null,
+            'commit_message' => $payload['head_commit']['message'] ?? 'Auto-deploy from push',
+            'metadata' => $payload,
+        ]);
+
+        ActivityLog::create([
+            'user_id' => $site->user->id,
+            'site_id' => $site->id,
+            'action' => 'github_auto_deployed',
+            'description' => "Auto-deployed from GitHub: {$site->github_repo_full_name} ({$site->github_branch})",
+            'ip_address' => request()->ip(),
+        ]);
     }
 }
