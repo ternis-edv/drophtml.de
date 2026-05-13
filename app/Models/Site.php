@@ -29,6 +29,7 @@ class Site extends Model
         'slug',
         'original_name',
         'path',
+        'entry_path',
         'user_id',
         'views',
         'is_permanent',

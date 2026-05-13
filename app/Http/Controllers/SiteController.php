@@ -20,19 +20,27 @@ class SiteController extends Controller
         // Determine actual file path first
         $requestedPath = $path;
         if (empty($requestedPath)) {
-            // Try to find index.html
-            if (Storage::disk('public')->exists("{$site->path}/index.html")) {
-                $requestedPath = 'index.html';
+            if ($site->entry_path) {
+                $requestedPath = $site->entry_path;
             } else {
-                // Find the first .html file
-                $files = Storage::disk('public')->files($site->path);
-                $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
-                
-                if (!empty($htmlFiles)) {
-                    $requestedPath = basename(reset($htmlFiles));
+                // Fallback for sites deployed before this optimization
+                // Try to find index.html
+                if (Storage::disk('public')->exists("{$site->path}/index.html")) {
+                    $requestedPath = 'index.html';
                 } else {
-                    abort(404, 'No HTML file found.');
+                    // Find the first .html file
+                    $files = Storage::disk('public')->files($site->path);
+                    $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+
+                    if (!empty($htmlFiles)) {
+                        $requestedPath = basename(reset($htmlFiles));
+                    } else {
+                        abort(404, 'No HTML file found.');
+                    }
                 }
+
+                // Cache it for next time
+                $site->update(['entry_path' => $requestedPath]);
             }
         }
 

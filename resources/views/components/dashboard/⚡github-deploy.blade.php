@@ -101,6 +101,18 @@ new class extends Component
                         rmdir($innerDir);
                     }
                 }
+
+                // Determine entry path
+                $entryPath = null;
+                if (Storage::disk('public')->exists("{$path}/index.html")) {
+                    $entryPath = 'index.html';
+                } else {
+                    $files = Storage::disk('public')->files($path);
+                    $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+                    if (!empty($htmlFiles)) {
+                        $entryPath = basename(reset($htmlFiles));
+                    }
+                }
             } else {
                 throw new \Exception('Could not extract repository.');
             }
@@ -111,6 +123,7 @@ new class extends Component
                 'slug' => $slug,
                 'original_name' => $repo['name'],
                 'path' => $path,
+                'entry_path' => $entryPath,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addDays(30),
                 'github_repo_full_name' => $fullName,
