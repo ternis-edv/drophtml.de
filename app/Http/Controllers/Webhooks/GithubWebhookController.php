@@ -81,6 +81,19 @@ class GithubWebhookController extends Controller
                         rmdir($innerDir);
                     }
                 }
+
+                // Determine entry path
+                $entryPath = null;
+                if (Storage::disk('public')->exists("{$site->path}/index.html")) {
+                    $entryPath = 'index.html';
+                } else {
+                    $files = Storage::disk('public')->files($site->path);
+                    $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+                    if (!empty($htmlFiles)) {
+                        $entryPath = basename(reset($htmlFiles));
+                    }
+                }
+                $site->update(['entry_path' => $entryPath]);
             }
 
             unlink($tempPath);

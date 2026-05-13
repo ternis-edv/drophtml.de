@@ -34,6 +34,7 @@ new class extends Component
             $slug = Str::random(8);
             $path = "sites/{$slug}";
 
+            $entryPath = null;
             if (strtolower($extension) === 'zip') {
                 $zip = new \ZipArchive;
                 if ($zip->open($this->file->getRealPath()) === TRUE) {
@@ -57,6 +58,17 @@ new class extends Component
                             rmdir($innerDir);
                         }
                     }
+
+                    // Determine entry path
+                    if (Storage::disk('public')->exists("{$path}/index.html")) {
+                        $entryPath = 'index.html';
+                    } else {
+                        $files = Storage::disk('public')->files($path);
+                        $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+                        if (!empty($htmlFiles)) {
+                            $entryPath = basename(reset($htmlFiles));
+                        }
+                    }
                 } else {
                     throw new \Exception('Could not open ZIP file');
                 }
@@ -64,15 +76,16 @@ new class extends Component
                 // Save single file
                 $this->file->storeAs($path, $originalName, 'public');
                 
-                // If it's a single html file but not named index.html, 
-                // we might want to allow accessing it directly or rename it.
-                // For now, SiteController handles index.html default.
+                if (str_ends_with(strtolower($originalName), '.html')) {
+                    $entryPath = $originalName;
+                }
             }
             
             $site = Site::create([
                 'slug' => $slug,
                 'original_name' => $originalName,
                 'path' => $path,
+                'entry_path' => $entryPath,
                 'user_id' => auth()->id(),
                 'expires_at' => auth()->check() ? now()->addDays(30) : now()->addHours(24),
             ]);

@@ -55,6 +55,10 @@ new class extends Component
 
         $path = "{$this->site->path}/{$this->currentFile}";
         Storage::disk('public')->put($path, $this->fileContent);
+
+        if ($this->currentFile === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($this->currentFile), '.html'))) {
+            $this->site->update(['entry_path' => $this->currentFile]);
+        }
         
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -83,6 +87,10 @@ new class extends Component
         }
 
         Storage::disk('public')->put($path, '');
+
+        if ($this->newFileName === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($this->newFileName), '.html'))) {
+            $this->site->update(['entry_path' => $this->newFileName]);
+        }
         
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -103,6 +111,17 @@ new class extends Component
     {
         $path = "{$this->site->path}/{$filename}";
         Storage::disk('public')->delete($path);
+
+        if ($this->site->entry_path === $filename) {
+            // Re-evaluate entry path
+            $files = Storage::disk('public')->files($this->site->path);
+            if (in_array("{$this->site->path}/index.html", $files)) {
+                $this->site->update(['entry_path' => 'index.html']);
+            } else {
+                $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+                $this->site->update(['entry_path' => !empty($htmlFiles) ? basename(reset($htmlFiles)) : null]);
+            }
+        }
         
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -129,6 +148,10 @@ new class extends Component
         $path = "{$this->site->path}/{$filename}";
         
         $this->uploadFile->storeAs($this->site->path, $filename, 'public');
+
+        if ($filename === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($filename), '.html'))) {
+            $this->site->update(['entry_path' => $filename]);
+        }
         
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -169,6 +192,23 @@ new class extends Component
         }
 
         Storage::disk('public')->move($oldPath, $newPath);
+
+        if ($this->site->entry_path === $this->oldFileName) {
+            if (str_ends_with(strtolower($this->newRenameName), '.html')) {
+                $this->site->update(['entry_path' => $this->newRenameName]);
+            } else {
+                // Re-evaluate
+                $files = Storage::disk('public')->files($this->site->path);
+                if (in_array("{$this->site->path}/index.html", $files)) {
+                    $this->site->update(['entry_path' => 'index.html']);
+                } else {
+                    $htmlFiles = array_filter($files, fn($f) => str_ends_with(strtolower($f), '.html'));
+                    $this->site->update(['entry_path' => !empty($htmlFiles) ? basename(reset($htmlFiles)) : null]);
+                }
+            }
+        } elseif (empty($this->site->entry_path) && str_ends_with(strtolower($this->newRenameName), '.html')) {
+            $this->site->update(['entry_path' => $this->newRenameName]);
+        }
 
         ActivityLog::create([
             'user_id' => auth()->id(),
