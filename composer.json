@@ -15,7 +15,24 @@
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "livewire/flux": "^2.13.1",
-        "livewire/livewire": "^4.1"
+        "livewire/livewire": "^4.1",
+        "symfony/clock": "^7.4",
+        "symfony/console": "^7.4",
+        "symfony/css-selector": "^7.4",
+        "symfony/error-handler": "^7.4",
+        "symfony/event-dispatcher": "^7.4",
+        "symfony/finder": "^7.4",
+        "symfony/http-foundation": "^7.4",
+        "symfony/http-kernel": "^7.4",
+        "symfony/mailer": "^7.4",
+        "symfony/mime": "^7.4",
+        "symfony/process": "^7.4",
+        "symfony/routing": "^7.4",
+        "symfony/string": "^7.4",
+        "symfony/translation": "^7.4",
+        "symfony/uid": "^7.4",
+        "symfony/var-dumper": "^7.4",
+        "symfony/yaml": "^7.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
@@ -100,6 +117,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "php": "8.3.6"
         }
     },
     "minimum-stability": "stable",
