@@ -1,7 +1,7 @@
 <section class="w-full lg:max-w-6xl px-6 py-12 lg:py-24 flex flex-col items-center text-center gap-8">
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-wide uppercase animate-fade-in">
         <flux:icon.sparkles class="size-3" />
-        <span>Instant Deployment is here</span>
+        <span>100% Free Instant Deployment</span>
     </div>
 
     <h1 class="text-5xl lg:text-7xl font-black tracking-tight leading-tight max-w-4xl">
@@ -9,7 +9,7 @@
     </h1>
 
     <p class="text-xl text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-        The fastest way to get your static sites online. Drag, drop, and share. No complex configuration, no servers to manage.
+        The fastest way to get your static sites online. Drag, drop, and share. No complex configuration, no servers to manage, and absolutely no costs.
     </p>
 
     <div class="flex flex-col sm:flex-row gap-4 mt-4">

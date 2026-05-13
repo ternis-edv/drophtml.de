@@ -139,8 +139,20 @@ new class extends Component
         @endif
 
         @if($sites->isEmpty())
-            <div class="py-8 text-center text-zinc-500">
-                You haven't uploaded any sites yet.
+            <div class="py-20 flex flex-col items-center justify-center text-center">
+                <div class="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-full mb-6">
+                    <flux:icon.cloud-arrow-up class="w-12 h-12 text-zinc-400" />
+                </div>
+                <h3 class="text-xl font-bold mb-2">No sites found</h3>
+                <p class="text-zinc-500 max-w-xs mb-8">Ready to share your project? Upload your first site or connect your GitHub account.</p>
+                <div class="flex gap-4">
+                    <flux:modal.trigger name="upload-site-modal">
+                        <flux:button variant="primary" icon="plus">Upload New Site</flux:button>
+                    </flux:modal.trigger>
+                    @if(!auth()->user()->github_id)
+                        <flux:button :href="route('social.redirect', 'github')" variant="ghost">Connect GitHub</flux:button>
+                    @endif
+                </div>
             </div>
         @else
             <div class="overflow-x-auto">

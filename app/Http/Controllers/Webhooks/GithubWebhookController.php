@@ -15,20 +15,17 @@ class GithubWebhookController extends Controller
     {
         $payload = $request->all();
         
-        // Basic verification: Check if it's a push to the default branch
+        // Basic verification
         if (!isset($payload['repository']['full_name']) || !isset($payload['ref'])) {
             return response()->json(['message' => 'Invalid payload'], 400);
         }
 
         $repoFullName = $payload['repository']['full_name'];
         $ref = $payload['ref'];
-        $defaultBranch = $payload['repository']['default_branch'];
-
-        if ($ref !== "refs/heads/{$defaultBranch}") {
-            return response()->json(['message' => 'Not a push to default branch'], 200);
-        }
+        $branch = str_replace('refs/heads/', '', $ref);
 
         $sites = Site::where('github_repo_full_name', $repoFullName)
+            ->where('github_branch', $branch)
             ->where('auto_deploy', true)
             ->get();
 
@@ -60,23 +57,23 @@ class GithubWebhookController extends Controller
             // Extract to public storage
             $zip = new \ZipArchive;
             if ($zip->open($tempPath) === TRUE) {
-                $extractPath = storage_path("app/public/{$site->path}");
+                $extractPath = Storage::disk('public')->path($site->path);
                 
                 // Clear old files
                 Storage::disk('public')->deleteDirectory($site->path);
-                mkdir($extractPath, 0755, true);
+                Storage::disk('public')->makeDirectory($site->path);
 
                 $zip->extractTo($extractPath);
                 $zip->close();
 
-                // Hoisting logic
+                // Hoisting logic: if ZIP contains a single top-level directory, move its contents up
                 $items = array_diff(scandir($extractPath), ['.', '..']);
                 if (count($items) === 1) {
-                    $innerDir = $extractPath . '/' . array_shift($items);
+                    $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
                     if (is_dir($innerDir)) {
                         $files = array_diff(scandir($innerDir), ['.', '..']);
                         foreach ($files as $file) {
-                            rename("{$innerDir}/{$file}", "{$extractPath}/{$file}");
+                            rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
                         }
                         rmdir($innerDir);
                     }
@@ -97,8 +94,8 @@ class GithubWebhookController extends Controller
                 'user_id' => $user->id,
                 'site_id' => $site->id,
                 'action' => 'github_auto_deployed',
-                'description' => "Auto-deployed from GitHub: {$repoFullName}",
-                'ip_address' => '127.0.0.1',
+                'description' => "Auto-deployed from GitHub: {$fullName} ({$branch})",
+                'ip_address' => request()->ip(),
             ]);
 
         } catch (\Exception $e) {

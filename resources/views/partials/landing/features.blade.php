@@ -11,6 +11,16 @@
         </flux:card>
 
         <flux:card class="p-8 space-y-4 border-none bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 shadow-xl shadow-zinc-200/50 dark:shadow-none">
+            <div class="size-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <flux:icon.gift class="size-6" />
+            </div>
+            <h3 class="text-xl font-bold">100% Free Forever</h3>
+            <p class="text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Enjoy our fully featured hosting solution completely free of charge. No credit card required, no hidden fees.
+            </p>
+        </flux:card>
+
+        <flux:card class="p-8 space-y-4 border-none bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 shadow-xl shadow-zinc-200/50 dark:shadow-none">
             <div class="size-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
                 <flux:icon.globe-alt class="size-6" />
             </div>
