@@ -80,23 +80,20 @@ new class extends Component
             // Extract
             $zip = new \ZipArchive;
             if ($zip->open($tempPath) === TRUE) {
-                // GitHub ZIPs contain a root folder, we need to extract contents carefully
-                $extractPath = storage_path("app/public/{$path}");
-                if (!file_exists($extractPath)) {
-                    mkdir($extractPath, 0755, true);
-                }
+                $extractPath = Storage::disk('public')->path($path);
+                Storage::disk('public')->makeDirectory($path);
                 
                 $zip->extractTo($extractPath);
                 $zip->close();
                 
-                // Move contents up one level if there's only one directory (GitHub's default)
+                // Hoisting logic: if ZIP contains a single top-level directory, move its contents up
                 $items = array_diff(scandir($extractPath), ['.', '..']);
                 if (count($items) === 1) {
-                    $innerDir = $extractPath . '/' . array_shift($items);
+                    $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
                     if (is_dir($innerDir)) {
                         $files = array_diff(scandir($innerDir), ['.', '..']);
                         foreach ($files as $file) {
-                            rename("{$innerDir}/{$file}", "{$extractPath}/{$file}");
+                            rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
                         }
                         rmdir($innerDir);
                     }
@@ -163,7 +160,7 @@ new class extends Component
     public function setupWebhook($fullName, $token)
     {
         try {
-            $webhookUrl = url('/api/webhooks/github');
+            $webhookUrl = url('/webhooks/github');
             
             $response = Http::withToken($token)->post("https://api.github.com/repos/{$fullName}/hooks", [
                 'name' => 'web',

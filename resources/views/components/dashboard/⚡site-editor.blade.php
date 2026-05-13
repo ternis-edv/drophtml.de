@@ -244,7 +244,10 @@ new class extends Component
             </flux:breadcrumbs>
             <h1 class="text-2xl font-bold mt-2">File Manager</h1>
         </div>
-        <flux:button :href="'/s/' . $site->slug" target="_blank" icon="arrow-top-right-on-square">View Live</flux:button>
+        <div class="flex gap-2">
+            <flux:button :href="'/s/' . $site->slug" target="_blank" icon="arrow-top-right-on-square" variant="ghost">View Live</flux:button>
+            <flux:button :href="'/s/' . $site->slug . '/' . ($currentFile ?: '')" target="_blank" icon="eye" variant="ghost" :disabled="!$currentFile">Preview File</flux:button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -303,8 +306,9 @@ new class extends Component
                 <div class="flex-1 relative">
                     <textarea 
                         wire:model="fileContent" 
-                        class="w-full h-full min-h-[500px] p-4 font-mono text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-accent outline-none resize-y"
+                        class="w-full h-full min-h-[600px] p-6 font-mono text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none leading-relaxed"
                         spellcheck="false"
+                        placeholder="Start typing your code here..."
                     ></textarea>
                 </div>
             @else

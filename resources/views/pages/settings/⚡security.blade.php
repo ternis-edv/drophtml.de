@@ -47,10 +47,15 @@ new #[Title('Security settings')] class extends Component {
     public function updatePassword(): void
     {
         try {
-            $validated = $this->validate([
-                'current_password' => $this->currentPasswordRules(),
+            $rules = [
                 'password' => $this->passwordRules(),
-            ]);
+            ];
+
+            if (Auth::user()->password_set_at) {
+                $rules['current_password'] = $this->currentPasswordRules();
+            }
+
+            $validated = $this->validate($rules);
         } catch (ValidationException $e) {
             $this->reset('current_password', 'password', 'password_confirmation');
 

@@ -38,10 +38,8 @@ new class extends Component
             if (strtolower($extension) === 'zip') {
                 $zip = new \ZipArchive;
                 if ($zip->open($this->file->getRealPath()) === TRUE) {
-                    $extractPath = storage_path("app/public/{$path}");
-                    if (!file_exists($extractPath)) {
-                        mkdir($extractPath, 0755, true);
-                    }
+                    $extractPath = Storage::disk('public')->path($path);
+                    Storage::disk('public')->makeDirectory($path);
                     
                     $zip->extractTo($extractPath);
                     $zip->close();
@@ -49,11 +47,11 @@ new class extends Component
                     // Automatically hoist contents if the ZIP contains a single root directory
                     $items = array_diff(scandir($extractPath), ['.', '..']);
                     if (count($items) === 1) {
-                        $innerDir = $extractPath . '/' . array_shift($items);
+                        $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
                         if (is_dir($innerDir)) {
                             $files = array_diff(scandir($innerDir), ['.', '..']);
                             foreach ($files as $file) {
-                                rename("{$innerDir}/{$file}", "{$extractPath}/{$file}");
+                                rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
                             }
                             rmdir($innerDir);
                         }

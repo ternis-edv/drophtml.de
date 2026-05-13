@@ -46,6 +46,7 @@
                 @if (Route::has('login'))
                     <nav class="hidden md:flex items-center gap-8 mr-4">
                         <a href="#features" class="text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">Features</a>
+                        <a href="#how-it-works" class="text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">How it works</a>
                         <a href="#analytics" class="text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">Analytics</a>
                     </nav>
                     <div class="flex items-center gap-2">
@@ -67,8 +68,16 @@
                 @include('partials.landing.features')
             </div>
 
-            <div id="analytics" class="w-full flex justify-center">
+            <div class="w-full flex justify-center">
+                @include('partials.landing.how-it-works')
+            </div>
+
+            <div id="analytics" class="w-full bg-zinc-50 dark:bg-zinc-900/30 flex justify-center border-y border-zinc-100 dark:border-zinc-800/50">
                 @include('partials.landing.stats-preview')
+            </div>
+
+            <div class="w-full flex justify-center">
+                @include('partials.landing.testimonials')
             </div>
 
             <div class="w-full bg-zinc-50 dark:bg-zinc-900/30 flex justify-center border-t border-zinc-100 dark:border-zinc-800/50">
@@ -99,20 +108,20 @@
                 <div class="space-y-4">
                     <h4 class="font-bold uppercase text-xs tracking-widest text-zinc-400">Platform</h4>
                     <nav class="flex flex-col gap-2">
-                        <a href="https://ternis-edv.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">ternis-edv.de</a>
-                        <a href="https://xpsystems.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">xpsystems.de</a>
-                        <a href="https://europehost.eu" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">europehost.eu</a>
-                        <a href="https://dnbx.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">dnbx.de</a>
+                        <a href="#features" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Features</a>
+                        <a href="#analytics" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Analytics</a>
+                        <a href="#features" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">100% Free</a>
+                        <a href="https://github.com/ternis-edv/drophtml.de" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Open Source</a>
                     </nav>
                 </div>
 
                 <div class="space-y-4">
                     <h4 class="font-bold uppercase text-xs tracking-widest text-zinc-400">Legal</h4>
                     <nav class="flex flex-col gap-2">
-                        <a href="#" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Privacy Policy</a>
-                        <a href="#" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Terms of Service</a>
+                        <a href="https://ternis-edv.de/impressum" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Impressum</a>
+                        <a href="https://ternis-edv.de/datenschutz" target="_blank" class="text-sm text-zinc-500 hover:text-blue-500 transition-colors">Privacy Policy</a>
                         <div class="mt-4 text-zinc-400 text-xs">
-                            &copy; {{ date('Y') }} DropHTML.de
+                            &copy; {{ date('Y') }} DropHTML.de - A <a href="https://ternis-edv.de" target="_blank" class="hover:text-blue-500">ternis-edv.de</a> project
                         </div>
                     </nav>
                 </div>
