@@ -11,5 +11,6 @@
 
 @fonts
 
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+<link rel="stylesheet" href="{{ asset('css/app.css') }}">
+@vite(['resources/js/app.js'])
 @fluxAppearance
