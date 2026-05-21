@@ -34,6 +34,9 @@ class UserFactory extends Factory
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
+            'github_id' => null,
+            'github_token' => null,
+            'github_refresh_token' => null,
         ];
     }
 
