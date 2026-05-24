@@ -14,6 +14,7 @@ class SiteController extends Controller
     public function index(Request $request)
     {
         $sites = $request->user()->sites()->with('domains')->latest()->paginate(15);
+
         return SiteResource::collection($sites);
     }
 
@@ -28,8 +29,8 @@ class SiteController extends Controller
             'site_password' => ['nullable', 'string', 'min:4'],
         ]);
 
-        $slug = Str::slug($validated['original_name']) . '-' . Str::random(6);
-        $path = 'sites/' . $request->user()->id . '/' . $slug;
+        $slug = Str::slug($validated['original_name']).'-'.Str::random(6);
+        $path = 'sites/'.$request->user()->id.'/'.$slug;
 
         $site = $request->user()->sites()->create([
             'slug' => $slug,
@@ -54,6 +55,7 @@ class SiteController extends Controller
         }
 
         $site->load('domains');
+
         return new SiteResource($site);
     }
 

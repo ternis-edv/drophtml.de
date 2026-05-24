@@ -12,6 +12,7 @@ class ActivityLogController extends Controller
     public function index(Request $request)
     {
         $logs = $request->user()->activityLogs()->latest()->paginate(20);
+
         return ActivityLogResource::collection($logs);
     }
 

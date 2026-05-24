@@ -17,6 +17,7 @@ class DeploymentController extends Controller
         }
 
         $deployments = $site->deployments()->latest()->paginate(15);
+
         return DeploymentResource::collection($deployments);
     }
 

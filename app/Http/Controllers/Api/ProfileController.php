@@ -65,7 +65,7 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
-        
+
         $request->user()->tokens()->delete();
         $user->delete();
 

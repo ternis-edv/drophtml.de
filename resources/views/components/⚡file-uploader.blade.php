@@ -113,6 +113,13 @@ new class extends Component
         dragging: false,
         uploading: false,
         progress: 0,
+        init() {
+            window.addEventListener('files-dropped', (e) => {
+                if (e.detail.files && e.detail.files.length > 0) {
+                    this.uploadFiles(e.detail.files[0]);
+                }
+            });
+        },
         handleDrop(e) {
             let files = e.dataTransfer.files;
             if (files.length > 0) {

@@ -4,9 +4,14 @@ use Livewire\Component;
 use App\Models\Site;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ActivityLog;
+use Livewire\Attributes\On;
 
 new class extends Component
 {
+    #[On('site-published')]
+    #[On('site-deleted')]
+    public function refresh() {}
+
     public function deleteSite($id)
     {
         $site = auth()->user()->sites()->findOrFail($id);
@@ -62,7 +67,47 @@ new class extends Component
 };
 ?>
 
-<div>
+<div
+    x-data="{
+        dragging: false,
+        uploadModalOpen: false,
+        handleGlobalDrop(e) {
+            this.dragging = false;
+            let files = e.dataTransfer.files;
+            if (files.length > 0) {
+                this.uploadModalOpen = true;
+                Flux.modal('upload-site-modal').show();
+                // We need to wait a bit for the modal and component to be ready
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('files-dropped', { detail: { files: files } }));
+                }, 200);
+            }
+        }
+    }"
+    @dragover.prevent.window="dragging = true"
+    @dragenter.prevent.window="dragging = true"
+    @dragleave.prevent.window="if (event.clientX <= 0 || event.clientY <= 0 || event.clientX >= window.innerWidth || event.clientY >= window.innerHeight) dragging = false"
+    @drop.prevent.window="handleGlobalDrop($event)"
+    class="relative"
+>
+    <!-- Drag overlay -->
+    <div
+        x-show="dragging"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 backdrop-blur-sm pointer-events-none"
+        style="display: none;"
+    >
+        <div class="p-8 border-4 border-dashed border-white rounded-2xl bg-white/10 flex flex-col items-center gap-4">
+            <flux:icon.cloud-arrow-up class="w-16 h-16 text-white animate-bounce" />
+            <div class="text-2xl font-bold text-white">Drop to upload your site</div>
+        </div>
+    </div>
+
     <!-- Stats row -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <flux:card>
@@ -245,4 +290,15 @@ new class extends Component
             </div>
         @endif
     </flux:card>
+
+    <flux:modal name="upload-site-modal" class="md:w-[600px]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Upload New Site</flux:heading>
+                <flux:subheading>Drag and drop your HTML or ZIP file below.</flux:subheading>
+            </div>
+
+            <livewire:file-uploader />
+        </div>
+    </flux:modal>
 </div>
