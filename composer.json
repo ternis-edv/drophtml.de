@@ -9,13 +9,16 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
+        "dedoc/scramble": "^0.13.23",
         "laravel/fortify": "^1.34",
         "laravel/framework": "^13.7",
+        "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "livewire/flux": "^2.13.1",
-        "livewire/livewire": "^4.1"
+        "livewire/livewire": "^4.1",
+        "livewire/volt": "^1.10"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
