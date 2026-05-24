@@ -27,6 +27,9 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
+                <flux:sidebar.item icon="document-text" href="/docs/api">
+                    {{ __('API Docs') }}
+                </flux:sidebar.item>
                 <flux:sidebar.item icon="folder-git-2" href="https://github.com/ternis-edv/drophtml.de" target="_blank">
                     {{ __('Repository') }}
                 </flux:sidebar.item>
