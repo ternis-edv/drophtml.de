@@ -6,5 +6,6 @@
     @include('partials.landing.interactive-demo')
     @include('partials.landing.stats')
     @include('partials.landing.bento-grid')
+    @include('partials.landing.testimonials')
     @include('partials.landing.pricing')
 @endsection

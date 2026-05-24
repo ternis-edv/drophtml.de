@@ -13,7 +13,7 @@ if ($host && $host !== 'localhost') {
 
 Route::get('/', function () {
     return view('welcome', [
-        'totalSites' => \App\Models\Site::count() + 1024,
+        'totalSites' => \App\Models\Site::count(),
     ]);
 })->name('home');
 

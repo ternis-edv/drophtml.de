@@ -15,10 +15,6 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <button @click="darkMode = !darkMode" class="p-2 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white focus:outline-none transition-colors" aria-label="Toggle dark mode">
-                    <flux:icon.sun x-show="!darkMode" class="w-5 h-5" style="display: none;" />
-                    <flux:icon.moon x-show="darkMode" class="w-5 h-5" style="display: none;" />
-                </button>
                 @auth
                     <flux:button :href="route('dashboard')" variant="primary" size="sm" class="rounded-full px-6">
                         Dashboard
