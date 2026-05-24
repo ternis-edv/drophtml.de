@@ -21,10 +21,10 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center gap-4">
-                    <flux:button :href="route('register')" size="lg" variant="primary" class="rounded-full px-8 py-3 text-lg bg-white text-black hover:bg-zinc-200 border-none shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all hover:scale-105">
+                    <flux:button :href="route('register')" size="base" variant="primary" class="rounded-full px-8 py-3 text-lg bg-white text-black hover:bg-zinc-200 border-none shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all hover:scale-105">
                         Start Deploying for Free
                     </flux:button>
-                    <flux:button href="#demo" size="lg" variant="ghost" class="rounded-full px-8 py-3 text-lg text-white border border-zinc-700 hover:bg-zinc-800 transition-all">
+                    <flux:button href="#demo" size="base" variant="ghost" class="rounded-full px-8 py-3 text-lg text-white border border-zinc-700 hover:bg-zinc-800 transition-all">
                         Try Interactive Demo
                     </flux:button>
                 </div>
