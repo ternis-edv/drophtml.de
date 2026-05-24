@@ -26,10 +26,10 @@ class CleanupExpiredSites extends Command
 
         foreach ($expiredSites as $site) {
             $this->comment("Deleting site: {$site->slug}...");
-            
+
             // Delete files
             Storage::disk('public')->deleteDirectory($site->path);
-            
+
             // Delete record
             $site->delete();
         }

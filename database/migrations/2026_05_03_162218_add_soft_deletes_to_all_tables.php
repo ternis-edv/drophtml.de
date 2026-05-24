@@ -11,12 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) { $table->softDeletes(); });
-        Schema::table('sites', function (Blueprint $table) { $table->softDeletes(); });
-        Schema::table('domains', function (Blueprint $table) { $table->softDeletes(); });
-        Schema::table('activity_logs', function (Blueprint $table) { $table->softDeletes(); });
-        Schema::table('deployments', function (Blueprint $table) { $table->softDeletes(); });
-        Schema::table('views', function (Blueprint $table) { $table->softDeletes(); });
+        Schema::table('users', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+        Schema::table('sites', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+        Schema::table('domains', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+        Schema::table('activity_logs', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+        Schema::table('deployments', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+        Schema::table('views', function (Blueprint $table) {
+            $table->softDeletes();
+        });
     }
 
     /**
@@ -24,11 +36,23 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) { $table->dropSoftDeletes(); });
-        Schema::table('sites', function (Blueprint $table) { $table->dropSoftDeletes(); });
-        Schema::table('domains', function (Blueprint $table) { $table->dropSoftDeletes(); });
-        Schema::table('activity_logs', function (Blueprint $table) { $table->dropSoftDeletes(); });
-        Schema::table('deployments', function (Blueprint $table) { $table->dropSoftDeletes(); });
-        Schema::table('views', function (Blueprint $table) { $table->dropSoftDeletes(); });
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+        Schema::table('sites', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+        Schema::table('domains', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+        Schema::table('activity_logs', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+        Schema::table('deployments', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+        Schema::table('views', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

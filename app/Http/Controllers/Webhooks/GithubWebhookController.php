@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use App\Models\ActivityLog;
 
 class GithubWebhookController extends Controller
 {
     public function handle(Request $request)
     {
         $payload = $request->all();
-        
+
         // Basic verification
-        if (!isset($payload['repository']['full_name']) || !isset($payload['ref'])) {
+        if (! isset($payload['repository']['full_name']) || ! isset($payload['ref'])) {
             return response()->json(['message' => 'Invalid payload'], 400);
         }
 
@@ -40,7 +40,9 @@ class GithubWebhookController extends Controller
     {
         try {
             $user = $site->user;
-            if (!$user || !$user->github_token) return;
+            if (! $user || ! $user->github_token) {
+                return;
+            }
 
             $fullName = $site->github_repo_full_name;
             $branch = $site->github_branch;
@@ -49,16 +51,18 @@ class GithubWebhookController extends Controller
             $archiveUrl = "https://api.github.com/repos/{$fullName}/zipball/{$branch}";
             $response = Http::withToken($token)->get($archiveUrl);
 
-            if ($response->failed()) throw new \Exception("Failed to download archive");
+            if ($response->failed()) {
+                throw new \Exception('Failed to download archive');
+            }
 
             $tempPath = storage_path("app/temp_webhook_{$site->slug}.zip");
             file_put_contents($tempPath, $response->body());
 
             // Extract to public storage
             $zip = new \ZipArchive;
-            if ($zip->open($tempPath) === TRUE) {
+            if ($zip->open($tempPath) === true) {
                 $extractPath = Storage::disk('public')->path($site->path);
-                
+
                 // Clear old files
                 Storage::disk('public')->deleteDirectory($site->path);
                 Storage::disk('public')->makeDirectory($site->path);
@@ -69,11 +73,11 @@ class GithubWebhookController extends Controller
                 // Hoisting logic: if ZIP contains a single top-level directory, move its contents up
                 $items = array_diff(scandir($extractPath), ['.', '..']);
                 if (count($items) === 1) {
-                    $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
+                    $innerDir = $extractPath.DIRECTORY_SEPARATOR.array_shift($items);
                     if (is_dir($innerDir)) {
                         $files = array_diff(scandir($innerDir), ['.', '..']);
                         foreach ($files as $file) {
-                            rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
+                            rename("{$innerDir}".DIRECTORY_SEPARATOR."{$file}", "{$extractPath}".DIRECTORY_SEPARATOR."{$file}");
                         }
                         rmdir($innerDir);
                     }
@@ -102,7 +106,7 @@ class GithubWebhookController extends Controller
             $site->deployments()->create([
                 'status' => 'failed',
                 'source' => 'github_webhook',
-                'commit_message' => "Auto-deploy failed: " . $e->getMessage(),
+                'commit_message' => 'Auto-deploy failed: '.$e->getMessage(),
             ]);
         }
     }

@@ -3,7 +3,7 @@
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
-use Livewire\Volt\Component;
+use Livewire\Component;
 
 new #[Title('API Tokens')] class extends Component {
     public string $createTokenName = '';

@@ -1,13 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\SiteController;
+use Illuminate\Support\Facades\Route;
 
 $host = parse_url(config('app.url'), PHP_URL_HOST);
 
 if ($host && $host !== 'localhost') {
-    Route::domain('{slug}.' . $host)->group(function () {
+    Route::domain('{slug}.'.$host)->group(function () {
         Route::get('/{path?}', [SiteController::class, 'show'])->where('path', '.*');
     });
 }
@@ -17,11 +16,12 @@ Route::view('/', 'welcome')->name('home');
 Route::get('/s/{slug}/{path?}', [SiteController::class, 'show'])->where('path', '.*');
 
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\Webhooks\GithubWebhookController;
 
 Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])->name('social.redirect');
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('social.callback');
 
-Route::post('/webhooks/github', [App\Http\Controllers\Webhooks\GithubWebhookController::class, 'handle'])->name('webhooks.github');
+Route::post('/webhooks/github', [GithubWebhookController::class, 'handle'])->name('webhooks.github');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');

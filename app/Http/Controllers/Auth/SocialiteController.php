@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -33,7 +32,7 @@ class SocialiteController extends Controller
 
         $user = User::where('github_id', $socialUser->id)->first();
 
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'github_id' => $socialUser->id,
                 'name' => $socialUser->name ?? $socialUser->nickname,
