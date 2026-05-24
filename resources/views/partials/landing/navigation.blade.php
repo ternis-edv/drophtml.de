@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center gap-2">
-                <flux:icon.rocket class="w-8 h-8 text-indigo-400" />
+                <flux:icon.rocket-launch class="w-8 h-8 text-indigo-400" />
                 <span class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
                     DropHTML
                 </span>

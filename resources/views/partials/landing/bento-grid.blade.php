@@ -13,7 +13,7 @@
                 <div class="absolute right-0 top-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] group-hover:bg-indigo-500/20 transition-all duration-500"></div>
                 <div class="relative z-10">
                     <div class="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center mb-6 ring-1 ring-indigo-500/30 group-hover:ring-indigo-500/50 transition-all">
-                        <flux:icon.rocket class="w-6 h-6" />
+                        <flux:icon.rocket-launch class="w-6 h-6" />
                     </div>
                     <h3 class="text-2xl font-bold mb-3 text-white">GitHub Auto-Deploy</h3>
                     <p class="text-zinc-400 mb-6 max-w-md">Connect your repository. Every push to `main` instantly updates your live site. We handle the webhooks and builds automatically.</p>

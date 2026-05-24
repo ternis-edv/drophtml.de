@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-2">
-                <flux:icon.rocket class="w-6 h-6 text-zinc-500" />
+                <flux:icon.rocket-launch class="w-6 h-6 text-zinc-500" />
                 <span class="text-lg font-bold text-zinc-400 tracking-tight">DropHTML</span>
             </div>
             <div class="flex items-center space-x-6 text-sm font-medium text-zinc-500">
