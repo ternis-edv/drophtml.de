@@ -1,11 +1,11 @@
-<section class="py-24 relative z-10 border-t border-zinc-800/50 bg-black/20">
+<section class="py-24 relative z-10 border-t border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-black/20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12" x-data="{ shown: false }" x-intersect.once="shown = true">
             
             <!-- Stat 1 -->
             <div :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-center">
-                <div class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-2"
-                     x-data="{ count: 0, target: 12048 }"
+                <div class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400 mb-2"
+                     x-data="{ count: 0, target: {{ $totalSites ?? 12048 }} }"
                      x-intersect="
                         if(count === 0) {
                             let duration = 2000;
@@ -26,7 +26,7 @@
 
             <!-- Stat 2 -->
             <div :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-center">
-                <div class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-2"
+                <div class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400 mb-2"
                      x-data="{ count: 0, target: 800 }"
                      x-intersect="
                         if(count === 0) {
@@ -48,7 +48,7 @@
 
             <!-- Stat 3 -->
             <div :class="shown ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-center">
-                <div class="text-4xl md:text-5xl font-extrabold text-white mb-2">
+                <div class="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white mb-2">
                     99.9%
                 </div>
                 <div class="text-zinc-500 text-sm font-medium uppercase tracking-wider">Uptime</div>
@@ -56,7 +56,7 @@
 
             <!-- Stat 4 -->
             <div :class="shown ? 'opacity-100 translate-y-0 delay-300' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-center">
-                <div class="text-4xl md:text-5xl font-extrabold text-white mb-2"
+                <div class="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white mb-2"
                      x-data="{ count: 0, target: 24 }"
                      x-intersect="
                         if(count === 0) {

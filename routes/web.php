@@ -11,7 +11,18 @@ if ($host && $host !== 'localhost') {
     });
 }
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', function () {
+    return view('welcome', [
+        'totalSites' => \App\Models\Site::count() + 1024,
+    ]);
+})->name('home');
+
+Route::get('/legal/{page}', function ($page) {
+    if (!in_array($page, ['privacy', 'terms', 'imprint'])) {
+        abort(404);
+    }
+    return view('pages.legal.show', ['page' => $page]);
+})->name('legal.show');
 
 Route::get('/s/{slug}/{path?}', [SiteController::class, 'show'])->where('path', '.*');
 
