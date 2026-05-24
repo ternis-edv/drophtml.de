@@ -38,12 +38,15 @@ class Site extends Model
         'github_branch',
         'auto_deploy',
         'github_webhook_id',
+        'is_password_protected',
+        'site_password',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
         'is_permanent' => 'boolean',
         'auto_deploy' => 'boolean',
+        'is_password_protected' => 'boolean',
     ];
 
     public function user()

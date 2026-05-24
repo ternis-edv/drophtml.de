@@ -9,7 +9,38 @@
         <div 
             x-data="{ 
                 shown: false,
-                code: '<div class=\'app\'>\\n  <h1>Hello, DropHTML! 🚀</h1>\\n  <p>Edit this code and see the preview update instantly.\\n  Perfect for rapid prototyping.</p>\\n  <button>Deploy Me</button>\\n</div>\\n\\n<style>\\n  .app {\\n    font-family: system-ui, sans-serif;\\n    text-align: center;\\n    padding: 40px;\\n    background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);\\n    border-radius: 16px;\\n    border: 1px solid #c7d2fe;\\n  }\\n  h1 { color: #4338ca; margin-bottom: 10px; }\\n  p { color: #6b7280; line-height: 1.6; }\\n  button {\\n    margin-top: 20px;\\n    padding: 10px 24px;\\n    background: #6366f1;\\n    color: white;\\n    border: none;\\n    border-radius: 8px;\\n    font-weight: 600;\\n    cursor: pointer;\\n    transition: 0.2s;\\n  }\\n  button:hover { background: #4f46e5; transform: translateY(-2px); }\\n</style>',
+                code: `<!-- DropHTML Preview -->
+<div class='app'>
+  <h1>Hello, DropHTML! 🚀</h1>
+  <p>Edit this code and see the preview update instantly.
+  Perfect for rapid prototyping.</p>
+  <button>Deploy Me</button>
+</div>
+
+<style>
+  .app {
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+    border-radius: 16px;
+    border: 1px solid #c7d2fe;
+  }
+  h1 { color: #4338ca; margin-bottom: 10px; }
+  p { color: #6b7280; line-height: 1.6; }
+  button {
+    margin-top: 20px;
+    padding: 10px 24px;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover { background: #4f46e5; transform: translateY(-2px); }
+</style>`,
                 uploading: false,
                 deployed: false,
                 progress: 0,
