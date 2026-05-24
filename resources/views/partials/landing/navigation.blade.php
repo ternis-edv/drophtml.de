@@ -1,12 +1,12 @@
 <nav class="fixed top-0 w-full z-50 glass-panel border-b border-zinc-200 dark:border-zinc-800/50 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-            <div class="flex items-center gap-2">
+            <a href="{{ route('home') }}" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <flux:icon.rocket-launch class="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
                 <span class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
                     DropHTML
                 </span>
-            </div>
+            </a>
             
             <div class="hidden md:flex items-center space-x-8">
                 <a href="#features" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Features</a>
