@@ -17,9 +17,14 @@ new class extends Component
         $this->site = auth()->user()->sites()->findOrFail($this->siteId);
     }
 
+    public function setPeriod($days)
+    {
+        $this->period = in_array((int) $days, [7, 14, 30]) ? (int) $days : 7;
+    }
+
     public function getChartData()
     {
-        // Views over time (only non-quiet views)
+        // Views over time (non-quiet page views)
         $viewsByDate = $this->site->siteViews()
             ->where('is_quiet', false)
             ->where('created_at', '>=', now()->subDays($this->period))
@@ -47,25 +52,27 @@ new class extends Component
 
     public function getDeviceData()
     {
-        // Only non-quiet views for device distribution
+        // Non-quiet views for device distribution
         $views = $this->site->siteViews()
             ->where('is_quiet', false)
             ->where('created_at', '>=', now()->subDays($this->period))
             ->get();
 
         $devices = [
-            'Mobile' => 0,
             'Desktop' => 0,
+            'Mobile' => 0,
             'Tablet' => 0,
             'Other' => 0,
         ];
 
         foreach ($views as $view) {
-            $ua = strtolower($view->user_agent);
-            if (str_contains($ua, 'mobile') || str_contains($ua, 'android') || str_contains($ua, 'iphone')) {
-                $devices['Mobile']++;
+            $ua = strtolower($view->user_agent ?? '');
+            if (empty($ua)) {
+                $devices['Other']++;
             } elseif (str_contains($ua, 'tablet') || str_contains($ua, 'ipad')) {
                 $devices['Tablet']++;
+            } elseif (str_contains($ua, 'mobile') || str_contains($ua, 'android') || str_contains($ua, 'iphone')) {
+                $devices['Mobile']++;
             } else {
                 $devices['Desktop']++;
             }
@@ -97,27 +104,34 @@ new class extends Component
 <div x-data="{ 
     chartData: {{ json_encode($chartData) }},
     deviceData: {{ json_encode($deviceData) }},
+    trafficChart: null,
+    deviceChart: null,
     init() {
-        this.renderTrafficChart();
-        this.renderDeviceChart();
+        this.$nextTick(() => {
+            this.renderTrafficChart();
+            this.renderDeviceChart();
+        });
     },
     renderTrafficChart() {
-        new Chart(this.$refs.trafficChart, {
+        if (typeof Chart === 'undefined' || !this.$refs.trafficChart) return;
+        if (this.trafficChart) this.trafficChart.destroy();
+        
+        this.trafficChart = new Chart(this.$refs.trafficChart, {
             type: 'line',
             data: {
                 labels: this.chartData.labels,
                 datasets: [{
-                    label: 'Views',
+                    label: 'Page Views',
                     data: this.chartData.data,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.12)',
                     fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#3b82f6',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                    tension: 0.35,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
@@ -125,70 +139,82 @@ new class extends Component
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(150, 150, 150, 0.1)' } },
                     x: { grid: { display: false } }
                 }
             }
         });
     },
     renderDeviceChart() {
-        new Chart(this.$refs.deviceChart, {
+        if (typeof Chart === 'undefined' || !this.$refs.deviceChart) return;
+        if (this.deviceChart) this.deviceChart.destroy();
+
+        this.deviceChart = new Chart(this.$refs.deviceChart, {
             type: 'doughnut',
             data: {
                 labels: this.deviceData.labels,
                 datasets: [{
                     data: this.deviceData.data,
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1'],
-                        borderWidth: 0,
-                        hoverOffset: 10
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6'],
+                    borderWidth: 0,
+                    hoverOffset: 6
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
+                plugins: { 
+                    legend: { 
+                        position: 'bottom',
+                        labels: { boxWidth: 12, padding: 16 }
+                    } 
+                }
             }
         });
     }
 }">
-    <head>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    </head>
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>Statistics</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+            <h1 class="text-2xl font-bold mt-2 text-zinc-900 dark:text-zinc-100">Site Statistics</h1>
+        </div>
 
-    <div class="mb-6">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>Statistics</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
-        <h1 class="text-2xl font-bold mt-2 text-zinc-900 dark:text-zinc-100">Site Statistics</h1>
+        <div class="flex items-center gap-2">
+            <flux:button wire:click="setPeriod(7)" :variant="$period === 7 ? 'primary' : 'ghost'" size="sm">7 Days</flux:button>
+            <flux:button wire:click="setPeriod(14)" :variant="$period === 14 ? 'primary' : 'ghost'" size="sm">14 Days</flux:button>
+            <flux:button wire:click="setPeriod(30)" :variant="$period === 30 ? 'primary' : 'ghost'" size="sm">30 Days</flux:button>
+        </div>
     </div>
 
-    <!-- Quick Stats -->
+    <!-- Quick Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <flux:card>
-            <div class="text-sm text-zinc-500 mb-1">Total Views</div>
-            <div class="text-3xl font-black">{{ number_format($totalViews) }}</div>
+            <div class="text-sm text-zinc-500 mb-1">Total Page Views</div>
+            <div class="text-3xl font-black text-indigo-600 dark:text-indigo-400">{{ number_format($totalViews) }}</div>
         </flux:card>
         <flux:card>
             <div class="text-sm text-zinc-500 mb-1">Unique Visitors</div>
-            <div class="text-3xl font-black">{{ number_format($uniqueVisitors) }}</div>
+            <div class="text-3xl font-black text-green-600 dark:text-green-400">{{ number_format($uniqueVisitors) }}</div>
         </flux:card>
         <flux:card>
-            <div class="text-sm text-zinc-500 mb-1">Avg. Daily Views</div>
-            <div class="text-3xl font-black">{{ number_format($totalViews / max($period, 1), 1) }}</div>
+            <div class="text-sm text-zinc-500 mb-1">Avg. Daily Views ({{ $period }}d)</div>
+            <div class="text-3xl font-black text-purple-600 dark:text-purple-400">{{ number_format($totalViews / max($period, 1), 1) }}</div>
         </flux:card>
     </div>
 
     <!-- Deployment History -->
     <flux:card class="mb-8">
-        <h3 class="font-bold mb-6">Deployment History</h3>
+        <h3 class="font-bold mb-4 text-base">Deployment History</h3>
         <div class="overflow-x-auto">
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>Status</flux:table.column>
                     <flux:table.column>Source</flux:table.column>
-                    <flux:table.column>Commit</flux:table.column>
+                    <flux:table.column>Commit / Details</flux:table.column>
                     <flux:table.column>Date</flux:table.column>
                 </flux:table.columns>
 
@@ -214,7 +240,7 @@ new class extends Component
                             <flux:table.cell>
                                 <div class="text-sm font-medium">{{ Str::limit($deployment->commit_message, 50) }}</div>
                                 @if($deployment->commit_hash)
-                                    <div class="text-xs font-mono text-zinc-400 mt-1">{{ Str::limit($deployment->commit_hash, 7, '') }}</div>
+                                    <div class="text-xs font-mono text-zinc-400 mt-0.5">{{ Str::limit($deployment->commit_hash, 7, '') }}</div>
                                 @endif
                             </flux:table.cell>
                             <flux:table.cell class="text-sm text-zinc-500">{{ $deployment->created_at->diffForHumans() }}</flux:table.cell>
@@ -229,27 +255,26 @@ new class extends Component
         </div>
     </flux:card>
 
+    <!-- Traffic and Device Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Main Traffic Chart -->
         <flux:card class="lg:col-span-2">
-            <h3 class="font-bold mb-6">Traffic Over Time (Last {{ $period }} Days)</h3>
+            <h3 class="font-bold mb-4 text-base">Traffic Over Time (Last {{ $period }} Days)</h3>
             <div class="h-64">
                 <canvas x-ref="trafficChart"></canvas>
             </div>
         </flux:card>
 
-        <!-- Device Distribution -->
         <flux:card>
-            <h3 class="font-bold mb-6">Device Usage</h3>
+            <h3 class="font-bold mb-4 text-base">Device Distribution</h3>
             <div class="h-64">
                 <canvas x-ref="deviceChart"></canvas>
             </div>
         </flux:card>
     </div>
 
-    <!-- Recent Visits Table -->
+    <!-- Recent Activity Table -->
     <flux:card>
-        <h3 class="font-bold mb-6">Recent Activity</h3>
+        <h3 class="font-bold mb-4 text-base">Recent Request Activity</h3>
         <div class="overflow-x-auto">
             <flux:table>
                 <flux:table.columns>
@@ -257,25 +282,25 @@ new class extends Component
                     <flux:table.column>Time</flux:table.column>
                     <flux:table.column>IP Address</flux:table.column>
                     <flux:table.column>Referer</flux:table.column>
-                    <flux:table.column>Device</flux:table.column>
+                    <flux:table.column>User Agent</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>
                     @forelse($recentViews as $view)
                         <flux:table.row>
                             <flux:table.cell>
-                                <flux:badge size="sm" :color="$view->is_quiet ? 'zinc' : 'blue'">
-                                    {{ $view->is_quiet ? 'Asset' : 'Page' }}
+                                <flux:badge size="sm" :color="$view->is_quiet ? 'zinc' : 'indigo'">
+                                    {{ $view->is_quiet ? 'Asset' : 'Page View' }}
                                 </flux:badge>
                             </flux:table.cell>
-                            <flux:table.cell class="text-sm text-zinc-500">{{ $view->created_at->diffForHumans() }}</flux:table.cell>
+                            <flux:table.cell class="text-sm text-zinc-500 whitespace-nowrap">{{ $view->created_at->diffForHumans() }}</flux:table.cell>
                             <flux:table.cell class="text-sm font-mono">{{ $view->ip_address }}</flux:table.cell>
                             <flux:table.cell class="text-sm truncate max-w-xs">{{ $view->referer ?: 'Direct' }}</flux:table.cell>
-                            <flux:table.cell class="text-sm truncate max-w-xs text-zinc-400">{{ Str::limit($view->user_agent, 30) }}</flux:table.cell>
+                            <flux:table.cell class="text-sm truncate max-w-xs text-zinc-400">{{ Str::limit($view->user_agent, 40) }}</flux:table.cell>
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="5" class="text-center py-8 text-zinc-500">No views recorded yet.</flux:table.cell>
+                            <flux:table.cell colspan="5" class="text-center py-8 text-zinc-500">No requests recorded yet.</flux:table.cell>
                         </flux:table.row>
                     @endforelse
                 </flux:table.rows>

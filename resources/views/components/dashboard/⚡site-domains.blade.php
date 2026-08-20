@@ -3,6 +3,7 @@
 use Livewire\Component;
 use App\Models\Site;
 use App\Models\Domain;
+use App\Models\ActivityLog;
 
 new class extends Component
 {
@@ -18,16 +19,29 @@ new class extends Component
     
     public function addDomain()
     {
+        $this->newDomain = strtolower(trim($this->newDomain));
+        // Strip http:// or https:// or trailing slashes if user pasted a URL
+        $this->newDomain = preg_replace('#^https?://#', '', $this->newDomain);
+        $this->newDomain = rtrim($this->newDomain, '/');
+
         $this->validate([
-            'newDomain' => 'required|string|unique:domains,domain',
+            'newDomain' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i',
+                'unique:domains,domain',
+            ],
+        ], [
+            'newDomain.regex' => 'Please enter a valid domain name (e.g. mysite.com or sub.mysite.com).',
         ]);
         
-        $this->site->domains()->create([
+        $domain = $this->site->domains()->create([
             'domain' => $this->newDomain,
             'is_custom' => true,
         ]);
         
-        \App\Models\ActivityLog::create([
+        ActivityLog::create([
             'user_id' => auth()->id(),
             'site_id' => $this->site->id,
             'action' => 'domain_added',
@@ -35,6 +49,9 @@ new class extends Component
             'ip_address' => request()->ip(),
         ]);
         
+        // Auto-verify if DNS is already pointing
+        $this->checkDomainDns($domain);
+
         $this->newDomain = '';
         $this->site->load('domains');
         Flux::toast('Domain added successfully.');
@@ -46,7 +63,7 @@ new class extends Component
         $domainName = $domain->domain;
         $domain->delete();
         
-        \App\Models\ActivityLog::create([
+        ActivityLog::create([
             'user_id' => auth()->id(),
             'site_id' => $this->site->id,
             'action' => 'domain_removed',
@@ -56,6 +73,56 @@ new class extends Component
         
         $this->site->load('domains');
         Flux::toast('Domain removed.');
+    }
+
+    public function verifyDomain($domainId)
+    {
+        $domain = $this->site->domains()->findOrFail($domainId);
+        $isConfigured = $this->checkDomainDns($domain);
+
+        $this->site->load('domains');
+
+        if ($isConfigured) {
+            Flux::toast('Domain DNS verified successfully!');
+        } else {
+            Flux::toast(variant: 'warning', text: 'DNS record not detected yet. Propagation may take a few minutes.');
+        }
+    }
+
+    protected function checkDomainDns(Domain $domain): bool
+    {
+        $host = $domain->domain;
+        $isVerified = false;
+
+        // Check CNAME records
+        $cnameRecords = @dns_get_record($host, DNS_CNAME);
+        if ($cnameRecords) {
+            foreach ($cnameRecords as $record) {
+                if (isset($record['target']) && (str_contains(strtolower($record['target']), 'drophtml.de') || str_contains(strtolower($record['target']), 'sites.drophtml.de'))) {
+                    $isVerified = true;
+                    break;
+                }
+            }
+        }
+
+        // Also check if domain resolves to the same IP as this app
+        if (!$isVerified) {
+            $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+            if ($appHost && $appHost !== 'localhost') {
+                $appIp = @gethostbyname($appHost);
+                $domainIp = @gethostbyname($host);
+                if ($appIp && $domainIp && $appIp === $domainIp && $domainIp !== $host) {
+                    $isVerified = true;
+                }
+            }
+        }
+
+        if ($isVerified) {
+            $domain->update(['verified_at' => now()]);
+            return true;
+        }
+
+        return false;
     }
 
     public function render()
@@ -69,7 +136,7 @@ new class extends Component
     <div class="mb-6 flex items-center justify-between">
         <div>
             <flux:breadcrumbs>
-                <flux:breadcrumbs.item :href="route('dashboard')">Dashboard</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>Domains</flux:breadcrumbs.item>
             </flux:breadcrumbs>
@@ -80,12 +147,12 @@ new class extends Component
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="md:col-span-2">
             <flux:card>
-                <h3 class="font-semibold mb-4 text-lg">Custom Domains</h3>
-                <p class="text-sm text-zinc-500 mb-6">Link your own custom domains to this site. Ensure you have configured a CNAME record pointing to <code>sites.drophtml.de</code>.</p>
+                <h3 class="font-semibold mb-2 text-lg">Custom Domains</h3>
+                <p class="text-sm text-zinc-500 mb-6">Link your own custom domain or subdomain to this site. Ensure you have configured a CNAME record pointing to <code>sites.drophtml.de</code>.</p>
                 
-                <form wire:submit="addDomain" class="flex gap-4 mb-8">
+                <form wire:submit="addDomain" class="flex gap-3 mb-8">
                     <div class="flex-1">
-                        <flux:input wire:model="newDomain" placeholder="e.g., www.my-awesome-site.com" required />
+                        <flux:input wire:model="newDomain" placeholder="e.g. www.my-awesome-site.com" required />
                     </div>
                     <flux:button type="submit" variant="primary">Add Domain</flux:button>
                 </form>
@@ -97,21 +164,32 @@ new class extends Component
                 @else
                     <div class="space-y-4">
                         @foreach($site->domains as $domain)
-                            <div class="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-800 rounded-lg">
+                            <div class="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/50">
                                 <div>
                                     <div class="font-medium flex items-center gap-2">
-                                        <flux:icon.globe-alt class="w-4 h-4 text-zinc-400" />
-                                        {{ $domain->domain }}
+                                        <flux:icon.globe-alt class="w-4 h-4 text-indigo-500" />
+                                        <a href="http://{{ $domain->domain }}" target="_blank" class="hover:underline text-zinc-900 dark:text-zinc-100">
+                                            {{ $domain->domain }}
+                                        </a>
                                     </div>
-                                    <div class="text-xs text-zinc-500 mt-1">
+                                    <div class="text-xs text-zinc-500 mt-1 flex items-center gap-3">
                                         @if($domain->verified_at)
-                                            <span class="text-green-500 flex items-center gap-1"><flux:icon.check-circle class="w-3 h-3" /> Verified</span>
+                                            <span class="text-green-500 flex items-center gap-1"><flux:icon.check-circle class="w-3.5 h-3.5" /> Verified (Active)</span>
                                         @else
-                                            <span class="text-amber-500 flex items-center gap-1"><flux:icon.exclamation-circle class="w-3 h-3" /> Pending Verification</span>
+                                            <span class="text-amber-500 flex items-center gap-1"><flux:icon.exclamation-circle class="w-3.5 h-3.5" /> Pending DNS</span>
                                         @endif
+                                        <span class="text-zinc-400">&bull;</span>
+                                        <span>Added {{ $domain->created_at->diffForHumans() }}</span>
                                     </div>
                                 </div>
-                                <flux:button wire:click="removeDomain({{ $domain->id }})" variant="danger" size="sm" icon="trash">Remove</flux:button>
+                                <div class="flex items-center gap-2">
+                                    <flux:button wire:click="verifyDomain('{{ $domain->id }}')" variant="ghost" size="sm" icon="arrow-path">
+                                        Verify DNS
+                                    </flux:button>
+                                    <flux:button wire:click="removeDomain('{{ $domain->id }}')" wire:confirm="Are you sure you want to remove this domain?" variant="danger" size="sm" icon="trash">
+                                        Remove
+                                    </flux:button>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -121,28 +199,31 @@ new class extends Component
         
         <div class="md:col-span-1 space-y-6">
             <flux:card>
-                <h3 class="font-semibold mb-2">Default URL</h3>
+                <h3 class="font-semibold mb-2">Default Platform URL</h3>
                 <div class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-md break-all text-sm font-mono border border-zinc-200 dark:border-zinc-800">
-                    <a href="/s/{{ $site->slug }}" target="_blank" class="text-blue-500 hover:underline">
+                    <a href="/s/{{ $site->slug }}" target="_blank" class="text-indigo-500 hover:underline">
                         {{ url('/s/' . $site->slug) }}
                     </a>
                 </div>
             </flux:card>
             
             <flux:card>
-                <h3 class="font-semibold mb-2">DNS Instructions</h3>
-                <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-4">To connect your custom domain, add the following record to your DNS provider:</p>
+                <h3 class="font-semibold mb-2">DNS Setup Instructions</h3>
+                <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-4">To route your domain to DropHTML, add the following CNAME record in your domain registrar or DNS provider (e.g. Cloudflare, dnbx.de, GoDaddy):</p>
                 
                 <div class="space-y-2 text-sm font-mono">
                     <div class="flex justify-between p-2 bg-zinc-50 dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800">
-                        <span class="text-zinc-500">Type:</span> <span>CNAME</span>
+                        <span class="text-zinc-500 font-sans text-xs">Record Type:</span> <span class="font-bold">CNAME</span>
                     </div>
                     <div class="flex justify-between p-2 bg-zinc-50 dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800">
-                        <span class="text-zinc-500">Name:</span> <span>@ (or www)</span>
+                        <span class="text-zinc-500 font-sans text-xs">Name / Host:</span> <span>@ (or subdomain)</span>
                     </div>
                     <div class="flex justify-between p-2 bg-zinc-50 dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800">
-                        <span class="text-zinc-500">Value:</span> <span>sites.drophtml.de</span>
+                        <span class="text-zinc-500 font-sans text-xs">Target / Value:</span> <span class="text-indigo-500">sites.drophtml.de</span>
                     </div>
+                </div>
+                <div class="mt-4 text-xs text-zinc-500">
+                    Need domain registration? Powered by <a href="https://dnbx.de" target="_blank" rel="noopener" class="text-indigo-500 hover:underline">dnbx.de</a>.
                 </div>
             </flux:card>
         </div>

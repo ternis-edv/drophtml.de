@@ -18,6 +18,7 @@ class CleanupExpiredSites extends Command
     public function handle()
     {
         $expiredSites = Site::where('is_permanent', false)
+            ->whereNotNull('expires_at')
             ->where('expires_at', '<=', now())
             ->get();
 
@@ -25,12 +26,17 @@ class CleanupExpiredSites extends Command
         $this->info("Found {$count} expired sites.");
 
         foreach ($expiredSites as $site) {
-            $this->comment("Deleting site: {$site->slug}...");
+            $this->comment("Deleting expired site: {$site->slug}...");
 
-            // Delete files
-            Storage::disk('public')->deleteDirectory($site->path);
+            // Delete storage files
+            if ($site->path) {
+                Storage::disk('public')->deleteDirectory($site->path);
+            }
 
-            // Delete record
+            // Delete records
+            $site->domains()->delete();
+            $site->deployments()->delete();
+            $site->siteViews()->delete();
             $site->delete();
         }
 

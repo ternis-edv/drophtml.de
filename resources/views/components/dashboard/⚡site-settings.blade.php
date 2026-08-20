@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use App\Models\Site;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use App\Models\ActivityLog;
 
@@ -13,6 +14,8 @@ new class extends Component
     public $autoDeploy;
     public $isPermanent;
     public $status;
+    public $isPasswordProtected;
+    public $sitePassword = '';
     
     public function mount($siteId)
     {
@@ -22,17 +25,48 @@ new class extends Component
         $this->autoDeploy = (bool) $this->site->auto_deploy;
         $this->isPermanent = (bool) $this->site->is_permanent;
         $this->status = $this->site->status;
+        $this->isPasswordProtected = (bool) $this->site->is_password_protected;
     }
     
     public function save()
     {
+        $rules = [
+            'status' => 'required|in:active,suspended',
+            'isPermanent' => 'boolean',
+            'autoDeploy' => 'boolean',
+            'isPasswordProtected' => 'boolean',
+        ];
+
+        if ($this->isPasswordProtected && empty($this->site->site_password)) {
+            $rules['sitePassword'] = 'required|string|min:4';
+        } elseif (!empty($this->sitePassword)) {
+            $rules['sitePassword'] = 'string|min:4';
+        }
+
+        $this->validate($rules);
+
         $oldAutoDeploy = $this->site->auto_deploy;
         
-        $this->site->update([
+        $updateData = [
             'auto_deploy' => $this->autoDeploy,
             'is_permanent' => $this->isPermanent,
             'status' => $this->status,
-        ]);
+            'is_password_protected' => $this->isPasswordProtected,
+        ];
+
+        if ($this->isPermanent) {
+            $updateData['expires_at'] = null;
+        } elseif ($this->site->is_permanent && !$this->isPermanent) {
+            $updateData['expires_at'] = now()->addDays(30);
+        }
+
+        if (!empty($this->sitePassword)) {
+            $updateData['site_password'] = Hash::make($this->sitePassword);
+        } elseif (!$this->isPasswordProtected) {
+            $updateData['site_password'] = null;
+        }
+
+        $this->site->update($updateData);
         
         // Handle webhook creation/deletion if auto-deploy changed
         if ($this->autoDeploy && !$oldAutoDeploy && $this->site->github_repo_full_name) {
@@ -45,11 +79,13 @@ new class extends Component
             'user_id' => auth()->id(),
             'site_id' => $this->site->id,
             'action' => 'site_settings_updated',
-            'description' => "Updated site settings",
+            'description' => "Updated site settings for {$this->site->slug}",
             'ip_address' => request()->ip(),
         ]);
         
-        Flux::toast('Settings saved.');
+        $this->sitePassword = '';
+        $this->site->refresh();
+        Flux::toast('Site settings saved successfully.');
     }
     
     protected function setupWebhook()
@@ -102,15 +138,16 @@ new class extends Component
     <div class="mb-6">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item>{{ $this->site->original_name ?: $this->site->slug }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>Settings</flux:breadcrumbs.item>
         </flux:breadcrumbs>
         <h1 class="text-2xl font-bold mt-2">Site Settings</h1>
     </div>
 
-    <div class="max-w-2xl">
+    <div class="max-w-2xl space-y-6">
         <flux:card>
             <form wire:submit="save" class="space-y-8">
+                <!-- General Settings -->
                 <flux:fieldset>
                     <flux:legend>General Settings</flux:legend>
                     
@@ -118,15 +155,52 @@ new class extends Component
                         <flux:field>
                             <flux:label>Deployment Status</flux:label>
                             <flux:select wire:model="status">
-                                <flux:select.option value="active">Active</flux:select.option>
-                                <flux:select.option value="suspended">Suspended</flux:select.option>
+                                <flux:select.option value="active">Active (Online & Accessible)</flux:select.option>
+                                <flux:select.option value="suspended">Suspended (Offline / 403)</flux:select.option>
                             </flux:select>
                         </flux:field>
 
-                        <flux:checkbox wire:model="isPermanent" label="Mark as Permanent" description="Prevents this site from ever expiring." />
+                        <flux:checkbox 
+                            wire:model="isPermanent" 
+                            label="Mark as Permanent" 
+                            description="Prevents this site from ever expiring. Disables the 30-day automatic deletion timer." 
+                        />
                     </div>
                 </flux:fieldset>
 
+                <!-- Security & Password Protection -->
+                <flux:fieldset>
+                    <flux:legend>Access & Security</flux:legend>
+                    
+                    <div class="space-y-4 mt-4">
+                        <flux:checkbox 
+                            wire:model.live="isPasswordProtected" 
+                            label="Password Protection" 
+                            description="Lock this site with a password so only visitors with the password can view it." 
+                        />
+
+                        @if($isPasswordProtected)
+                            <div class="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg space-y-3">
+                                <flux:field>
+                                    <flux:label>Site Password</flux:label>
+                                    <flux:input 
+                                        wire:model="sitePassword" 
+                                        type="password" 
+                                        placeholder="{{ $site->site_password ? 'Leave blank to keep existing password' : 'Enter a secure password (min. 4 characters)' }}" 
+                                        viewable
+                                    />
+                                    @if($site->site_password)
+                                        <flux:description class="text-xs text-zinc-500">
+                                            A password is currently set and active. Entering a new password will update it.
+                                        </flux:description>
+                                    @endif
+                                </flux:field>
+                            </div>
+                        @endif
+                    </div>
+                </flux:fieldset>
+
+                <!-- GitHub Integration -->
                 @if($site->github_repo_full_name)
                     <flux:fieldset>
                         <flux:legend>GitHub Integration</flux:legend>
@@ -136,7 +210,11 @@ new class extends Component
                                 <flux:input value="{{ $site->github_repo_full_name }}" disabled />
                             </flux:field>
                             
-                            <flux:checkbox wire:model="autoDeploy" label="Enable Auto-Deploy" description="Automatically re-deploy when you push to the {{ $site->github_branch }} branch." />
+                            <flux:checkbox 
+                                wire:model="autoDeploy" 
+                                label="Enable Auto-Deploy" 
+                                description="Automatically re-deploy when you push to the {{ $site->github_branch }} branch via webhook." 
+                            />
                         </div>
                     </flux:fieldset>
                 @endif

@@ -30,10 +30,11 @@ class DomainController extends Controller
             'is_custom' => ['boolean'],
         ]);
 
+        $domainName = strtolower(rtrim(preg_replace('#^https?://#', '', trim($validated['domain'])), '/'));
+
         $domain = $site->domains()->create([
-            'domain' => $validated['domain'],
+            'domain' => $domainName,
             'is_custom' => $validated['is_custom'] ?? true,
-            'status' => 'pending',
         ]);
 
         return new DomainResource($domain);

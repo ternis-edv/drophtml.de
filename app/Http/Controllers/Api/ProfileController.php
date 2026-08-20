@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProfileResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -60,13 +61,21 @@ class ProfileController extends Controller
 
     public function destroy(Request $request)
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
 
-        $request->user()->tokens()->delete();
+        if ($user->password_set_at) {
+            $request->validate([
+                'password' => ['required', 'current_password'],
+            ]);
+        }
+
+        foreach ($user->sites as $site) {
+            if ($site->path) {
+                Storage::disk('public')->deleteDirectory($site->path);
+            }
+        }
+
+        $user->tokens()->delete();
         $user->delete();
 
         return response()->json(['message' => 'Account deleted successfully.']);

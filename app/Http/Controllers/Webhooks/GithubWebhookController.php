@@ -84,7 +84,9 @@ class GithubWebhookController extends Controller
                 }
             }
 
-            unlink($tempPath);
+            if (file_exists($tempPath)) {
+                unlink($tempPath);
+            }
 
             $site->deployments()->create([
                 'status' => 'success',

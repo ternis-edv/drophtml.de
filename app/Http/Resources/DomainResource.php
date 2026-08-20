@@ -18,9 +18,9 @@ class DomainResource extends JsonResource
             'id' => $this->id,
             'site_id' => $this->site_id,
             'domain' => $this->domain,
-            'is_custom' => $this->is_custom,
-            'status' => $this->status,
-            'dns_verified_at' => $this->dns_verified_at,
+            'is_custom' => (bool) $this->is_custom,
+            'status' => $this->verified_at ? 'verified' : 'pending',
+            'verified_at' => $this->verified_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

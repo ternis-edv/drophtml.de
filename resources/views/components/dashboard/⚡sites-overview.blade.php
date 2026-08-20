@@ -17,7 +17,9 @@ new class extends Component
         $site = auth()->user()->sites()->findOrFail($id);
         
         // Remove storage
-        Storage::disk('public')->deleteDirectory($site->path);
+        if ($site->path) {
+            Storage::disk('public')->deleteDirectory($site->path);
+        }
         
         // Log action
         ActivityLog::create([
@@ -30,6 +32,7 @@ new class extends Component
         
         $site->delete();
         $this->dispatch('site-deleted');
+        Flux::toast('Site deleted successfully.');
     }
 
     public function extendExpiry($id, $days)
@@ -53,15 +56,39 @@ new class extends Component
         Flux::toast("Expiry extended by {$days} days.");
     }
 
+    public function togglePermanent($id)
+    {
+        $site = auth()->user()->sites()->findOrFail($id);
+        $site->is_permanent = !$site->is_permanent;
+        if ($site->is_permanent) {
+            $site->expires_at = null;
+        } else {
+            $site->expires_at = now()->addDays(30);
+        }
+        $site->save();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'site_id' => $site->id,
+            'action' => 'site_updated',
+            'description' => $site->is_permanent ? "Marked site as permanent: {$site->slug}" : "Set expiry on site: {$site->slug}",
+            'ip_address' => request()->ip(),
+        ]);
+
+        Flux::toast($site->is_permanent ? 'Site marked as permanent.' : 'Site expiry reset to 30 days.');
+    }
+
     public function render()
     {
-        $sites = auth()->user()->sites()->latest()->get();
+        $sites = auth()->user()->sites()->with('domains')->latest()->get();
         $totalViews = $sites->sum('views');
+        $totalDomains = $sites->pluck('domains')->flatten()->count();
         
         return view('components.dashboard.⚡sites-overview', [
             'sites' => $sites,
             'totalViews' => $totalViews,
             'totalSites' => $sites->count(),
+            'totalDomains' => $totalDomains,
         ]);
     }
 };
@@ -77,7 +104,6 @@ new class extends Component
             if (files.length > 0) {
                 this.uploadModalOpen = true;
                 Flux.modal('upload-site-modal').show();
-                // We need to wait a bit for the modal and component to be ready
                 setTimeout(() => {
                     window.dispatchEvent(new CustomEvent('files-dropped', { detail: { files: files } }));
                 }, 200);
@@ -141,7 +167,7 @@ new class extends Component
                 </div>
                 <div>
                     <div class="text-sm text-zinc-500">Active Domains</div>
-                    <div class="text-2xl font-bold">0</div>
+                    <div class="text-2xl font-bold">{{ $totalDomains }}</div>
                 </div>
             </div>
         </flux:card>
@@ -206,6 +232,7 @@ new class extends Component
                         <flux:table.column>Name / Slug</flux:table.column>
                         <flux:table.column>Views</flux:table.column>
                         <flux:table.column>Expires In</flux:table.column>
+                        <flux:table.column>Security</flux:table.column>
                         <flux:table.column>Status</flux:table.column>
                         <flux:table.column class="text-right">Actions</flux:table.column>
                     </flux:table.columns>
@@ -214,9 +241,18 @@ new class extends Component
                         @foreach ($sites as $site)
                             <flux:table.row>
                                 <flux:table.cell>
-                                    <div class="font-medium">{{ $site->original_name ?: 'Unnamed Site' }}</div>
-                                    <div class="text-xs text-zinc-500">
-                                        <a href="/s/{{ $site->slug }}" target="_blank" class="hover:underline">/s/{{ $site->slug }}</a>
+                                    <div class="font-medium flex items-center gap-2">
+                                        {{ $site->original_name ?: 'Unnamed Site' }}
+                                        @if($site->github_repo_full_name)
+                                            <flux:badge size="xs" color="zinc">GitHub</flux:badge>
+                                        @endif
+                                    </div>
+                                    <div class="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
+                                        <a href="/s/{{ $site->slug }}" target="_blank" class="hover:underline text-indigo-500 dark:text-indigo-400">/s/{{ $site->slug }}</a>
+                                        @if($site->domains->count() > 0)
+                                            <span class="text-zinc-400">&bull;</span>
+                                            <span class="text-zinc-400">{{ $site->domains->first()->domain }}</span>
+                                        @endif
                                     </div>
                                 </flux:table.cell>
                                 <flux:table.cell>{{ number_format($site->views) }}</flux:table.cell>
@@ -234,8 +270,8 @@ new class extends Component
                                                     if (diff <= 0) return 'Expired';
                                                     
                                                     let days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                                                    let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                                    let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                                    let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60));
+                                                    let minutes = Math.floor((diff % (1000 * 60)) / (1000 * 60));
                                                     let seconds = Math.floor((diff % (1000 * 60)) / 1000);
                                                     
                                                     if (days > 0) return `${days}d ${hours}h`;
@@ -252,6 +288,13 @@ new class extends Component
                                     @endif
                                 </flux:table.cell>
                                 <flux:table.cell>
+                                    @if($site->is_password_protected)
+                                        <flux:badge size="sm" color="amber" icon="lock-closed">Protected</flux:badge>
+                                    @else
+                                        <flux:badge size="sm" color="zinc">Public</flux:badge>
+                                    @endif
+                                </flux:table.cell>
+                                <flux:table.cell>
                                     <flux:badge size="sm" :color="$site->status === 'active' ? 'green' : 'red'">
                                         {{ ucfirst($site->status) }}
                                     </flux:badge>
@@ -265,21 +308,20 @@ new class extends Component
                                             <flux:menu.item icon="chart-bar" :href="route('dashboard.sites.stats', $site->id)" wire:navigate>Statistics</flux:menu.item>
                                             <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>
                                             <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank">View Site</flux:menu.item>
-                                            <!-- Preparing for file editor & domains feature -->
-                                            <flux:menu.item icon="code-bracket" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Edit Files</flux:menu.item>
+                                            <flux:menu.item icon="code-bracket" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>File Manager</flux:menu.item>
                                             <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Manage Domains</flux:menu.item>
                                             
                                             <flux:menu.separator />
                                             
                                             <flux:menu.submenu icon="clock">
-                                                <flux:menu.heading>Extend Expiry</flux:menu.heading>
-                                                <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 7)">Add 7 Days</flux:menu.item>
-                                                <flux:menu.item wire:click="extendExpiry({{ $site->id }}, 30)">Add 30 Days</flux:menu.item>
-                                                <flux:menu.item wire:click="$dispatch('toast', { text: 'Premium feature: Permanent sites' })" class="text-purple-600">Make Permanent</flux:menu.item>
+                                                <flux:menu.heading>Site Expiry</flux:menu.heading>
+                                                <flux:menu.item wire:click="extendExpiry('{{ $site->id }}', 7)">Add 7 Days</flux:menu.item>
+                                                <flux:menu.item wire:click="extendExpiry('{{ $site->id }}', 30)">Add 30 Days</flux:menu.item>
+                                                <flux:menu.item wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set Expiry (30 days)' : 'Make Permanent' }}</flux:menu.item>
                                             </flux:menu.submenu>
 
                                             <flux:menu.separator />
-                                            <flux:menu.item icon="trash" wire:click="deleteSite({{ $site->id }})" wire:confirm="Are you sure you want to delete this site? This action cannot be undone." class="text-red-600">Delete</flux:menu.item>
+                                            <flux:menu.item icon="trash" wire:click="deleteSite('{{ $site->id }}')" wire:confirm="Are you sure you want to delete this site? This action cannot be undone." class="text-red-600">Delete</flux:menu.item>
                                         </flux:menu>
                                     </flux:dropdown>
                                 </flux:table.cell>

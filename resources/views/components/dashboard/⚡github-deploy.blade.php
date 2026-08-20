@@ -30,12 +30,12 @@ new class extends Component
             $token = auth()->user()->github_token;
             
             if (!$token) {
-                $this->error = "GitHub token not found. Please reconnect your account.";
+                $this->error = "GitHub account not connected or token expired. Please reconnect your account.";
                 $this->loading = false;
                 return;
             }
 
-            // Fetch user repos
+            // Fetch user repos (up to 100 recent)
             $response = Http::withToken($token)->get('https://api.github.com/user/repos', [
                 'sort' => 'updated',
                 'per_page' => 100,
@@ -65,13 +65,14 @@ new class extends Component
 
             $slug = Str::random(8);
             $path = "sites/{$slug}";
+            $defaultBranch = $repo['default_branch'] ?? 'main';
             
             // Download archive
-            $archiveUrl = "https://api.github.com/repos/{$fullName}/zipball/{$repo['default_branch']}";
+            $archiveUrl = "https://api.github.com/repos/{$fullName}/zipball/{$defaultBranch}";
             $response = Http::withToken($token)->get($archiveUrl);
             
             if ($response->failed()) {
-                throw new \Exception("Failed to download repository archive.");
+                throw new \Exception("Failed to download repository archive. Please check permissions.");
             }
 
             $tempPath = storage_path("app/temp_{$slug}.zip");
@@ -99,10 +100,12 @@ new class extends Component
                     }
                 }
             } else {
-                throw new \Exception('Could not extract repository.');
+                throw new \Exception('Could not extract repository archive.');
             }
 
-            unlink($tempPath);
+            if (file_exists($tempPath)) {
+                unlink($tempPath);
+            }
 
             $site = Site::create([
                 'slug' => $slug,
@@ -111,7 +114,7 @@ new class extends Component
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addDays(30),
                 'github_repo_full_name' => $fullName,
-                'github_branch' => $repo['default_branch'],
+                'github_branch' => $defaultBranch,
                 'auto_deploy' => $this->autoDeploy,
             ]);
 
@@ -119,19 +122,19 @@ new class extends Component
             $site->deployments()->create([
                 'status' => 'success',
                 'source' => 'github_manual',
-                'commit_hash' => $repo['default_branch'],
-                'commit_message' => "Initial deployment from GitHub",
+                'commit_hash' => $defaultBranch,
+                'commit_message' => "Initial deployment from GitHub ({$fullName})",
             ]);
 
             if ($this->autoDeploy) {
-                $this->setupWebhook($fullName, $token);
+                $this->setupWebhook($site, $token);
             }
 
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'site_id' => $site->id,
                 'action' => 'github_deployed',
-                'description' => "Deployed repository: {$fullName}",
+                'description' => "Deployed repository: {$fullName} ({$defaultBranch})",
                 'ip_address' => request()->ip(),
             ]);
 
@@ -144,9 +147,10 @@ new class extends Component
         $this->deploying = false;
     }
 
-    public function setupWebhook($fullName, $token)
+    public function setupWebhook(Site $site, $token)
     {
         try {
+            $fullName = $site->github_repo_full_name;
             $webhookUrl = url('/webhooks/github');
             
             $response = Http::withToken($token)->post("https://api.github.com/repos/{$fullName}/hooks", [
@@ -162,21 +166,17 @@ new class extends Component
 
             if ($response->successful()) {
                 $hookData = $response->json();
-                Site::where('github_repo_full_name', $fullName)
-                    ->where('user_id', auth()->id())
-                    ->latest()
-                    ->first()
-                    ?->update(['github_webhook_id' => $hookData['id'] ?? null]);
+                $site->update(['github_webhook_id' => $hookData['id'] ?? null]);
             }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("Failed to setup GitHub webhook for {$fullName}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning("Failed to setup GitHub webhook for {$site->slug}: " . $e->getMessage());
         }
     }
 
     public function render()
     {
         $filteredRepos = collect($this->repositories)
-            ->filter(fn($repo) => empty($this->search) || str_contains(strtolower($repo['full_name']), strtolower($this->search)))
+            ->filter(fn($repo) => empty($this->search) || str_contains(strtolower($repo['full_name'] ?? ''), strtolower($this->search)))
             ->values();
 
         return view('components.dashboard.⚡github-deploy', [
@@ -188,32 +188,32 @@ new class extends Component
 
 <div class="space-y-4">
     @if ($error)
-        <div class="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">
+        <div class="p-4 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800 text-sm">
             {{ $error }}
         </div>
     @endif
 
     <div class="relative">
-        <flux:input wire:model.live="search" placeholder="Search repositories..." icon="magnifying-glass" />
+        <flux:input wire:model.live.debounce.300ms="search" placeholder="Search your repositories..." icon="magnifying-glass" />
     </div>
 
     <div class="flex items-center gap-2 py-2">
-        <flux:checkbox wire:model="autoDeploy" :label="__('Auto-deploy on push (default branch)')" />
+        <flux:checkbox wire:model="autoDeploy" label="Auto-deploy on push to default branch (Webhook)" />
     </div>
 
-    <div class="max-h-[400px] overflow-y-auto space-y-2 pr-2">
+    <div class="max-h-[400px] overflow-y-auto space-y-2 pr-1">
         @if ($loading)
             <div class="flex items-center justify-center py-12">
-                <flux:icon.loading class="w-8 h-8" />
+                <flux:icon.arrow-path class="w-8 h-8 animate-spin text-indigo-500" />
             </div>
         @else
             @forelse($filteredRepos as $repo)
                 <div class="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <flux:icon.folder class="w-5 h-5 text-zinc-400" />
-                        <div>
-                            <div class="font-medium text-sm">{{ $repo['full_name'] }}</div>
-                            <div class="text-xs text-zinc-500">{{ $repo['description'] ?? 'No description' }}</div>
+                    <div class="flex items-center gap-3 truncate mr-4">
+                        <flux:icon.folder class="w-5 h-5 text-zinc-400 shrink-0" />
+                        <div class="truncate">
+                            <div class="font-medium text-sm text-zinc-900 dark:text-white truncate">{{ $repo['full_name'] }}</div>
+                            <div class="text-xs text-zinc-500 truncate">{{ $repo['description'] ?? 'Branch: ' . ($repo['default_branch'] ?? 'main') }}</div>
                         </div>
                     </div>
                     <flux:button 
@@ -221,23 +221,24 @@ new class extends Component
                         size="sm" 
                         variant="primary"
                         :disabled="$deploying"
+                        class="shrink-0"
                     >
                         Deploy
                     </flux:button>
                 </div>
             @empty
-                <div class="text-center py-12 text-zinc-500">
-                    No repositories found.
+                <div class="text-center py-12 text-zinc-500 text-sm">
+                    No repositories found matching your search.
                 </div>
             @endforelse
         @endif
     </div>
 
     @if ($deploying)
-        <div class="fixed inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-4">
-            <flux:icon.loading class="w-12 h-12 text-blue-600" />
-            <p class="font-bold">Deploying repository...</p>
-            <p class="text-sm text-zinc-500">Downloading and extracting files</p>
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-4 text-white">
+            <flux:icon.arrow-path class="w-12 h-12 animate-spin text-indigo-400" />
+            <p class="font-bold text-lg">Deploying repository...</p>
+            <p class="text-sm text-zinc-400">Downloading archive, extracting files, and configuring site</p>
         </div>
     @endif
 </div>

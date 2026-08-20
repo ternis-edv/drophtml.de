@@ -3,6 +3,7 @@
 use App\Concerns\PasswordValidationRules;
 use App\Livewire\Actions\Logout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 new class extends Component {
@@ -15,11 +16,22 @@ new class extends Component {
      */
     public function deleteUser(Logout $logout): void
     {
-        $this->validate([
-            'password' => $this->currentPasswordRules(),
-        ]);
+        $user = Auth::user();
 
-        tap(Auth::user(), $logout(...))->delete();
+        if ($user->password_set_at) {
+            $this->validate([
+                'password' => $this->currentPasswordRules(),
+            ]);
+        }
+
+        // Delete user's sites storage directories
+        foreach ($user->sites as $site) {
+            if ($site->path) {
+                Storage::disk('public')->deleteDirectory($site->path);
+            }
+        }
+
+        tap($user, $logout(...))->delete();
 
         $this->redirect('/', navigate: true);
     }
@@ -31,11 +43,16 @@ new class extends Component {
             <flux:heading size="lg">{{ __('Are you sure you want to delete your account?') }}</flux:heading>
 
             <flux:subheading>
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+                {{ __('Once your account is deleted, all of your sites, domains, analytics, and data will be permanently deleted.') }}
+                @if(auth()->user()->password_set_at)
+                    {{ __('Please enter your password to confirm.') }}
+                @endif
             </flux:subheading>
         </div>
 
-        <flux:input wire:model="password" :label="__('Password')" type="password" viewable />
+        @if(auth()->user()->password_set_at)
+            <flux:input wire:model="password" :label="__('Password')" type="password" viewable required />
+        @endif
 
         <div class="flex justify-end space-x-2 rtl:space-x-reverse">
             <flux:modal.close>

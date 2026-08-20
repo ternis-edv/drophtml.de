@@ -17,10 +17,11 @@ class DeploymentResource extends JsonResource
         return [
             'id' => $this->id,
             'site_id' => $this->site_id,
+            'status' => $this->status,
+            'source' => $this->source,
             'commit_hash' => $this->commit_hash,
             'commit_message' => $this->commit_message,
-            'status' => $this->status,
-            'log' => $this->log,
+            'metadata' => $this->metadata,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
