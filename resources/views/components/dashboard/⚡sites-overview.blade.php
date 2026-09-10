@@ -29,6 +29,13 @@ new class extends Component
         Flux::toast('Site deleted successfully.');
     }
 
+    public function duplicateSite($id, SiteDeploymentService $deploymentService)
+    {
+        $site = auth()->user()->sites()->findOrFail($id);
+        $cloned = $deploymentService->duplicateSite($site, auth()->user());
+        Flux::toast("Site cloned as '{$cloned->slug}'!");
+    }
+
     public function extendExpiry($id, $days, ActivityLogService $activityLogService)
     {
         $site = auth()->user()->sites()->findOrFail($id);
@@ -388,6 +395,9 @@ new class extends Component
                                             <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Custom Domains</flux:menu.item>
                                             <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>
                                             <flux:menu.separator />
+                                            <flux:menu.item icon="arrow-down-tray" :href="route('dashboard.sites.download', $site->id)">Download ZIP</flux:menu.item>
+                                            <flux:menu.item icon="document-duplicate" wire:click="duplicateSite('{{ $site->id }}')">Duplicate Site</flux:menu.item>
+                                            <flux:menu.separator />
                                             <flux:menu.submenu icon="clock">
                                                 <flux:menu.heading>Extend Lifetime</flux:menu.heading>
                                                 <flux:menu.item wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days</flux:menu.item>
@@ -531,6 +541,9 @@ new class extends Component
                                                 <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank">View Live</flux:menu.item>
                                                 <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Domains</flux:menu.item>
                                                 <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>
+                                                <flux:menu.separator />
+                                                <flux:menu.item icon="arrow-down-tray" :href="route('dashboard.sites.download', $site->id)">Download ZIP</flux:menu.item>
+                                                <flux:menu.item icon="document-duplicate" wire:click="duplicateSite('{{ $site->id }}')">Duplicate Site</flux:menu.item>
                                                 <flux:menu.separator />
                                                 <flux:menu.item icon="clock" wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days Expiry</flux:menu.item>
                                                 <flux:menu.item icon="sparkles" wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set Expiry (30d)' : 'Make Permanent' }}</flux:menu.item>

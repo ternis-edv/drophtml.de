@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
 class SiteDeploymentService
@@ -295,6 +296,96 @@ class SiteDeploymentService
         } while (Site::where('slug', $slug)->exists());
 
         return $slug;
+    }
+
+    /**
+     * Package the site's deployed files into a ZIP archive and stream download.
+     */
+    public function downloadZip(Site $site): BinaryFileResponse
+    {
+        $disk = Storage::disk('public');
+        if (! $disk->exists($site->path)) {
+            abort(404, 'Site files directory not found.');
+        }
+
+        $allFiles = $disk->allFiles($site->path);
+        if (empty($allFiles)) {
+            abort(404, 'No files found in site to archive.');
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'site_zip_');
+        $zip = new ZipArchive;
+
+        if ($zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new RuntimeException('Failed to initialize ZIP archive for site download.');
+        }
+
+        $prefix = rtrim($site->path, '/').'/';
+        foreach ($allFiles as $file) {
+            $relativePath = str_starts_with($file, $prefix) ? substr($file, strlen($prefix)) : $file;
+            $fullFilePath = $disk->path($file);
+            if (file_exists($fullFilePath) && is_readable($fullFilePath)) {
+                $zip->addFile($fullFilePath, $relativePath);
+            }
+        }
+
+        $zip->close();
+
+        $downloadFilename = $site->slug.'-backup-'.now()->format('Y-m-d').'.zip';
+
+        return response()->download($tempFile, $downloadFilename, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Duplicate an existing site to a new site with a unique slug.
+     */
+    public function duplicateSite(Site $site, User $user, ?string $customSlug = null): Site
+    {
+        $disk = Storage::disk('public');
+        if (! $disk->exists($site->path)) {
+            throw new RuntimeException('Source site directory not found.');
+        }
+
+        $newSlug = ! empty($customSlug)
+            ? Str::slug($customSlug)
+            : $this->generateUniqueSlug($site->slug.'-copy');
+
+        if (Site::where('slug', $newSlug)->exists()) {
+            $newSlug = $this->generateUniqueSlug($newSlug);
+        }
+
+        $newPath = "sites/{$newSlug}";
+        $disk->makeDirectory($newPath);
+
+        $prefix = rtrim($site->path, '/').'/';
+        $files = $disk->allFiles($site->path);
+
+        foreach ($files as $file) {
+            $rel = str_starts_with($file, $prefix) ? substr($file, strlen($prefix)) : $file;
+            $disk->copy($file, "{$newPath}/{$rel}");
+        }
+
+        $clonedSite = Site::create([
+            'slug' => $newSlug,
+            'original_name' => ($site->original_name ?: $site->slug).' (Copy)',
+            'path' => $newPath,
+            'user_id' => $user->id,
+            'status' => 'active',
+            'is_permanent' => false,
+            'expires_at' => now()->addDays(30),
+            'views' => 0,
+        ]);
+
+        $this->activityLogService->log(
+            $user,
+            $clonedSite,
+            'site_duplicated',
+            "Duplicated site from {$site->slug} to {$clonedSite->slug}"
+        );
+
+        return $clonedSite;
     }
 
     /**

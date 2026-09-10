@@ -5,6 +5,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\Webhooks\GithubWebhookController;
 use App\Models\Site;
 use App\Services\AnalyticsService;
+use App\Services\SiteDeploymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,13 @@ Route::domain($appDomain)->group(function () {
 
             return $analytics->exportCsv($site, $days);
         })->name('dashboard.sites.stats.export');
+        Route::get('dashboard/sites/{site}/download', function (Site $site, SiteDeploymentService $deploymentService) {
+            if ($site->user_id !== auth()->id()) {
+                abort(403);
+            }
+
+            return $deploymentService->downloadZip($site);
+        })->name('dashboard.sites.download');
         Route::view('dashboard/sites/{site}/settings', 'dashboard.site-settings')->name('dashboard.sites.settings');
         Route::view('dashboard/activity', 'dashboard.activity')->name('dashboard.activity');
     });

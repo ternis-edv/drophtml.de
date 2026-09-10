@@ -67,9 +67,20 @@ class SiteServingService
         }
 
         $resolvedPath = $this->resolveFilePath($site, $path);
-
         $disk = Storage::disk('public');
         $siteRoot = $disk->path($site->path);
+
+        $isCustom404 = false;
+
+        if ($resolvedPath === null) {
+            if ($disk->fileExists("{$site->path}/404.html")) {
+                $resolvedPath = '404.html';
+                $isCustom404 = true;
+            } else {
+                abort(404, 'File not found.');
+            }
+        }
+
         $fullPath = $disk->path("{$site->path}/{$resolvedPath}");
 
         // Strict realpath boundary check against directory traversal
@@ -77,7 +88,13 @@ class SiteServingService
         $realFilePath = realpath($fullPath);
 
         if ($realSiteRoot === false || $realFilePath === false || ! str_starts_with($realFilePath, $realSiteRoot)) {
-            abort(404, 'File not found.');
+            if (! $isCustom404 && $disk->fileExists("{$site->path}/404.html")) {
+                $resolvedPath = '404.html';
+                $realFilePath = realpath($disk->path("{$site->path}/404.html"));
+                $isCustom404 = true;
+            } else {
+                abort(404, 'File not found.');
+            }
         }
 
         $extension = strtolower(pathinfo($resolvedPath, PATHINFO_EXTENSION));
@@ -86,6 +103,17 @@ class SiteServingService
         // Record visitor analytics
         $this->recordAnalytics($site, $request, $path ?? $resolvedPath, $isHtml);
 
+        $lastModified = filemtime($realFilePath);
+        $fileSize = filesize($realFilePath);
+        $etag = '"'.md5($lastModified.$fileSize).'"';
+
+        if (! $isCustom404 && $request->header('If-None-Match') === $etag) {
+            return response('', 304, [
+                'ETag' => $etag,
+                'Cache-Control' => $isHtml ? 'no-cache, must-revalidate' : 'public, max-age=86400, stale-while-revalidate=604800',
+            ]);
+        }
+
         $fileContent = file_get_contents($realFilePath);
         $mime = $this->resolveMimeType($extension, "{$site->path}/{$resolvedPath}");
 
@@ -93,8 +121,12 @@ class SiteServingService
             $fileContent = $this->injectBaseTag($fileContent, $baseUrl);
         }
 
-        return response($fileContent, 200, [
+        $statusCode = $isCustom404 ? 404 : 200;
+
+        return response($fileContent, $statusCode, [
             'Content-Type' => $mime,
+            'ETag' => $etag,
+            'Cache-Control' => $isHtml ? 'no-cache, must-revalidate' : 'public, max-age=86400, stale-while-revalidate=604800',
             'X-Frame-Options' => 'SAMEORIGIN',
             'X-Content-Type-Options' => 'nosniff',
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
@@ -127,7 +159,7 @@ class SiteServingService
     /**
      * Resolve the requested relative file path within the site directory.
      */
-    public function resolveFilePath(Site $site, ?string $path): string
+    public function resolveFilePath(Site $site, ?string $path): ?string
     {
         $disk = Storage::disk('public');
 
@@ -161,12 +193,17 @@ class SiteServingService
             return $cleanPath;
         }
 
+        // Clean URL extension fallback (e.g. /pricing -> /pricing.html)
+        if ($disk->fileExists("{$site->path}/{$cleanPath}.html")) {
+            return "{$cleanPath}.html";
+        }
+
         // Directory index fallback (e.g. /docs -> /docs/index.html)
         if ($disk->fileExists("{$site->path}/{$cleanPath}/index.html")) {
             return rtrim($cleanPath, '/').'/index.html';
         }
 
-        abort(404, 'File not found.');
+        return null;
     }
 
     /**

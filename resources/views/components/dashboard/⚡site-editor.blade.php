@@ -335,6 +335,12 @@ new class extends Component
                 <button wire:click="setPreviewMode('preview')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'preview' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Live Preview</button>
             </div>
 
+            <!-- Download Site Archive -->
+            <a href="{{ route('dashboard.sites.download', $site->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors" title="Download complete site as ZIP archive">
+                <flux:icon.arrow-down-tray class="size-3.5" />
+                Export ZIP
+            </a>
+
             <!-- Live Site Link -->
             <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors">
                 <flux:icon.arrow-top-right-on-square class="size-3.5" />
