@@ -220,21 +220,16 @@ new class extends Component
         }
     }
 }">
-    <!-- Header & Controls -->
+    <!-- Subnavigation Header -->
+    <x-site-subnav :site="$site" current="stats" />
+
+    <!-- Controls Bar -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>Analytics</flux:breadcrumbs.item>
-            </flux:breadcrumbs>
-            <div class="flex items-center gap-3 mt-2">
-                <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Site Analytics</h1>
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
-                    <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Live Insights
-                </span>
-            </div>
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
+                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Live Telemetry
+            </span>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">

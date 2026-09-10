@@ -311,41 +311,21 @@ new class extends Component
     @file-saved.window="reloadPreview()"
     class="space-y-4"
 >
-    <!-- Header & Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>Code Editor</flux:breadcrumbs.item>
-            </flux:breadcrumbs>
-            <div class="flex items-center gap-2.5 mt-1.5">
-                <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Live Code Studio</h1>
-                @if($currentFile)
-                    <flux:badge size="sm" color="zinc" class="font-mono">{{ $currentFile }}</flux:badge>
-                @endif
-            </div>
+    <!-- Subnavigation Header -->
+    <x-site-subnav :site="$site" current="editor" />
+
+    <!-- Mode Switcher Bar -->
+    <div class="flex items-center justify-between pb-1">
+        <div class="flex items-center gap-2">
+            @if($currentFile)
+                <flux:badge size="sm" color="zinc" class="font-mono">{{ $currentFile }}</flux:badge>
+            @endif
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <!-- View Mode Switcher -->
-            <div class="inline-flex rounded-lg p-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs">
-                <button wire:click="setPreviewMode('editor')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'editor' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Code Only</button>
-                <button wire:click="setPreviewMode('split')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'split' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Split View</button>
-                <button wire:click="setPreviewMode('preview')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'preview' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Live Preview</button>
-            </div>
-
-            <!-- Download Site Archive -->
-            <a href="{{ route('dashboard.sites.download', $site->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors" title="Download complete site as ZIP archive">
-                <flux:icon.arrow-down-tray class="size-3.5" />
-                Export ZIP
-            </a>
-
-            <!-- Live Site Link -->
-            <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors">
-                <flux:icon.arrow-top-right-on-square class="size-3.5" />
-                Open Live Site
-            </a>
+        <div class="inline-flex rounded-lg p-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs">
+            <button wire:click="setPreviewMode('editor')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'editor' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Code Only</button>
+            <button wire:click="setPreviewMode('split')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'split' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Split View</button>
+            <button wire:click="setPreviewMode('preview')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'preview' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Live Preview</button>
         </div>
     </div>
 

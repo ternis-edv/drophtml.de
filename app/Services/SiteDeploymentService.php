@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Deployment;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -75,6 +76,17 @@ class SiteDeploymentService
             'site_password' => ! empty($options['site_password']) ? Hash::make($options['site_password']) : null,
         ]);
 
+        $deployment = $site->deployments()->create([
+            'status' => 'success',
+            'source' => $options['source'] ?? 'upload',
+            'commit_message' => "Uploaded site: {$originalName}",
+            'metadata' => [
+                'filename' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+            ],
+        ]);
+        $this->createDeploymentSnapshot($site, $deployment);
+
         if ($user) {
             $this->activityLogService->log(
                 $user,
@@ -116,6 +128,16 @@ class SiteDeploymentService
             'is_password_protected' => (bool) ($options['is_password_protected'] ?? false),
             'site_password' => ! empty($options['site_password']) ? Hash::make($options['site_password']) : null,
         ]);
+
+        $deployment = $site->deployments()->create([
+            'status' => 'success',
+            'source' => 'editor',
+            'commit_message' => "Initial deployment from web editor: {$name}",
+            'metadata' => [
+                'editor' => true,
+            ],
+        ]);
+        $this->createDeploymentSnapshot($site, $deployment);
 
         if ($user) {
             $this->activityLogService->log(
@@ -245,6 +267,7 @@ class SiteDeploymentService
     {
         if ($site->path) {
             Storage::disk('public')->deleteDirectory($site->path);
+            Storage::disk('local')->deleteDirectory("snapshots/{$site->id}");
         }
 
         if ($actor) {
@@ -386,6 +409,190 @@ class SiteDeploymentService
         );
 
         return $clonedSite;
+    }
+
+    /**
+     * Create a ZIP snapshot of current deployed site files for deployment history.
+     */
+    public function createDeploymentSnapshot(Site $site, Deployment $deployment): ?string
+    {
+        $publicDisk = Storage::disk('public');
+        $localDisk = Storage::disk('local');
+
+        if (! $publicDisk->exists($site->path)) {
+            return null;
+        }
+
+        $allFiles = $publicDisk->allFiles($site->path);
+        if (empty($allFiles)) {
+            return null;
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'snap_');
+        $zip = new ZipArchive;
+
+        if ($zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return null;
+        }
+
+        $prefix = rtrim($site->path, '/').'/';
+        $totalBytes = 0;
+
+        foreach ($allFiles as $file) {
+            $relativePath = str_starts_with($file, $prefix) ? substr($file, strlen($prefix)) : $file;
+            $fullFilePath = $publicDisk->path($file);
+            if (file_exists($fullFilePath) && is_readable($fullFilePath)) {
+                $zip->addFile($fullFilePath, $relativePath);
+                $totalBytes += filesize($fullFilePath);
+            }
+        }
+
+        $zip->close();
+
+        $snapshotRelPath = "snapshots/{$site->id}/{$deployment->id}.zip";
+        $localDisk->put($snapshotRelPath, file_get_contents($tempFile));
+        @unlink($tempFile);
+
+        $metadata = $deployment->metadata ?? [];
+        $metadata['snapshot_path'] = $snapshotRelPath;
+        $metadata['file_count'] = count($allFiles);
+        $metadata['total_bytes'] = $totalBytes;
+
+        $deployment->update(['metadata' => $metadata]);
+
+        return $snapshotRelPath;
+    }
+
+    /**
+     * Deploy new files to an existing site (from upload, CI/CD, or CLI).
+     */
+    public function deployToExistingSite(
+        Site $site,
+        UploadedFile $file,
+        ?User $actor = null,
+        ?string $commitMessage = null,
+        string $source = 'upload'
+    ): Deployment {
+        $publicDisk = Storage::disk('public');
+        $fullStoragePath = $publicDisk->path($site->path);
+
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        if ($extension === 'zip') {
+            $publicDisk->deleteDirectory($site->path);
+            $publicDisk->makeDirectory($site->path);
+            $this->extractZipSafely($file->getRealPath(), $fullStoragePath);
+        } else {
+            if ($this->isDangerousExtension($extension)) {
+                throw new InvalidArgumentException("Uploading .{$extension} files is not permitted for security reasons.");
+            }
+
+            $publicDisk->deleteDirectory($site->path);
+            $publicDisk->makeDirectory($site->path);
+            $sanitizedFilename = $this->sanitizeFileName($file->getClientOriginalName());
+            $file->storeAs($site->path, $sanitizedFilename, 'public');
+        }
+
+        $message = $commitMessage ?: 'Redeployed site files via '.$source;
+
+        $deployment = $site->deployments()->create([
+            'status' => 'success',
+            'source' => $source,
+            'commit_message' => $message,
+            'metadata' => [
+                'filename' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+            ],
+        ]);
+
+        $this->createDeploymentSnapshot($site, $deployment);
+
+        if ($actor) {
+            $this->activityLogService->log(
+                $actor,
+                $site,
+                'site_redeployed',
+                "Redeployed site: {$site->original_name} ({$site->slug})"
+            );
+        }
+
+        return $deployment;
+    }
+
+    /**
+     * Rollback a site to a previous deployment snapshot.
+     */
+    public function rollbackToDeployment(Site $site, Deployment $targetDeployment, ?User $actor = null): Deployment
+    {
+        if ($targetDeployment->site_id !== $site->id) {
+            throw new InvalidArgumentException('Deployment does not belong to this site.');
+        }
+
+        $localDisk = Storage::disk('local');
+        $snapshotPath = $targetDeployment->metadata['snapshot_path'] ?? "snapshots/{$site->id}/{$targetDeployment->id}.zip";
+
+        if (! $localDisk->exists($snapshotPath)) {
+            throw new RuntimeException('Snapshot archive for this deployment was not found.');
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'rollback_');
+        file_put_contents($tempFile, $localDisk->get($snapshotPath));
+
+        $publicDisk = Storage::disk('public');
+        $destinationPath = $publicDisk->path($site->path);
+
+        $publicDisk->deleteDirectory($site->path);
+        $publicDisk->makeDirectory($site->path);
+
+        $this->extractZipSafely($tempFile, $destinationPath);
+        @unlink($tempFile);
+
+        $shortId = substr($targetDeployment->id, 0, 8);
+        $newDeployment = $site->deployments()->create([
+            'status' => 'success',
+            'source' => 'rollback',
+            'commit_message' => "Rolled back to deployment #{$shortId}",
+            'metadata' => [
+                'target_deployment_id' => $targetDeployment->id,
+                'target_commit_message' => $targetDeployment->commit_message,
+            ],
+        ]);
+
+        $this->createDeploymentSnapshot($site, $newDeployment);
+
+        if ($actor) {
+            $this->activityLogService->log(
+                $actor,
+                $site,
+                'site_rollback',
+                "Rolled back site {$site->slug} to deployment #{$shortId}"
+            );
+        }
+
+        return $newDeployment;
+    }
+
+    /**
+     * Download a specific deployment ZIP snapshot.
+     */
+    public function downloadDeploymentZip(Site $site, Deployment $deployment): BinaryFileResponse
+    {
+        if ($deployment->site_id !== $site->id) {
+            abort(404, 'Deployment does not belong to this site.');
+        }
+
+        $localDisk = Storage::disk('local');
+        $snapshotPath = $deployment->metadata['snapshot_path'] ?? "snapshots/{$site->id}/{$deployment->id}.zip";
+
+        if (! $localDisk->exists($snapshotPath)) {
+            abort(404, 'Snapshot file not found for this deployment.');
+        }
+
+        $filename = $site->slug.'-deploy-'.substr($deployment->id, 0, 8).'.zip';
+
+        return response()->download($localDisk->path($snapshotPath), $filename, [
+            'Content-Type' => 'application/zip',
+        ]);
     }
 
     /**

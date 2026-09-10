@@ -66,8 +66,29 @@ class SiteServingService
             }
         }
 
-        $resolvedPath = $this->resolveFilePath($site, $path);
+        $cleanPath = $this->sanitizePath($path);
         $disk = Storage::disk('public');
+
+        // Dynamic SEO generation if not provided in site bundle
+        if ($cleanPath === 'robots.txt' && ! $disk->fileExists("{$site->path}/robots.txt")) {
+            $robotsTxt = "User-agent: *\nAllow: /\nSitemap: ".rtrim($baseUrl, '/')."/sitemap.xml\n";
+
+            return response($robotsTxt, 200, [
+                'Content-Type' => 'text/plain; charset=UTF-8',
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        if ($cleanPath === 'sitemap.xml' && ! $disk->fileExists("{$site->path}/sitemap.xml")) {
+            $sitemapXml = $this->generateDynamicSitemap($site, $baseUrl);
+
+            return response($sitemapXml, 200, [
+                'Content-Type' => 'application/xml; charset=UTF-8',
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        $resolvedPath = $this->resolveFilePath($site, $path);
         $siteRoot = $disk->path($site->path);
 
         $isCustom404 = false;
@@ -285,5 +306,76 @@ class SiteServingService
         if ($isHtml) {
             $site->increment('views');
         }
+    }
+
+    /**
+     * Generate dynamic XML sitemap for a static site.
+     */
+    public function generateDynamicSitemap(Site $site, string $baseUrl): string
+    {
+        $disk = Storage::disk('public');
+        $cleanBaseUrl = rtrim($baseUrl, '/');
+
+        $allFiles = $disk->exists($site->path) ? $disk->allFiles($site->path) : [];
+        $prefix = rtrim($site->path, '/').'/';
+
+        $urls = [];
+
+        foreach ($allFiles as $file) {
+            $relPath = str_starts_with($file, $prefix) ? substr($file, strlen($prefix)) : $file;
+            $ext = strtolower(pathinfo($relPath, PATHINFO_EXTENSION));
+
+            if (! in_array($ext, ['html', 'htm'], true)) {
+                continue;
+            }
+
+            // Exclude 404 error page from sitemap
+            if (basename($relPath) === '404.html' || basename($relPath) === '404.htm') {
+                continue;
+            }
+
+            $fullFilePath = $disk->path($file);
+            $lastMod = file_exists($fullFilePath) ? date('Y-m-d', filemtime($fullFilePath)) : date('Y-m-d');
+
+            if ($relPath === 'index.html' || $relPath === 'index.htm') {
+                $loc = $cleanBaseUrl.'/';
+                $priority = '1.0';
+            } else {
+                $cleanUrlPath = preg_replace('/\.html?$/', '', $relPath);
+                $loc = $cleanBaseUrl.'/'.$cleanUrlPath;
+                $priority = '0.8';
+            }
+
+            $urls[] = [
+                'loc' => htmlspecialchars($loc, ENT_XML1, 'UTF-8'),
+                'lastmod' => $lastMod,
+                'priority' => $priority,
+            ];
+        }
+
+        // If no HTML files found, at least provide root
+        if (empty($urls)) {
+            $urls[] = [
+                'loc' => htmlspecialchars($cleanBaseUrl.'/', ENT_XML1, 'UTF-8'),
+                'lastmod' => date('Y-m-d'),
+                'priority' => '1.0',
+            ];
+        }
+
+        $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        $xml .= "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
+
+        foreach ($urls as $url) {
+            $xml .= "  <url>\n";
+            $xml .= "    <loc>{$url['loc']}</loc>\n";
+            $xml .= "    <lastmod>{$url['lastmod']}</lastmod>\n";
+            $xml .= "    <changefreq>weekly</changefreq>\n";
+            $xml .= "    <priority>{$url['priority']}</priority>\n";
+            $xml .= "  </url>\n";
+        }
+
+        $xml .= "</urlset>\n";
+
+        return $xml;
     }
 }

@@ -125,23 +125,9 @@ new class extends Component
 };
 ?>
 
-<div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>{{ $this->site->original_name ?: $this->site->slug }}</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>Settings</flux:breadcrumbs.item>
-            </flux:breadcrumbs>
-            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1.5">Site Settings</h1>
-        </div>
-
-        <a href="{{ url('/s/' . $site->slug) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors">
-            <flux:icon.arrow-top-right-on-square class="size-3.5" />
-            Visit Live Site
-        </a>
-    </div>
+<div>
+    <!-- Subnavigation Header -->
+    <x-site-subnav :site="$site" current="settings" />
 
     <div class="max-w-3xl space-y-6">
         <flux:card>

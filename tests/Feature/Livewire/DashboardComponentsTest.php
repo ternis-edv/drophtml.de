@@ -142,3 +142,61 @@ test('landing editor deploys mock code into a real site', function () {
     $site = Site::first();
     expect(Storage::disk('public')->exists("{$site->path}/index.html"))->toBeTrue();
 });
+
+test('command palette mounts and filters sites on search', function () {
+    $user = User::factory()->create();
+    $site1 = Site::create([
+        'user_id' => $user->id,
+        'slug' => 'portfolio-cool',
+        'original_name' => 'Portfolio Cool',
+        'path' => 'sites/portfolio-cool',
+        'status' => 'active',
+    ]);
+    $site2 = Site::create([
+        'user_id' => $user->id,
+        'slug' => 'blog-super',
+        'original_name' => 'Blog Super',
+        'path' => 'sites/blog-super',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test('dashboard.command-palette')
+        ->assertSet('isOpen', false)
+        ->call('openPalette')
+        ->assertSet('isOpen', true)
+        ->assertSee('Portfolio Cool')
+        ->assertSee('Blog Super')
+        ->set('search', 'portfolio')
+        ->assertSee('Portfolio Cool')
+        ->assertDontSee('Blog Super')
+        ->call('closePalette')
+        ->assertSet('isOpen', false);
+});
+
+test('site deployments livewire component mounts and can trigger manual snapshot', function () {
+    Storage::fake('public');
+    Storage::fake('local');
+
+    $user = User::factory()->create();
+    $site = Site::create([
+        'user_id' => $user->id,
+        'slug' => 'snap-site',
+        'original_name' => 'Snap Site',
+        'path' => 'sites/snap-site',
+        'status' => 'active',
+    ]);
+
+    Storage::disk('public')->put("{$site->path}/index.html", '<h1>Snap</h1>');
+
+    $this->actingAs($user);
+
+    Livewire::test('dashboard.site-deployments', ['siteId' => $site->id])
+        ->call('createManualSnapshot');
+
+    $site->refresh();
+    expect($site->deployments()->count())->toBe(1);
+    $deployment = $site->deployments()->first();
+    expect($deployment->source)->toBe('manual');
+});

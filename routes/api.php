@@ -15,12 +15,15 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::delete('/user', [ProfileController::class, 'destroy']);
 
     // Sites
+    Route::post('sites/{site}/deploy', [SiteController::class, 'deploy']);
     Route::apiResource('sites', SiteController::class);
 
     // Domains (Nested under sites)
     Route::apiResource('sites.domains', DomainController::class)->except(['update']);
 
-    // Deployments (Nested under sites, Read-only)
+    // Deployments (Nested under sites)
+    Route::post('sites/{site}/deployments/{deployment}/rollback', [DeploymentController::class, 'rollback']);
+    Route::get('sites/{site}/deployments/{deployment}/download', [DeploymentController::class, 'download']);
     Route::apiResource('sites.deployments', DeploymentController::class)->only(['index', 'show']);
 
     // Activity Logs (Read-only)

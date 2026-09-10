@@ -10,6 +10,20 @@
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
+            <div class="px-2 pt-2 pb-1" x-data>
+                <button 
+                    type="button" 
+                    @click="$dispatch('open-command-palette')" 
+                    class="w-full flex items-center justify-between px-3 py-2 text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 bg-white dark:bg-zinc-800/90 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 border border-zinc-200 dark:border-zinc-700/80 rounded-xl shadow-xs transition-colors group cursor-pointer"
+                >
+                    <span class="flex items-center gap-2">
+                        <flux:icon.magnifying-glass class="size-3.5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
+                        <span class="font-medium">Quick Search...</span>
+                    </span>
+                    <kbd class="px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">⌘K</kbd>
+                </button>
+            </div>
+
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
@@ -56,6 +70,17 @@
         <!-- Mobile User Menu -->
         <flux:header class="lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+
+            <div class="flex items-center ml-2" x-data>
+                <button 
+                    type="button" 
+                    @click="$dispatch('open-command-palette')" 
+                    class="p-1.5 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    title="Search (⌘K)"
+                >
+                    <flux:icon.magnifying-glass class="size-5" />
+                </button>
+            </div>
 
             <flux:spacer />
 
@@ -115,6 +140,10 @@
                 <flux:toast />
             </flux:toast.group>
         @endpersist
+
+        @auth
+            <livewire:dashboard.command-palette />
+        @endauth
 
         @fluxScripts
     </body>

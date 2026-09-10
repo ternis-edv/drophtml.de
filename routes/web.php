@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\Webhooks\GithubWebhookController;
+use App\Models\Deployment;
 use App\Models\Site;
 use App\Services\AnalyticsService;
 use App\Services\SiteDeploymentService;
@@ -56,6 +57,14 @@ Route::domain($appDomain)->group(function () {
         Route::view('dashboard/sites/upload', 'dashboard.sites-upload')->name('dashboard.sites.upload');
         Route::view('dashboard/sites/{site}/edit', 'dashboard.site-editor')->name('dashboard.sites.edit');
         Route::view('dashboard/sites/{site}/domains', 'dashboard.site-domains')->name('dashboard.sites.domains');
+        Route::view('dashboard/sites/{site}/deployments', 'dashboard.site-deployments')->name('dashboard.sites.deployments');
+        Route::get('dashboard/sites/{site}/deployments/{deployment}/download', function (Site $site, Deployment $deployment, SiteDeploymentService $deploymentService) {
+            if ($site->user_id !== auth()->id() || $deployment->site_id !== $site->id) {
+                abort(403);
+            }
+
+            return $deploymentService->downloadDeploymentZip($site, $deployment);
+        })->name('dashboard.sites.deployments.download');
         Route::view('dashboard/sites/{site}/stats', 'dashboard.site-stats')->name('dashboard.sites.stats');
         Route::get('dashboard/sites/{site}/stats/export', function (Site $site, Request $request, AnalyticsService $analytics) {
             if ($site->user_id !== auth()->id()) {

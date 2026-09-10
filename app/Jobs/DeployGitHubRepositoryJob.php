@@ -56,13 +56,15 @@ class DeployGitHubRepositoryJob implements ShouldQueue
             $deploymentService->extractZipSafely($tempPath, $destination);
 
             // 3. Record deployment
-            $this->site->deployments()->create([
+            $deployment = $this->site->deployments()->create([
                 'status' => 'success',
                 'source' => 'github_webhook',
                 'commit_hash' => $this->payload['after'] ?? null,
                 'commit_message' => $this->payload['head_commit']['message'] ?? 'Auto-deploy from push',
                 'metadata' => $this->payload,
             ]);
+
+            $deploymentService->createDeploymentSnapshot($this->site, $deployment);
 
             // 4. Log activity
             $activityLogService->log(

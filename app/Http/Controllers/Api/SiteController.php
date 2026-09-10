@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
+use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\SiteResource;
 use App\Models\Site;
 use App\Services\SiteDeploymentService;
@@ -90,5 +91,27 @@ class SiteController extends Controller
         $this->siteDeploymentService->deleteSite($site, $request->user());
 
         return response()->json(['message' => 'Site deleted successfully.']);
+    }
+
+    public function deploy(Request $request, Site $site)
+    {
+        Gate::authorize('update', $site);
+
+        $request->validate([
+            'file' => 'required|file|max:51200',
+            'commit_message' => 'nullable|string|max:255',
+        ]);
+
+        $deployment = $this->siteDeploymentService->deployToExistingSite(
+            $site,
+            $request->file('file'),
+            $request->user(),
+            $request->input('commit_message'),
+            'api'
+        );
+
+        return (new DeploymentResource($deployment))
+            ->response()
+            ->setStatusCode(201);
     }
 }

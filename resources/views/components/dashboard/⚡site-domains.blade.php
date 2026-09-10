@@ -82,29 +82,9 @@ new class extends Component
 };
 ?>
 
-<div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>Custom Domains</flux:breadcrumbs.item>
-            </flux:breadcrumbs>
-            <div class="flex items-center gap-2.5 mt-1.5">
-                <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Custom Domains</h1>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
-                    <flux:icon.shield-check class="size-3 text-emerald-500" />
-                    Auto SSL
-                </span>
-            </div>
-        </div>
-
-        <a href="{{ url('/s/' . $site->slug) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors">
-            <flux:icon.arrow-top-right-on-square class="size-3.5" />
-            Default URL: /s/{{ $site->slug }}
-        </a>
-    </div>
+<div>
+    <!-- Subnavigation Header -->
+    <x-site-subnav :site="$site" current="domains" />
 
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
