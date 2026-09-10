@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
@@ -34,6 +34,21 @@
                     {{ __('Repository') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
+
+            <div class="px-2 py-1.5 mb-1 flex items-center justify-between text-xs text-zinc-500 rounded-lg bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60" x-data>
+                <span class="font-medium text-[11px] uppercase tracking-wider text-zinc-400">Theme</span>
+                <div class="flex items-center gap-0.5">
+                    <button type="button" @click="$flux.appearance = 'light'" :class="$flux.appearance === 'light' ? 'bg-white text-indigo-600 shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1 rounded-md transition-colors" title="Light Mode">
+                        <flux:icon.sun class="size-3.5" />
+                    </button>
+                    <button type="button" @click="$flux.appearance = 'dark'" :class="$flux.appearance === 'dark' ? 'bg-zinc-900 text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1 rounded-md transition-colors" title="Dark Mode">
+                        <flux:icon.moon class="size-3.5" />
+                    </button>
+                    <button type="button" @click="$flux.appearance = 'system'" :class="$flux.appearance === 'system' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1 rounded-md transition-colors" title="System Preference">
+                        <flux:icon.computer-desktop class="size-3.5" />
+                    </button>
+                </div>
+            </div>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>

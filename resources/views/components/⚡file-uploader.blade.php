@@ -12,6 +12,9 @@ new class extends Component
     public $uploading = false;
     public $message = '';
     public $errorMessage = '';
+    public $publishedSlug = null;
+    public $publishedUrl = null;
+    public $publishedId = null;
 
     public function updatedFile(SiteDeploymentService $deploymentService)
     {
@@ -38,18 +41,11 @@ new class extends Component
                 $user
             );
 
-            $host = parse_url(config('app.url'), PHP_URL_HOST);
-            $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?? 'http';
+            $this->publishedSlug = $site->slug;
+            $this->publishedId = $site->id;
+            $this->publishedUrl = url("/s/{$site->slug}");
 
-            $pathUrl = url("/s/{$site->slug}");
-            $subdomainUrl = ($host && $host !== 'localhost') ? "{$scheme}://{$site->slug}.{$host}" : null;
-
-            $this->message = "Site published successfully!";
-            if ($subdomainUrl) {
-                $this->message .= " Access it at: <a href='{$subdomainUrl}' class='underline font-medium' target='_blank'>{$subdomainUrl}</a> or <a href='{$pathUrl}' class='underline font-medium' target='_blank'>{$pathUrl}</a>";
-            } else {
-                $this->message .= " Access it at: <a href='{$pathUrl}' class='underline font-medium' target='_blank'>{$pathUrl}</a>";
-            }
+            $this->message = "Site published successfully! Access it at: <a href='{$this->publishedUrl}' class='underline font-medium' target='_blank'>{$this->publishedUrl}</a>";
 
             $this->dispatch('site-published', slug: $site->slug);
             $this->reset('file');
@@ -58,6 +54,16 @@ new class extends Component
         }
 
         $this->uploading = false;
+    }
+
+    public function resetUpload()
+    {
+        $this->publishedSlug = null;
+        $this->publishedUrl = null;
+        $this->publishedId = null;
+        $this->message = '';
+        $this->errorMessage = '';
+        $this->reset('file');
     }
 };
 ?>
@@ -91,7 +97,7 @@ new class extends Component
             this.progress = 0;
             @this.upload('file', file, (uploadedName) => {
                 this.uploading = false;
-                @this.upload(); // Trigger the backend upload logic
+                @this.upload();
             }, () => {
                 this.uploading = false;
                 Flux.toast({ variant: 'danger', text: 'Upload failed.' });
@@ -105,47 +111,100 @@ new class extends Component
     @drop.prevent="dragging = false; handleDrop($event)"
     class="relative"
 >
-    <div
-        :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900/20': dragging, 'border-gray-300 dark:border-gray-700': !dragging }"
-        class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        @click="$refs.fileInput.click()"
-    >
-        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+    @if($publishedSlug)
+        <!-- Success State Card -->
+        <div class="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-center space-y-4">
+            <div class="size-14 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+                <flux:icon.check-circle class="size-8" />
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">Site Published Successfully!</h3>
+                <p class="text-xs text-zinc-500 mt-1">Your static site is deployed and ready to share worldwide.</p>
+            </div>
+
+            <div class="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200 dark:border-emerald-800/80 flex items-center justify-between gap-3 text-xs font-mono">
+                <a href="{{ $publishedUrl }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline truncate">
+                    {{ $publishedUrl }}
+                </a>
+                <button 
+                    type="button" 
+                    @click="navigator.clipboard.writeText('{{ $publishedUrl }}'); Flux.toast('URL copied to clipboard!')" 
+                    class="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors shrink-0"
+                    title="Copy URL"
+                >
+                    <flux:icon.clipboard class="size-4" />
+                </button>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <a href="{{ $publishedUrl }}" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors shadow-xs">
+                    <flux:icon.arrow-top-right-on-square class="size-3.5" />
+                    Open Live Site
+                </a>
+                @if(auth()->check() && $publishedId)
+                    <a href="{{ route('dashboard.sites.edit', $publishedId) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition-colors">
+                        <flux:icon.code-bracket class="size-3.5" />
+                        Code Editor
+                    </a>
+                @endif
+                <button wire:click="resetUpload" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs font-medium transition-colors">
+                    Deploy Another Site
+                </button>
+            </div>
+        </div>
+    @else
+        <!-- Upload Dropzone -->
+        <div
+            :class="{ 
+                'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 scale-[1.01]': dragging, 
+                'border-zinc-300 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-900/60 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40': !dragging 
+            }"
+            class="flex flex-col items-center justify-center w-full min-h-[260px] p-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200"
+            @click="$refs.fileInput.click()"
+        >
             <template x-if="!uploading">
-                <div class="flex flex-col items-center justify-center">
-                    <flux:icon.cloud-arrow-up class="w-12 h-12 mb-4 text-zinc-400" />
-                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400 font-medium">Click or drag and drop your files</p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500">HTML, ZIP or Folder (max. 50MB)</p>
+                <div class="flex flex-col items-center justify-center text-center">
+                    <div class="size-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+                        <flux:icon.cloud-arrow-up class="size-7" />
+                    </div>
+                    <div class="text-sm font-bold text-zinc-800 dark:text-zinc-200">
+                        Click or drag & drop files here to deploy
+                    </div>
+                    <p class="text-xs text-zinc-500 mt-1 max-w-xs">
+                        Supports single <code class="font-mono text-indigo-600 dark:text-indigo-400 font-semibold">.html</code> files or complete <code class="font-mono text-indigo-600 dark:text-indigo-400 font-semibold">.zip</code> archives up to 50MB
+                    </p>
+                    
+                    <div class="flex items-center gap-2 mt-4 text-[11px] text-zinc-400">
+                        <span class="px-2 py-0.5 rounded bg-zinc-200/60 dark:bg-zinc-800">Instant SSL</span>
+                        <span class="px-2 py-0.5 rounded bg-zinc-200/60 dark:bg-zinc-800">Edge CDN</span>
+                        <span class="px-2 py-0.5 rounded bg-zinc-200/60 dark:bg-zinc-800">Automatic Unpack</span>
+                    </div>
                 </div>
             </template>
 
             <template x-if="uploading">
-                <div class="flex flex-col items-center justify-center w-full px-12">
-                    <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 mb-4 overflow-hidden">
-                        <div class="bg-blue-600 h-2 transition-all duration-300" :style="`width: ${progress}%`"></div >
+                <div class="flex flex-col items-center justify-center w-full max-w-sm px-4">
+                    <div class="size-12 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 animate-spin">
+                        <flux:icon.arrow-path class="size-6" />
                     </div>
-                    <p class="text-sm text-zinc-500">Uploading... <span x-text="progress"></span>%</p>
+                    <div class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-2">Deploying package... <span x-text="progress"></span>%</div>
+                    <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 overflow-hidden">
+                        <div class="bg-indigo-600 h-2 transition-all duration-200 rounded-full" :style="`width: ${progress}%`"></div>
+                    </div>
                 </div>
             </template>
-        </div>
-        <input type="file" class="hidden" x-ref="fileInput" @change="handleSelect($event)" />
-    </div>
 
-    @if ($message)
-        <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg shadow-sm border border-green-200 dark:border-green-800 flex items-center justify-between">
-            <div class="flex-1">
-                {!! $message !!}
-            </div>
-            <flux:button variant="ghost" size="sm" icon="x-mark" wire:click="$set('message', '')" />
+            <input type="file" class="hidden" x-ref="fileInput" @change="handleSelect($event)" accept=".html,.htm,.zip" />
         </div>
     @endif
 
     @if ($errorMessage)
-        <div class="mt-4 p-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg shadow-sm border border-red-200 dark:border-red-800 flex items-center justify-between">
-            <div class="flex-1 text-sm font-medium">
-                {{ $errorMessage }}
-            </div>
-            <flux:button variant="ghost" size="sm" icon="x-mark" wire:click="$set('errorMessage', '')" />
+        <div class="mt-4 p-3.5 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded-xl border border-rose-200 dark:border-rose-800 flex items-center justify-between text-xs">
+            <span>{{ $errorMessage }}</span>
+            <button type="button" wire:click="$set('errorMessage', '')" class="text-rose-500 hover:text-rose-700">
+                <flux:icon.x-mark class="size-4" />
+            </button>
         </div>
     @endif
 </div>

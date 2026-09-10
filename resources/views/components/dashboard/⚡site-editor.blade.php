@@ -23,6 +23,9 @@ new class extends Component
 
     public $oldFileName = '';
     public $newRenameName = '';
+    public $fileFilter = '';
+    public $previewMode = 'split'; // 'editor', 'split', 'preview'
+    public $viewportMode = 'desktop'; // 'desktop', 'tablet', 'mobile'
 
     public function mount($siteId)
     {
@@ -31,13 +34,22 @@ new class extends Component
         $this->loadFiles();
 
         if (! empty($this->files)) {
-            // Default to index.html if available, else first file
             if (in_array('index.html', $this->files)) {
                 $this->selectFile('index.html');
             } else {
                 $this->selectFile($this->files[0]);
             }
         }
+    }
+
+    public function setPreviewMode($mode)
+    {
+        $this->previewMode = in_array($mode, ['editor', 'split', 'preview'], true) ? $mode : 'split';
+    }
+
+    public function setViewportMode($viewport)
+    {
+        $this->viewportMode = in_array($viewport, ['desktop', 'tablet', 'mobile'], true) ? $viewport : 'desktop';
     }
 
     public function loadFiles()
@@ -91,6 +103,7 @@ new class extends Component
             "Edited file: {$this->currentFile} on {$this->site->slug}"
         );
 
+        $this->dispatch('file-saved');
         Flux::toast('File saved successfully.');
     }
 
@@ -121,7 +134,6 @@ new class extends Component
             return;
         }
 
-        // Ensure directory exists
         $dir = dirname($path);
         if (! Storage::disk('public')->exists($dir)) {
             Storage::disk('public')->makeDirectory($dir);
@@ -256,7 +268,7 @@ new class extends Component
         );
 
         if ($this->currentFile === $this->oldFileName) {
-            $this->currentFile = $cleanNew;
+            $this->currentFile = cleanNew;
         }
 
         $this->loadFiles();
@@ -266,155 +278,263 @@ new class extends Component
 
     public function render()
     {
-        return view('components.dashboard.⚡site-editor');
+        $filteredFiles = $this->files;
+        if (! empty($this->fileFilter)) {
+            $filter = strtolower(trim($this->fileFilter));
+            $filteredFiles = array_filter($this->files, fn ($f) => str_contains(strtolower($f), $filter));
+        }
+
+        return view('components.dashboard.⚡site-editor', [
+            'filteredFiles' => $filteredFiles,
+        ]);
     }
 };
 ?>
 
-<div>
-    <div class="mb-6 flex items-center justify-between">
+<div 
+    x-data="{
+        previewTimestamp: Date.now(),
+        handleTab(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.substring(0, start) + '  ' + e.target.value.substring(end);
+                e.target.selectionStart = e.target.selectionEnd = start + 2;
+                e.target.dispatchEvent(new Event('input'));
+            }
+        },
+        reloadPreview() {
+            this.previewTimestamp = Date.now();
+        }
+    }"
+    @file-saved.window="reloadPreview()"
+    class="space-y-4"
+>
+    <!-- Header & Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <flux:breadcrumbs>
                 <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>{{ $site->original_name ?: $site->slug }}</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>File Manager</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>Code Editor</flux:breadcrumbs.item>
             </flux:breadcrumbs>
-            <h1 class="text-2xl font-bold mt-2">File Manager & Editor</h1>
+            <div class="flex items-center gap-2.5 mt-1.5">
+                <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Live Code Studio</h1>
+                @if($currentFile)
+                    <flux:badge size="sm" color="zinc" class="font-mono">{{ $currentFile }}</flux:badge>
+                @endif
+            </div>
         </div>
-        <div class="flex gap-2">
-            <flux:button :href="'/s/' . $site->slug" target="_blank" icon="arrow-top-right-on-square" variant="ghost">View Live Site</flux:button>
-            @if($currentFile)
-                <flux:button :href="'/s/' . $site->slug . '/' . $currentFile" target="_blank" icon="eye" variant="ghost">Preview Current File</flux:button>
-            @endif
+
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- View Mode Switcher -->
+            <div class="inline-flex rounded-lg p-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs">
+                <button wire:click="setPreviewMode('editor')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'editor' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Code Only</button>
+                <button wire:click="setPreviewMode('split')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'split' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Split View</button>
+                <button wire:click="setPreviewMode('preview')" class="px-2.5 py-1 font-medium rounded-md transition-colors {{ $previewMode === 'preview' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900' }}">Live Preview</button>
+            </div>
+
+            <!-- Live Site Link -->
+            <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors">
+                <flux:icon.arrow-top-right-on-square class="size-3.5" />
+                Open Live Site
+            </a>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <!-- File Browser Sidebar -->
-        <div class="md:col-span-1 space-y-4">
-            <flux:card>
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-semibold text-xs uppercase text-zinc-500 tracking-wider">Site Files ({{ count($files) }})</h3>
-                    <div class="flex gap-1">
+    <!-- Studio Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[700px]">
+        <!-- File Explorer Sidebar (3 Cols) -->
+        <div class="lg:col-span-3 flex flex-col space-y-3">
+            <flux:card class="flex-1 flex flex-col p-3.5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Explorer ({{ count($files) }})</span>
+                    <div class="flex items-center gap-1">
                         <flux:modal.trigger name="create-file-modal">
-                            <flux:button variant="ghost" size="xs" icon="plus" tooltip="New File" />
+                            <button type="button" class="p-1 rounded text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="New File">
+                                <flux:icon.plus class="size-4" />
+                            </button>
                         </flux:modal.trigger>
-                        <flux:button variant="ghost" size="xs" icon="arrow-up-tray" @click="$refs.mgrUploadInput.click()" tooltip="Upload File" />
+                        <button type="button" @click="$refs.mgrUploadInput.click()" class="p-1 rounded text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Upload Asset">
+                            <flux:icon.arrow-up-tray class="size-4" />
+                        </button>
                         <input type="file" class="hidden" x-ref="mgrUploadInput" wire:model="uploadFile" />
                     </div>
                 </div>
 
-                <div class="max-h-[600px] overflow-y-auto pr-1">
-                    <ul class="space-y-1">
-                        @forelse($files as $file)
-                            <li class="group flex items-center justify-between gap-1 rounded-md transition-colors {{ $currentFile === $file ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300' }}">
-                                <button 
-                                    wire:click="selectFile('{{ $file }}')"
-                                    class="flex-1 text-left px-3 py-2 text-sm truncate flex items-center gap-2 cursor-pointer"
-                                    title="{{ $file }}"
-                                >
-                                    @if(str_ends_with(strtolower($file), '.html') || str_ends_with(strtolower($file), '.htm'))
-                                        <flux:icon.code-bracket class="w-4 h-4 shrink-0 text-indigo-400" />
-                                    @elseif(str_ends_with(strtolower($file), '.css'))
-                                        <flux:icon.hashtag class="w-4 h-4 shrink-0 text-pink-400" />
-                                    @elseif(str_ends_with(strtolower($file), '.js'))
-                                        <flux:icon.bolt class="w-4 h-4 shrink-0 text-amber-400" />
-                                    @elseif(in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']))
-                                        <flux:icon.photo class="w-4 h-4 shrink-0 text-emerald-400" />
-                                    @else
-                                        <flux:icon.document-text class="w-4 h-4 shrink-0 text-zinc-400" />
-                                    @endif
-                                    <span class="truncate font-mono text-xs">{{ $file }}</span>
-                                </button>
+                <!-- Filter search input -->
+                <div class="relative mb-2">
+                    <input 
+                        wire:model.live.debounce.150ms="fileFilter" 
+                        type="text" 
+                        placeholder="Filter files..." 
+                        class="w-full pl-7 pr-2 py-1 text-xs rounded-md bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <flux:icon.magnifying-glass class="size-3 text-zinc-400 absolute left-2 top-2" />
+                </div>
 
-                                <flux:dropdown>
-                                    <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" class="opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <flux:menu>
-                                        <flux:menu.item icon="pencil-square" wire:click="startRename('{{ $file }}')">Rename</flux:menu.item>
-                                        <flux:menu.item icon="trash" wire:click="deleteFile('{{ $file }}')" wire:confirm="Are you sure you want to delete '{{ $file }}'?" class="text-red-600">Delete</flux:menu.item>
-                                    </flux:menu>
-                                </flux:dropdown>
-                            </li>
-                        @empty
-                            <div class="text-xs text-zinc-500 py-8 text-center">
-                                No files found.<br>
-                                <button class="mt-2 text-indigo-500 underline" @click="$refs.mgrUploadInput.click()">Upload a file</button>
-                            </div>
-                        @endforelse
-                    </ul>
+                <!-- File List Tree -->
+                <div class="flex-1 overflow-y-auto max-h-[600px] space-y-0.5 pr-0.5">
+                    @forelse($filteredFiles as $file)
+                        <div class="group flex items-center justify-between rounded-md px-2 py-1.5 text-xs transition-colors {{ $currentFile === $file ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/60' }}">
+                            <button 
+                                wire:click="selectFile('{{ $file }}')" 
+                                class="flex-1 flex items-center gap-2 text-left truncate cursor-pointer"
+                                title="{{ $file }}"
+                            >
+                                @if(str_ends_with(strtolower($file), '.html') || str_ends_with(strtolower($file), '.htm'))
+                                    <flux:icon.code-bracket class="size-3.5 text-indigo-500 shrink-0" />
+                                @elseif(str_ends_with(strtolower($file), '.css'))
+                                    <flux:icon.hashtag class="size-3.5 text-pink-500 shrink-0" />
+                                @elseif(str_ends_with(strtolower($file), '.js') || str_ends_with(strtolower($file), '.mjs'))
+                                    <flux:icon.bolt class="size-3.5 text-amber-500 shrink-0" />
+                                @elseif(in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']))
+                                    <flux:icon.photo class="size-3.5 text-emerald-500 shrink-0" />
+                                @else
+                                    <flux:icon.document-text class="size-3.5 text-zinc-400 shrink-0" />
+                                @endif
+                                <span class="truncate font-mono">{{ $file }}</span>
+                            </button>
+
+                            <flux:dropdown>
+                                <button type="button" class="p-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <flux:icon.ellipsis-vertical class="size-3" />
+                                </button>
+                                <flux:menu>
+                                    <flux:menu.item icon="pencil-square" wire:click="startRename('{{ $file }}')">Rename</flux:menu.item>
+                                    <flux:menu.item icon="trash" wire:click="deleteFile('{{ $file }}')" wire:confirm="Are you sure you want to delete '{{ $file }}'?" class="text-rose-600">Delete</flux:menu.item>
+                                </flux:menu>
+                            </flux:dropdown>
+                        </div>
+                    @empty
+                        <div class="text-center py-6 text-xs text-zinc-400">
+                            No files found.
+                        </div>
+                    @endforelse
                 </div>
             </flux:card>
         </div>
 
-        <!-- Editor Area -->
-        <flux:card class="md:col-span-3 flex flex-col min-h-[650px] p-4">
+        <!-- Main Workspace (Editor + Live Preview) (9 Cols) -->
+        <div class="lg:col-span-9 flex flex-col space-y-3">
             @if($currentFile)
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <div class="font-medium flex items-center gap-2 font-mono text-sm">
-                        <flux:icon.document-text class="w-4 h-4 text-indigo-400" />
-                        <span>{{ $currentFile }}</span>
-                        @if($isBinary)
-                            <flux:badge size="xs" color="zinc">Binary / Asset File</flux:badge>
-                        @endif
+                <flux:card class="flex-1 flex flex-col p-4">
+                    <!-- Editor / Preview Toolbar -->
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100 dark:border-zinc-800">
+                        <div class="flex items-center gap-2 font-mono text-xs">
+                            <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ $currentFile }}</span>
+                            @if($isBinary)
+                                <flux:badge size="xs" color="zinc">Binary Asset</flux:badge>
+                            @else
+                                <span class="text-zinc-400">&bull;</span>
+                                <span class="text-zinc-400">Cmd+S to Save</span>
+                            @endif
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            @if($previewMode !== 'editor')
+                                <!-- Viewport Controls -->
+                                <div class="inline-flex rounded-lg p-0.5 bg-zinc-100 dark:bg-zinc-800 text-xs">
+                                    <button wire:click="setViewportMode('desktop')" class="p-1 rounded transition-colors {{ $viewportMode === 'desktop' ? 'bg-white dark:bg-zinc-700 text-indigo-600 shadow-xs' : 'text-zinc-400 hover:text-zinc-600' }}" title="Desktop Viewport">
+                                        <flux:icon.computer-desktop class="size-3.5" />
+                                    </button>
+                                    <button wire:click="setViewportMode('tablet')" class="p-1 rounded transition-colors {{ $viewportMode === 'tablet' ? 'bg-white dark:bg-zinc-700 text-indigo-600 shadow-xs' : 'text-zinc-400 hover:text-zinc-600' }}" title="Tablet (768px)">
+                                        <flux:icon.device-tablet class="size-3.5" />
+                                    </button>
+                                    <button wire:click="setViewportMode('mobile')" class="p-1 rounded transition-colors {{ $viewportMode === 'mobile' ? 'bg-white dark:bg-zinc-700 text-indigo-600 shadow-xs' : 'text-zinc-400 hover:text-zinc-600' }}" title="Mobile (375px)">
+                                        <flux:icon.device-phone-mobile class="size-3.5" />
+                                    </button>
+                                </div>
+                            @endif
+
+                            @if(!$isBinary)
+                                <flux:button wire:click="saveFile" variant="primary" size="sm" class="bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs">
+                                    <flux:icon.check class="size-3.5 mr-1" />
+                                    Save
+                                </flux:button>
+                            @endif
+                        </div>
                     </div>
-                    <div class="flex gap-2 items-center">
-                        @if(!$isBinary)
-                            <flux:button wire:click="saveFile" variant="primary" size="sm" icon="check">Save Changes</flux:button>
-                        @endif
-                    </div>
-                </div>
-                
-                @if($isBinary)
-                    <div class="flex-1 flex flex-col items-center justify-center p-8 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                        @if(in_array(strtolower(pathinfo($currentFile, PATHINFO_EXTENSION)), ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']))
-                            <img src="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" alt="{{ $currentFile }}" class="max-h-80 max-w-full rounded border border-zinc-200 dark:border-zinc-700 shadow-sm mb-4 object-contain" />
-                            <p class="text-xs font-mono text-zinc-500">{{ $currentFile }}</p>
-                        @else
-                            <flux:icon.document class="w-16 h-16 text-zinc-400 mb-4" />
-                            <p class="text-sm font-medium mb-1">{{ $currentFile }}</p>
-                            <p class="text-xs text-zinc-500 mb-4">Binary file format cannot be directly edited in text editor.</p>
-                            <a href="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" download="{{ basename($currentFile) }}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded text-xs font-medium">
-                                <flux:icon.arrow-down-tray class="w-3.5 h-3.5" /> Download File
-                            </a>
-                        @endif
-                    </div>
-                @else
-                    <div 
-                        class="flex-1 relative" 
-                        x-data="{
-                            init() {
-                                window.addEventListener('keydown', (e) => {
-                                    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                                        e.preventDefault();
-                                        @this.call('saveFile');
+
+                    <!-- Work Area -->
+                    <div class="flex-1 grid {{ $previewMode === 'split' ? 'grid-cols-1 lg:grid-cols-2 gap-4' : 'grid-cols-1' }} min-h-[580px]">
+                        <!-- Code Editor Pane -->
+                        @if($previewMode !== 'preview')
+                            <div 
+                                class="flex flex-col h-full relative border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden"
+                                x-data="{
+                                    init() {
+                                        window.addEventListener('keydown', (e) => {
+                                            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                                                e.preventDefault();
+                                                @this.call('saveFile');
+                                            }
+                                        });
                                     }
-                                });
-                            }
-                        }"
-                    >
-                        <textarea 
-                            wire:model="fileContent" 
-                            class="w-full h-full min-h-[580px] p-4 font-mono text-xs md:text-sm bg-zinc-50 dark:bg-[#0c0c0e] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none leading-relaxed"
-                            spellcheck="false"
-                            placeholder="Start typing your code here..."
-                        ></textarea>
+                                }"
+                            >
+                                @if($isBinary)
+                                    <div class="flex-1 flex flex-col items-center justify-center p-8 bg-zinc-50 dark:bg-zinc-900/50 text-center">
+                                        @if(in_array(strtolower(pathinfo($currentFile, PATHINFO_EXTENSION)), ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']))
+                                            <img src="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" alt="{{ $currentFile }}" class="max-h-72 max-w-full rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm mb-4 object-contain bg-checkered" />
+                                            <p class="text-xs font-mono text-zinc-500">{{ $currentFile }}</p>
+                                        @else
+                                            <flux:icon.document class="size-16 text-zinc-400 mb-3" />
+                                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ $currentFile }}</p>
+                                            <p class="text-xs text-zinc-400 max-w-xs mt-1 mb-4">Binary file format cannot be directly edited as plain text.</p>
+                                            <a href="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" download="{{ basename($currentFile) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-xs font-medium transition-colors">
+                                                <flux:icon.arrow-down-tray class="size-3.5" /> Download Asset
+                                            </a>
+                                        @endif
+                                    </div>
+                                @else
+                                    <textarea 
+                                        wire:model="fileContent" 
+                                        @keydown="handleTab($event)"
+                                        class="w-full h-full min-h-[580px] p-4 font-mono text-xs md:text-sm bg-zinc-50 dark:bg-[#0c0c0e] text-zinc-900 dark:text-zinc-100 border-none outline-none resize-none leading-relaxed selection:bg-indigo-500 selection:text-white"
+                                        spellcheck="false"
+                                        placeholder="Start typing your code..."
+                                    ></textarea>
+                                @endif
+                            </div>
+                        @endif
+
+                        <!-- Live Interactive Preview Pane -->
+                        @if($previewMode !== 'editor')
+                            <div class="flex flex-col h-full border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-950 items-center justify-center p-2">
+                                <div 
+                                    class="h-full bg-white dark:bg-zinc-900 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-all duration-300 w-full"
+                                    :style="`max-width: ${'{{ $viewportMode }}' === 'mobile' ? '375px' : ('{{ $viewportMode }}' === 'tablet' ? '768px' : '100%')}`"
+                                >
+                                    <iframe 
+                                        :src="`{{ url('/s/' . $site->slug . '/' . (str_ends_with(strtolower($currentFile), '.html') ? $currentFile : '')) }}?_t=${previewTimestamp}`"
+                                        class="w-full h-full border-none min-h-[560px]"
+                                        title="Live Site Preview"
+                                    ></iframe>
+                                </div>
+                            </div>
+                        @endif
                     </div>
-                @endif
+                </flux:card>
             @else
-                <div class="flex-1 flex flex-col items-center justify-center text-zinc-500 py-24">
-                    <flux:icon.document-text class="w-12 h-12 mb-4 text-zinc-300 dark:text-zinc-700" />
-                    <p class="text-sm">Select a file from the sidebar to edit or create a new file.</p>
-                </div>
+                <flux:card class="flex-1 flex flex-col items-center justify-center text-center py-24">
+                    <div class="size-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mb-4">
+                        <flux:icon.code-bracket-square class="size-8" />
+                    </div>
+                    <h3 class="text-base font-bold text-zinc-800 dark:text-zinc-200">No File Selected</h3>
+                    <p class="text-xs text-zinc-400 max-w-xs mt-1 mb-4">Pick a file from the explorer on the left or create a new file to start editing.</p>
+                </flux:card>
             @endif
-        </flux:card>
+        </div>
     </div>
 
-    <!-- Create File Modal -->
+    <!-- Modals -->
     <flux:modal name="create-file-modal" class="md:w-[420px]">
-        <form wire:submit="createFile" class="space-y-6">
+        <form wire:submit="createFile" class="space-y-5">
             <div>
                 <flux:heading size="lg">Create New File</flux:heading>
-                <flux:subheading>Enter a file name or path (e.g. <code>about.html</code> or <code>css/styles.css</code>).</flux:subheading>
+                <flux:subheading>Enter a file path (e.g. <code>about.html</code>, <code>styles.css</code>, or <code>js/main.js</code>).</flux:subheading>
             </div>
 
             <flux:input wire:model="newFileName" placeholder="about.html" autofocus required />
@@ -428,12 +548,11 @@ new class extends Component
         </form>
     </flux:modal>
 
-    <!-- Rename File Modal -->
     <flux:modal name="rename-file-modal" class="md:w-[420px]">
-        <form wire:submit="renameFile" class="space-y-6">
+        <form wire:submit="renameFile" class="space-y-5">
             <div>
                 <flux:heading size="lg">Rename File</flux:heading>
-                <flux:subheading>Enter a new name for <code>{{ $oldFileName }}</code>.</flux:subheading>
+                <flux:subheading>Rename <code>{{ $oldFileName }}</code> to a new file name.</flux:subheading>
             </div>
 
             <flux:input wire:model="newRenameName" autofocus required />

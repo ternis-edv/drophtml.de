@@ -3,6 +3,7 @@
 use App\Models\Site;
 use App\Services\ActivityLogService;
 use App\Services\GitHubService;
+use App\Services\SiteDeploymentService;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 
@@ -90,6 +91,33 @@ new class extends Component
         Flux::toast('Site settings saved successfully.');
     }
 
+    public function extendExpiry($days, ActivityLogService $activityLogService)
+    {
+        $this->site->expires_at = ($this->site->expires_at && $this->site->expires_at->isFuture())
+            ? $this->site->expires_at->addDays($days)
+            : now()->addDays($days);
+
+        $this->site->save();
+
+        $activityLogService->log(
+            auth()->user(),
+            $this->site,
+            'expiry_extended',
+            "Extended expiry by {$days} days for site: {$this->site->slug}"
+        );
+
+        $this->site->refresh();
+        Flux::toast("Lifetime extended by {$days} days.");
+    }
+
+    public function deleteSite(SiteDeploymentService $deploymentService)
+    {
+        $deploymentService->deleteSite($this->site, auth()->user());
+        Flux::toast('Site deleted successfully.');
+
+        return redirect()->route('dashboard');
+    }
+
     public function render()
     {
         return view('components.dashboard.⚡site-settings');
@@ -97,37 +125,74 @@ new class extends Component
 };
 ?>
 
-<div>
-    <div class="mb-6">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ $this->site->original_name ?: $this->site->slug }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>Settings</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
-        <h1 class="text-2xl font-bold mt-2">Site Settings</h1>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ $this->site->original_name ?: $this->site->slug }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>Settings</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1.5">Site Settings</h1>
+        </div>
+
+        <a href="{{ url('/s/' . $site->slug) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors">
+            <flux:icon.arrow-top-right-on-square class="size-3.5" />
+            Visit Live Site
+        </a>
     </div>
 
-    <div class="max-w-2xl space-y-6">
+    <div class="max-w-3xl space-y-6">
         <flux:card>
             <form wire:submit="save" class="space-y-8">
-                <!-- General Settings -->
+                <!-- General & Status -->
                 <flux:fieldset>
-                    <flux:legend>General Settings</flux:legend>
+                    <flux:legend>General & Availability</flux:legend>
                     
                     <div class="space-y-4 mt-4">
                         <flux:field>
                             <flux:label>Deployment Status</flux:label>
                             <flux:select wire:model="status">
                                 <flux:select.option value="active">Active (Online & Accessible)</flux:select.option>
-                                <flux:select.option value="suspended">Suspended (Offline / 403)</flux:select.option>
+                                <flux:select.option value="suspended">Suspended (Offline / Returns 403)</flux:select.option>
                             </flux:select>
+                            <flux:description class="text-xs text-zinc-500 mt-1">
+                                Temporarily suspend public access without deleting any files.
+                            </flux:description>
                         </flux:field>
+                    </div>
+                </flux:fieldset>
 
+                <!-- Lifecycle & Expiry -->
+                <flux:fieldset>
+                    <flux:legend>Site Lifecycle & Expiry</flux:legend>
+
+                    <div class="space-y-4 mt-4">
                         <flux:checkbox 
                             wire:model="isPermanent" 
-                            label="Mark as Permanent" 
-                            description="Prevents this site from ever expiring. Disables the 30-day automatic deletion timer." 
+                            label="Permanent Site" 
+                            description="Prevents this site from ever expiring. Disables the automatic deletion timer." 
                         />
+
+                        @if(!$isPermanent)
+                            <div class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-xs text-zinc-500">Current Expiration:</div>
+                                    <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 mt-0.5">
+                                        @if($site->expires_at)
+                                            {{ $site->expires_at->format('M d, Y H:i') }} ({{ $site->expires_at->diffForHumans() }})
+                                        @else
+                                            No expiry set
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <flux:button type="button" wire:click="extendExpiry(7)" variant="ghost" size="xs">+7 Days</flux:button>
+                                    <flux:button type="button" wire:click="extendExpiry(30)" variant="ghost" size="xs">+30 Days</flux:button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </flux:fieldset>
 
@@ -139,22 +204,23 @@ new class extends Component
                         <flux:checkbox 
                             wire:model.live="isPasswordProtected" 
                             label="Password Protection" 
-                            description="Lock this site with a password so only visitors with the password can view it." 
+                            description="Require visitors to enter a password before viewing this site or any of its files." 
                         />
 
                         @if($isPasswordProtected)
-                            <div class="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg space-y-3">
+                            <div class="p-4 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl space-y-3">
                                 <flux:field>
                                     <flux:label>Site Password</flux:label>
                                     <flux:input 
                                         wire:model="sitePassword" 
                                         type="password" 
-                                        placeholder="{{ $site->site_password ? 'Leave blank to keep existing password' : 'Enter a secure password (min. 4 characters)' }}" 
+                                        placeholder="{{ $site->site_password ? 'Leave blank to keep existing password' : 'Enter a password (min. 4 characters)' }}" 
                                         viewable
                                     />
                                     @if($site->site_password)
-                                        <flux:description class="text-xs text-zinc-500">
-                                            A password is currently set and active. Entering a new password will update it.
+                                        <flux:description class="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                                            <flux:icon.check-circle class="size-3.5" />
+                                            Site password is active. Enter a new password above only if you wish to change it.
                                         </flux:description>
                                     @endif
                                 </flux:field>
@@ -166,26 +232,50 @@ new class extends Component
                 <!-- GitHub Integration -->
                 @if($site->github_repo_full_name)
                     <flux:fieldset>
-                        <flux:legend>GitHub Integration</flux:legend>
+                        <flux:legend>GitHub Continuous Deployment</flux:legend>
                         <div class="space-y-4 mt-4">
                             <flux:field>
-                                <flux:label>Repository</flux:label>
-                                <flux:input value="{{ $site->github_repo_full_name }}" disabled />
+                                <flux:label>Connected Repository</flux:label>
+                                <div class="flex items-center gap-2 p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-mono text-xs text-zinc-800 dark:text-zinc-200">
+                                    <svg class="size-4 text-zinc-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" /></svg>
+                                    <span>{{ $site->github_repo_full_name }} ({{ $site->github_branch }})</span>
+                                </div>
                             </flux:field>
                             
                             <flux:checkbox 
                                 wire:model="autoDeploy" 
-                                label="Enable Auto-Deploy" 
-                                description="Automatically re-deploy when you push to the {{ $site->github_branch }} branch via webhook." 
+                                label="Automatic Push Deployments" 
+                                description="Automatically redeploy whenever commits are pushed to the {{ $site->github_branch }} branch via GitHub webhooks." 
                             />
                         </div>
                     </flux:fieldset>
                 @endif
 
                 <div class="flex justify-end pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                    <flux:button type="submit" variant="primary">Save Changes</flux:button>
+                    <flux:button type="submit" variant="primary" class="bg-indigo-600 hover:bg-indigo-500 text-white">Save Changes</flux:button>
                 </div>
             </form>
+        </flux:card>
+
+        <!-- Danger Zone Card -->
+        <flux:card class="border-rose-200 dark:border-rose-900/40">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-sm text-rose-600 dark:text-rose-400">Danger Zone: Delete Site</h3>
+                    <p class="text-xs text-zinc-500 mt-1 max-w-md">
+                        Permanently delete this site, all uploaded HTML and asset files, custom domain links, and visitor analytics. This action cannot be reversed.
+                    </p>
+                </div>
+                <flux:button 
+                    wire:click="deleteSite" 
+                    wire:confirm="Are you sure you want to permanently delete '{{ $site->original_name ?: $site->slug }}'? This action cannot be undone." 
+                    variant="danger" 
+                    size="sm"
+                    icon="trash"
+                >
+                    Delete This Site
+                </flux:button>
+            </div>
         </flux:card>
     </div>
 </div>
