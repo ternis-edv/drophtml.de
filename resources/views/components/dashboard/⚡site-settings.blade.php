@@ -1,34 +1,34 @@
 <?php
 
-use Livewire\Component;
 use App\Models\Site;
+use App\Services\ActivityLogService;
+use App\Services\GitHubService;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
-use App\Models\ActivityLog;
+use Livewire\Component;
 
 new class extends Component
 {
     public $siteId;
     public $site;
-    
+
     public $autoDeploy;
     public $isPermanent;
     public $status;
     public $isPasswordProtected;
     public $sitePassword = '';
-    
+
     public function mount($siteId)
     {
         $this->siteId = $siteId;
         $this->site = auth()->user()->sites()->findOrFail($this->siteId);
-        
+
         $this->autoDeploy = (bool) $this->site->auto_deploy;
         $this->isPermanent = (bool) $this->site->is_permanent;
         $this->status = $this->site->status;
         $this->isPasswordProtected = (bool) $this->site->is_password_protected;
     }
-    
-    public function save()
+
+    public function save(GitHubService $gitHubService, ActivityLogService $activityLogService)
     {
         $rules = [
             'status' => 'required|in:active,suspended',
@@ -39,14 +39,14 @@ new class extends Component
 
         if ($this->isPasswordProtected && empty($this->site->site_password)) {
             $rules['sitePassword'] = 'required|string|min:4';
-        } elseif (!empty($this->sitePassword)) {
+        } elseif (! empty($this->sitePassword)) {
             $rules['sitePassword'] = 'string|min:4';
         }
 
         $this->validate($rules);
 
         $oldAutoDeploy = $this->site->auto_deploy;
-        
+
         $updateData = [
             'auto_deploy' => $this->autoDeploy,
             'is_permanent' => $this->isPermanent,
@@ -56,75 +56,38 @@ new class extends Component
 
         if ($this->isPermanent) {
             $updateData['expires_at'] = null;
-        } elseif ($this->site->is_permanent && !$this->isPermanent) {
+        } elseif ($this->site->is_permanent && ! $this->isPermanent) {
             $updateData['expires_at'] = now()->addDays(30);
         }
 
-        if (!empty($this->sitePassword)) {
+        if (! empty($this->sitePassword)) {
             $updateData['site_password'] = Hash::make($this->sitePassword);
-        } elseif (!$this->isPasswordProtected) {
+        } elseif (! $this->isPasswordProtected) {
             $updateData['site_password'] = null;
         }
 
         $this->site->update($updateData);
-        
+
         // Handle webhook creation/deletion if auto-deploy changed
-        if ($this->autoDeploy && !$oldAutoDeploy && $this->site->github_repo_full_name) {
-            $this->setupWebhook();
-        } elseif (!$this->autoDeploy && $oldAutoDeploy && $this->site->github_webhook_id) {
-            $this->removeWebhook();
+        $token = auth()->user()->github_token;
+        if ($token) {
+            if ($this->autoDeploy && ! $oldAutoDeploy && $this->site->github_repo_full_name) {
+                $gitHubService->setupWebhook($this->site, $token);
+            } elseif (! $this->autoDeploy && $oldAutoDeploy && $this->site->github_webhook_id) {
+                $gitHubService->removeWebhook($this->site, $token);
+            }
         }
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'site_settings_updated',
-            'description' => "Updated site settings for {$this->site->slug}",
-            'ip_address' => request()->ip(),
-        ]);
-        
+
+        $activityLogService->log(
+            auth()->user(),
+            $this->site,
+            'site_settings_updated',
+            "Updated site settings for {$this->site->slug}"
+        );
+
         $this->sitePassword = '';
         $this->site->refresh();
         Flux::toast('Site settings saved successfully.');
-    }
-    
-    protected function setupWebhook()
-    {
-        $token = auth()->user()->github_token;
-        $fullName = $this->site->github_repo_full_name;
-        $webhookUrl = url('/webhooks/github');
-
-        try {
-            $response = Http::withToken($token)->post("https://api.github.com/repos/{$fullName}/hooks", [
-                'name' => 'web',
-                'active' => true,
-                'events' => ['push'],
-                'config' => [
-                    'url' => $webhookUrl,
-                    'content_type' => 'json',
-                    'insecure_ssl' => '0',
-                ],
-            ]);
-
-            if ($response->successful()) {
-                $this->site->update(['github_webhook_id' => $response->json()['id']]);
-            }
-        } catch (\Exception $e) {
-             \Illuminate\Support\Facades\Log::error("Webhook setup failed: " . $e->getMessage());
-        }
-    }
-    
-    protected function removeWebhook()
-    {
-        $token = auth()->user()->github_token;
-        $fullName = $this->site->github_repo_full_name;
-        $hookId = $this->site->github_webhook_id;
-
-        try {
-            Http::withToken($token)->delete("https://api.github.com/repos/{$fullName}/hooks/{$hookId}");
-        } catch (\Exception $e) {}
-        
-        $this->site->update(['github_webhook_id' => null]);
     }
 
     public function render()

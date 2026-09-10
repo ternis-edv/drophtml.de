@@ -1,10 +1,11 @@
 <?php
 
+use App\Models\Site;
+use App\Services\ActivityLogService;
+use App\Services\SiteDeploymentService;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\Site;
-use Illuminate\Support\Facades\Storage;
-use App\Models\ActivityLog;
 
 new class extends Component
 {
@@ -16,20 +17,20 @@ new class extends Component
     public $currentFile = null;
     public $fileContent = '';
     public $isBinary = false;
-    
+
     public $newFileName = '';
     public $uploadFile = null;
 
     public $oldFileName = '';
     public $newRenameName = '';
-    
+
     public function mount($siteId)
     {
         $this->siteId = $siteId;
         $this->site = auth()->user()->sites()->findOrFail($this->siteId);
         $this->loadFiles();
 
-        if (!empty($this->files)) {
+        if (! empty($this->files)) {
             // Default to index.html if available, else first file
             if (in_array('index.html', $this->files)) {
                 $this->selectFile('index.html');
@@ -38,13 +39,13 @@ new class extends Component
             }
         }
     }
-    
+
     public function loadFiles()
     {
         if (Storage::disk('public')->exists($this->site->path)) {
             $prefix = rtrim($this->site->path, '/').'/';
             $allFiles = Storage::disk('public')->allFiles($this->site->path);
-            
+
             $this->files = array_values(array_map(function ($file) use ($prefix) {
                 return str_starts_with($file, $prefix) ? substr($file, strlen($prefix)) : $file;
             }, $allFiles));
@@ -59,11 +60,11 @@ new class extends Component
     {
         $this->currentFile = $filename;
         $path = "{$this->site->path}/{$filename}";
-        
+
         if (Storage::disk('public')->exists($path)) {
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-            $binaryExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'woff', 'woff2', 'ttf', 'eot', 'zip', 'pdf'];
-            
+            $binaryExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'woff', 'woff2', 'ttf', 'eot', 'zip', 'pdf', 'mp4', 'webm', 'mp3'];
+
             if (in_array($ext, $binaryExtensions)) {
                 $this->isBinary = true;
                 $this->fileContent = '';
@@ -74,46 +75,55 @@ new class extends Component
         }
     }
 
-    public function saveFile()
+    public function saveFile(ActivityLogService $activityLogService)
     {
-        if (!$this->currentFile || $this->isBinary) return;
+        if (! $this->currentFile || $this->isBinary) {
+            return;
+        }
 
         $path = "{$this->site->path}/{$this->currentFile}";
         Storage::disk('public')->put($path, $this->fileContent);
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'file_edited',
-            'description' => "Edited file: {$this->currentFile} on {$this->site->slug}",
-            'ip_address' => request()->ip(),
-        ]);
+
+        $activityLogService->log(
+            auth()->user(),
+            $this->site,
+            'file_edited',
+            "Edited file: {$this->currentFile} on {$this->site->slug}"
+        );
 
         Flux::toast('File saved successfully.');
     }
 
-    public function createFile()
+    public function createFile(SiteDeploymentService $deploymentService, ActivityLogService $activityLogService)
     {
         $this->validate([
             'newFileName' => 'required|string|max:255',
         ]);
-        
+
         $name = ltrim(str_replace(['../', '..\\'], '', trim($this->newFileName)), '/');
 
-        if (!str_contains(basename($name), '.')) {
+        if (! str_contains(basename($name), '.')) {
             $name .= '.html';
         }
 
+        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if ($deploymentService->isDangerousExtension($ext)) {
+            Flux::toast(variant: 'danger', text: "Creating .{$ext} files is not permitted for security reasons.");
+
+            return;
+        }
+
         $path = "{$this->site->path}/{$name}";
-        
+
         if (Storage::disk('public')->exists($path)) {
             Flux::toast(variant: 'danger', text: 'A file with this name already exists.');
+
             return;
         }
 
         // Ensure directory exists
         $dir = dirname($path);
-        if (!Storage::disk('public')->exists($dir)) {
+        if (! Storage::disk('public')->exists($dir)) {
             Storage::disk('public')->makeDirectory($dir);
         }
 
@@ -122,14 +132,13 @@ new class extends Component
             : '';
 
         Storage::disk('public')->put($path, $defaultContent);
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'file_created',
-            'description' => "Created file: {$name}",
-            'ip_address' => request()->ip(),
-        ]);
+
+        $activityLogService->log(
+            auth()->user(),
+            $this->site,
+            'file_created',
+            "Created file: {$name}"
+        );
 
         $this->loadFiles();
         $this->selectFile($name);
@@ -138,18 +147,17 @@ new class extends Component
         Flux::toast('File created successfully.');
     }
 
-    public function deleteFile($filename)
+    public function deleteFile($filename, ActivityLogService $activityLogService)
     {
         $path = "{$this->site->path}/{$filename}";
         Storage::disk('public')->delete($path);
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'file_deleted',
-            'description' => "Deleted file: {$filename}",
-            'ip_address' => request()->ip(),
-        ]);
+
+        $activityLogService->log(
+            auth()->user(),
+            $this->site,
+            'file_deleted',
+            "Deleted file: {$filename}"
+        );
 
         if ($this->currentFile === $filename) {
             $this->currentFile = null;
@@ -159,29 +167,38 @@ new class extends Component
 
         $this->loadFiles();
 
-        if (empty($this->currentFile) && !empty($this->files)) {
+        if (empty($this->currentFile) && ! empty($this->files)) {
             $this->selectFile($this->files[0]);
         }
 
         Flux::toast('File deleted.');
     }
 
-    public function updatedUploadFile()
+    public function updatedUploadFile(SiteDeploymentService $deploymentService, ActivityLogService $activityLogService)
     {
-        if (!$this->uploadFile) return;
+        if (! $this->uploadFile) {
+            return;
+        }
 
-        $filename = $this->uploadFile->getClientOriginalName();
+        $filename = $deploymentService->sanitizeFileName($this->uploadFile->getClientOriginalName());
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if ($deploymentService->isDangerousExtension($ext)) {
+            Flux::toast(variant: 'danger', text: "Uploading .{$ext} files is not permitted for security reasons.");
+            $this->uploadFile = null;
+
+            return;
+        }
+
         $path = "{$this->site->path}/{$filename}";
-        
         $this->uploadFile->storeAs($this->site->path, $filename, 'public');
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'file_uploaded_to_manager',
-            'description' => "Uploaded file to manager: {$filename}",
-            'ip_address' => request()->ip(),
-        ]);
+
+        $activityLogService->log(
+            auth()->user(),
+            $this->site,
+            'file_uploaded_to_manager',
+            "Uploaded file to manager: {$filename}"
+        );
 
         $this->loadFiles();
         $this->selectFile($filename);
@@ -196,7 +213,7 @@ new class extends Component
         Flux::modal('rename-file-modal')->show();
     }
 
-    public function renameFile()
+    public function renameFile(SiteDeploymentService $deploymentService, ActivityLogService $activityLogService)
     {
         $this->validate(['newRenameName' => 'required|string|max:255']);
 
@@ -204,6 +221,14 @@ new class extends Component
 
         if ($this->oldFileName === $cleanNew) {
             Flux::modal('rename-file-modal')->close();
+
+            return;
+        }
+
+        $ext = strtolower(pathinfo($cleanNew, PATHINFO_EXTENSION));
+        if ($deploymentService->isDangerousExtension($ext)) {
+            Flux::toast(variant: 'danger', text: "Renaming to .{$ext} is not permitted for security reasons.");
+
             return;
         }
 
@@ -212,23 +237,23 @@ new class extends Component
 
         if (Storage::disk('public')->exists($newPath)) {
             Flux::toast(variant: 'danger', text: 'Target file name already exists.');
+
             return;
         }
 
         $dir = dirname($newPath);
-        if (!Storage::disk('public')->exists($dir)) {
+        if (! Storage::disk('public')->exists($dir)) {
             Storage::disk('public')->makeDirectory($dir);
         }
 
         Storage::disk('public')->move($oldPath, $newPath);
 
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'file_renamed',
-            'description' => "Renamed file from {$this->oldFileName} to {$cleanNew}",
-            'ip_address' => request()->ip(),
-        ]);
+        $activityLogService->log(
+            auth()->user(),
+            $this->site,
+            'file_renamed',
+            "Renamed file from {$this->oldFileName} to {$cleanNew}"
+        );
 
         if ($this->currentFile === $this->oldFileName) {
             $this->currentFile = $cleanNew;

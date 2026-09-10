@@ -1,10 +1,10 @@
 <?php
 
-use Livewire\Component;
 use App\Models\Site;
-use Illuminate\Support\Facades\Storage;
-use App\Models\ActivityLog;
+use App\Services\ActivityLogService;
+use App\Services\SiteDeploymentService;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 new class extends Component
 {
@@ -12,54 +12,39 @@ new class extends Component
     #[On('site-deleted')]
     public function refresh() {}
 
-    public function deleteSite($id)
+    public function deleteSite($id, SiteDeploymentService $deploymentService)
     {
         $site = auth()->user()->sites()->findOrFail($id);
-        
-        // Remove storage
-        if ($site->path) {
-            Storage::disk('public')->deleteDirectory($site->path);
-        }
-        
-        // Log action
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => null,
-            'action' => 'site_deleted',
-            'description' => "Deleted site: {$site->original_name} ({$site->slug})",
-            'ip_address' => request()->ip(),
-        ]);
-        
-        $site->delete();
+        $deploymentService->deleteSite($site, auth()->user());
+
         $this->dispatch('site-deleted');
         Flux::toast('Site deleted successfully.');
     }
 
-    public function extendExpiry($id, $days)
+    public function extendExpiry($id, $days, ActivityLogService $activityLogService)
     {
         $site = auth()->user()->sites()->findOrFail($id);
-        
-        $site->expires_at = ($site->expires_at && $site->expires_at->isFuture()) 
-            ? $site->expires_at->addDays($days) 
+
+        $site->expires_at = ($site->expires_at && $site->expires_at->isFuture())
+            ? $site->expires_at->addDays($days)
             : now()->addDays($days);
-            
+
         $site->save();
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $site->id,
-            'action' => 'expiry_extended',
-            'description' => "Extended expiry by {$days} days for site: {$site->slug}",
-            'ip_address' => request()->ip(),
-        ]);
-        
+
+        $activityLogService->log(
+            auth()->user(),
+            $site,
+            'expiry_extended',
+            "Extended expiry by {$days} days for site: {$site->slug}"
+        );
+
         Flux::toast("Expiry extended by {$days} days.");
     }
 
-    public function togglePermanent($id)
+    public function togglePermanent($id, ActivityLogService $activityLogService)
     {
         $site = auth()->user()->sites()->findOrFail($id);
-        $site->is_permanent = !$site->is_permanent;
+        $site->is_permanent = ! $site->is_permanent;
         if ($site->is_permanent) {
             $site->expires_at = null;
         } else {
@@ -67,13 +52,12 @@ new class extends Component
         }
         $site->save();
 
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $site->id,
-            'action' => 'site_updated',
-            'description' => $site->is_permanent ? "Marked site as permanent: {$site->slug}" : "Set expiry on site: {$site->slug}",
-            'ip_address' => request()->ip(),
-        ]);
+        $activityLogService->log(
+            auth()->user(),
+            $site,
+            'site_updated',
+            $site->is_permanent ? "Marked site as permanent: {$site->slug}" : "Set expiry on site: {$site->slug}"
+        );
 
         Flux::toast($site->is_permanent ? 'Site marked as permanent.' : 'Site expiry reset to 30 days.');
     }
@@ -83,7 +67,7 @@ new class extends Component
         $sites = auth()->user()->sites()->with('domains')->latest()->get();
         $totalViews = $sites->sum('views');
         $totalDomains = $sites->pluck('domains')->flatten()->count();
-        
+
         return view('components.dashboard.⚡sites-overview', [
             'sites' => $sites,
             'totalViews' => $totalViews,

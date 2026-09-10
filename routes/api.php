@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SiteController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     // Profile
     Route::get('/user', [ProfileController::class, 'show']);
     Route::put('/user', [ProfileController::class, 'update']);

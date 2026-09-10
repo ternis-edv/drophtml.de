@@ -3,19 +3,19 @@
 namespace App\Console\Commands;
 
 use App\Models\Site;
+use App\Services\SiteDeploymentService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 
 #[Signature('sites:cleanup')]
-#[Description('Remove expired temporary sites and their files.')]
+#[Description('Remove expired temporary sites and their storage files.')]
 class CleanupExpiredSites extends Command
 {
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(SiteDeploymentService $siteDeploymentService): void
     {
         $expiredSites = Site::where('is_permanent', false)
             ->whereNotNull('expires_at')
@@ -26,20 +26,10 @@ class CleanupExpiredSites extends Command
         $this->info("Found {$count} expired sites.");
 
         foreach ($expiredSites as $site) {
-            $this->comment("Deleting expired site: {$site->slug}...");
-
-            // Delete storage files
-            if ($site->path) {
-                Storage::disk('public')->deleteDirectory($site->path);
-            }
-
-            // Delete records
-            $site->domains()->delete();
-            $site->deployments()->delete();
-            $site->siteViews()->delete();
-            $site->delete();
+            $this->comment("Deleting expired site: {$site->slug} ({$site->original_name})...");
+            $siteDeploymentService->deleteSite($site);
         }
 
-        $this->info('Cleanup completed.');
+        $this->info('Cleanup completed successfully.');
     }
 }

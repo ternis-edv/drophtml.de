@@ -1,84 +1,64 @@
 <?php
 
-use Livewire\Component;
-use App\Models\Site;
 use App\Models\Domain;
-use App\Models\ActivityLog;
+use App\Models\Site;
+use App\Rules\DomainNameRule;
+use App\Services\DomainService;
+use Livewire\Component;
 
 new class extends Component
 {
     public $siteId;
     public $site;
     public $newDomain = '';
-    
+
     public function mount($siteId)
     {
         $this->siteId = $siteId;
         $this->site = auth()->user()->sites()->findOrFail($this->siteId);
     }
-    
-    public function addDomain()
-    {
-        $this->newDomain = strtolower(trim($this->newDomain));
-        // Strip http:// or https:// or trailing slashes if user pasted a URL
-        $this->newDomain = preg_replace('#^https?://#', '', $this->newDomain);
-        $this->newDomain = rtrim($this->newDomain, '/');
 
+    public function addDomain(DomainService $domainService)
+    {
         $this->validate([
             'newDomain' => [
                 'required',
                 'string',
                 'max:255',
-                'regex:/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i',
                 'unique:domains,domain',
+                new DomainNameRule($domainService),
             ],
-        ], [
-            'newDomain.regex' => 'Please enter a valid domain name (e.g. mysite.com or sub.mysite.com).',
         ]);
-        
-        $domain = $this->site->domains()->create([
-            'domain' => $this->newDomain,
-            'is_custom' => true,
-        ]);
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'domain_added',
-            'description' => "Added custom domain: {$this->newDomain}",
-            'ip_address' => request()->ip(),
-        ]);
-        
-        // Auto-verify if DNS is already pointing
-        $this->checkDomainDns($domain);
 
-        $this->newDomain = '';
-        $this->site->load('domains');
-        Flux::toast('Domain added successfully.');
+        try {
+            $domain = $domainService->createDomain(
+                $this->site,
+                $this->newDomain,
+                true,
+                auth()->user()
+            );
+
+            $this->newDomain = '';
+            $this->site->load('domains');
+            Flux::toast('Domain added successfully.');
+        } catch (\Throwable $e) {
+            Flux::toast(variant: 'danger', text: $e->getMessage());
+        }
     }
-    
-    public function removeDomain($domainId)
+
+    public function removeDomain($domainId, DomainService $domainService)
     {
         $domain = $this->site->domains()->findOrFail($domainId);
-        $domainName = $domain->domain;
-        $domain->delete();
-        
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'site_id' => $this->site->id,
-            'action' => 'domain_removed',
-            'description' => "Removed custom domain: {$domainName}",
-            'ip_address' => request()->ip(),
-        ]);
-        
+        $domainService->deleteDomain($domain, auth()->user());
+
         $this->site->load('domains');
         Flux::toast('Domain removed.');
     }
 
-    public function verifyDomain($domainId)
+    public function verifyDomain($domainId, DomainService $domainService)
     {
         $domain = $this->site->domains()->findOrFail($domainId);
-        $isConfigured = $this->checkDomainDns($domain);
+        $isConfigured = $domainService->verifyDns($domain);
 
         $this->site->load('domains');
 
@@ -87,42 +67,6 @@ new class extends Component
         } else {
             Flux::toast(variant: 'warning', text: 'DNS record not detected yet. Propagation may take a few minutes.');
         }
-    }
-
-    protected function checkDomainDns(Domain $domain): bool
-    {
-        $host = $domain->domain;
-        $isVerified = false;
-
-        // Check CNAME records
-        $cnameRecords = @dns_get_record($host, DNS_CNAME);
-        if ($cnameRecords) {
-            foreach ($cnameRecords as $record) {
-                if (isset($record['target']) && (str_contains(strtolower($record['target']), 'drophtml.de') || str_contains(strtolower($record['target']), 'sites.drophtml.de'))) {
-                    $isVerified = true;
-                    break;
-                }
-            }
-        }
-
-        // Also check if domain resolves to the same IP as this app
-        if (!$isVerified) {
-            $appHost = parse_url(config('app.url'), PHP_URL_HOST);
-            if ($appHost && $appHost !== 'localhost') {
-                $appIp = @gethostbyname($appHost);
-                $domainIp = @gethostbyname($host);
-                if ($appIp && $domainIp && $appIp === $domainIp && $domainIp !== $host) {
-                    $isVerified = true;
-                }
-            }
-        }
-
-        if ($isVerified) {
-            $domain->update(['verified_at' => now()]);
-            return true;
-        }
-
-        return false;
     }
 
     public function render()

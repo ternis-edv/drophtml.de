@@ -19,15 +19,52 @@ class View extends Model
         'ip_address',
         'user_agent',
         'referer',
+        'referer_domain',
+        'path',
+        'country_code',
+        'browser',
+        'os',
+        'device',
+        'is_bot',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_term',
+        'utm_content',
         'is_quiet',
     ];
 
     protected $casts = [
         'is_quiet' => 'boolean',
+        'is_bot' => 'boolean',
     ];
 
     public function site()
     {
         return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * Scope for real page views (non-asset).
+     */
+    public function scopePageViews($query)
+    {
+        return $query->where('is_quiet', false);
+    }
+
+    /**
+     * Scope for human (non-bot) traffic.
+     */
+    public function scopeHuman($query)
+    {
+        return $query->where('is_bot', false);
+    }
+
+    /**
+     * Scope for filtering by days.
+     */
+    public function scopeForDays($query, int $days)
+    {
+        return $query->where('created_at', '>=', now()->subDays($days));
     }
 }

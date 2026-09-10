@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\Webhooks\GithubWebhookController;
 use App\Models\Site;
+use App\Services\AnalyticsService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 $host = parse_url(config('app.url'), PHP_URL_HOST);
@@ -14,14 +16,14 @@ $appDomain = $host ?: 'localhost';
 if ($host && $host !== 'localhost') {
     Route::domain('{slug}.'.$host)->group(function () {
         Route::get('/{path?}', [SiteController::class, 'showSubdomain'])->where('path', '.*');
-        Route::post('/_unlock', [SiteController::class, 'unlockSubdomain'])->name('site.subdomain.unlock');
+        Route::post('/_unlock', [SiteController::class, 'unlockSubdomain'])->middleware('throttle:site-unlock')->name('site.subdomain.unlock');
     });
 }
 
 // 2. Custom domains routing (matches any non-app host domain)
 Route::domain('{custom_domain}')->where(['custom_domain' => '^(?!localhost$|127\.0\.0\.1$|'.$escapedHost.'$|.*\.'.$escapedHost.'$).*'])->group(function () {
     Route::get('/{path?}', [SiteController::class, 'showCustomDomain'])->where('path', '.*');
-    Route::post('/_unlock', [SiteController::class, 'unlockCustomDomain'])->name('site.custom_domain.unlock');
+    Route::post('/_unlock', [SiteController::class, 'unlockCustomDomain'])->middleware('throttle:site-unlock')->name('site.custom_domain.unlock');
 });
 
 // 3. Main App routes (scoped to app domain or localhost)
@@ -41,12 +43,12 @@ Route::domain($appDomain)->group(function () {
     })->name('legal.show');
 
     Route::get('/s/{slug}/{path?}', [SiteController::class, 'show'])->where('path', '.*');
-    Route::post('/s/{slug}/_unlock', [SiteController::class, 'unlock'])->name('site.unlock');
+    Route::post('/s/{slug}/_unlock', [SiteController::class, 'unlock'])->middleware('throttle:site-unlock')->name('site.unlock');
 
     Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])->name('social.redirect');
     Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('social.callback');
 
-    Route::post('/webhooks/github', [GithubWebhookController::class, 'handle'])->name('webhooks.github');
+    Route::post('/webhooks/github', [GithubWebhookController::class, 'handle'])->middleware('throttle:webhooks')->name('webhooks.github');
 
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::view('dashboard', 'dashboard')->name('dashboard');
@@ -54,6 +56,14 @@ Route::domain($appDomain)->group(function () {
         Route::view('dashboard/sites/{site}/edit', 'dashboard.site-editor')->name('dashboard.sites.edit');
         Route::view('dashboard/sites/{site}/domains', 'dashboard.site-domains')->name('dashboard.sites.domains');
         Route::view('dashboard/sites/{site}/stats', 'dashboard.site-stats')->name('dashboard.sites.stats');
+        Route::get('dashboard/sites/{site}/stats/export', function (Site $site, Request $request, AnalyticsService $analytics) {
+            if ($site->user_id !== auth()->id()) {
+                abort(403);
+            }
+            $days = (int) $request->query('days', 30);
+
+            return $analytics->exportCsv($site, $days);
+        })->name('dashboard.sites.stats.export');
         Route::view('dashboard/sites/{site}/settings', 'dashboard.site-settings')->name('dashboard.sites.settings');
         Route::view('dashboard/activity', 'dashboard.activity')->name('dashboard.activity');
     });

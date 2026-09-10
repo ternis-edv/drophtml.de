@@ -1,74 +1,123 @@
-<section id="pricing" class="py-24 relative z-10">
+<section id="pricing" class="py-24 relative z-10" x-data="{ annual: true }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="text-center mb-16" x-data="{ shown: false }" x-intersect.once="shown = true">
-            <h2 :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-3xl md:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">Simple, Transparent Pricing</h2>
-            <p :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-zinc-600 dark:text-zinc-400">Everything you need to host static files, absolutely free for individuals.</p>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-4 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+                Transparent Plans
+            </div>
+            <h2 :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-3xl md:text-5xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">
+                Simple, Honest Pricing
+            </h2>
+            <p :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto text-base">
+                Get started completely free. Upgrade when you need permanent retention, custom domains, and team automation.
+            </p>
+
+            <!-- Billing Toggle -->
+            <div class="mt-8 inline-flex items-center gap-3 p-1.5 rounded-full bg-zinc-200/80 dark:bg-zinc-800/80 border border-zinc-300 dark:border-zinc-700">
+                <button 
+                    @click="annual = false"
+                    :class="!annual ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs font-bold' : 'text-zinc-600 dark:text-zinc-400 font-medium'"
+                    class="px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer"
+                >
+                    Monthly
+                </button>
+                <button 
+                    @click="annual = true"
+                    :class="annual ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs font-bold' : 'text-zinc-600 dark:text-zinc-400 font-medium'"
+                    class="px-4 py-1.5 rounded-full text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                    <span>Yearly</span>
+                    <span class="px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">Save 20%</span>
+                </button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto" x-data="{ shown: false }" x-intersect.once="shown = true">
             
             <!-- Personal Free Plan -->
-            <div :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
-                <div class="absolute inset-0 bg-gradient-to-b from-indigo-500/10 dark:from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Personal</h3>
-                    <div class="flex items-baseline gap-2 mb-6">
-                        <span class="text-5xl font-extrabold text-zinc-900 dark:text-white">$0</span>
-                        <span class="text-zinc-500">/forever</span>
+            <div :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden flex flex-col justify-between group hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Community</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">Free Forever</span>
                     </div>
-                    <p class="text-zinc-600 dark:text-zinc-400 mb-8 h-12">Perfect for side projects, portfolios, and rapid prototyping.</p>
+                    <div class="flex items-baseline gap-2 mb-4">
+                        <span class="text-5xl font-black text-zinc-900 dark:text-white">&euro;0</span>
+                        <span class="text-zinc-500 text-sm">/month</span>
+                    </div>
+                    <p class="text-zinc-600 dark:text-zinc-400 text-sm mb-6">Ideal for prototypes, portfolio showcases, homework, and quick staging tests.</p>
                     
-                    <ul class="space-y-4 mb-8">
+                    <ul class="space-y-3.5 mb-8 text-sm">
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Unlimited temporary sites
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Unlimited 30-day temporary sites
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Up to 50MB per upload
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Up to 50MB per single site upload
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Global Edge Network
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Global Edge CDN distribution
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Free drophtml.de subdomains
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Free <code>{slug}.drophtml.de</code> subdomains
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> GitHub OAuth & Webhook auto-deploys
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> In-browser code editor & file manager
                         </li>
                     </ul>
-                    
-                    <flux:button :href="route('register')" variant="primary" class="w-full justify-center">Start for free</flux:button>
-                </div>
-            </div>
-
-            <!-- Commercial Plan -->
-            <div :class="shown ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
-                <div class="absolute inset-0 bg-gradient-to-b from-purple-500/10 dark:from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div class="absolute top-0 right-8 transform -translate-y-1/2">
-                    <span class="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Business</span>
                 </div>
                 
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Commercial</h3>
-                    <div class="flex items-baseline gap-2 mb-6">
-                        <span class="text-5xl font-extrabold text-zinc-900 dark:text-white">Custom</span>
+                <flux:button :href="route('register')" variant="ghost" class="w-full justify-center border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold">
+                    Start for Free
+                </flux:button>
+            </div>
+
+            <!-- Pro / Commercial Plan -->
+            <div :class="shown ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border-2 border-indigo-500/80 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-indigo-500/10">
+                <div class="absolute top-0 right-8 transform -translate-y-1/2">
+                    <span class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
+                        Most Popular
+                    </span>
+                </div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Pro & Commercial</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-xs font-bold">Everything Unlimited</span>
                     </div>
-                    <p class="text-zinc-600 dark:text-zinc-400 mb-8 h-12">For agencies and companies needing permanent hosting and custom domains.</p>
+                    <div class="flex items-baseline gap-2 mb-4">
+                        <span class="text-5xl font-black text-zinc-900 dark:text-white" x-text="annual ? '&euro;4.80' : '&euro;6'"></span>
+                        <span class="text-zinc-500 text-sm">/month <span x-show="annual" class="text-xs text-indigo-500 font-medium">(billed annually)</span></span>
+                    </div>
+                    <p class="text-zinc-600 dark:text-zinc-400 text-sm mb-6">For freelancers, agencies, and teams requiring permanent domains, custom SSL, and SLA.</p>
                     
-                    <ul class="space-y-4 mb-8">
+                    <ul class="space-y-3.5 mb-8 text-sm">
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-purple-500 dark:text-purple-400" /> Everything in Personal
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Permanent hosting</strong> (zero expiration)
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-purple-500 dark:text-purple-400" /> Permanent sites
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Unlimited custom domains</strong> with auto SSL
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-purple-500 dark:text-purple-400" /> Custom domains & auto SSL
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Password protection</strong> for client previews
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-purple-500 dark:text-purple-400" /> Password protection
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Full REST API & Personal Access Tokens
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Real-time traffic & device analytics
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Priority infrastructure support
                         </li>
                     </ul>
-                    
-                    <flux:button href="mailto:business@drophtml.de" variant="ghost" class="w-full justify-center border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800">Contact Us</flux:button>
                 </div>
+                
+                <flux:button :href="route('register')" variant="primary" class="w-full justify-center bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md border-none">
+                    Get Started with Pro
+                </flux:button>
             </div>
 
         </div>

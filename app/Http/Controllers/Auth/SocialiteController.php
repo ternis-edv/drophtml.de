@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -11,8 +12,18 @@ use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
 {
+    protected const SUPPORTED_PROVIDERS = ['github'];
+
+    public function __construct(
+        protected ActivityLogService $activityLogService
+    ) {}
+
     public function redirect(string $provider)
     {
+        if (! in_array($provider, self::SUPPORTED_PROVIDERS, true)) {
+            abort(404, 'OAuth provider not supported.');
+        }
+
         if ($provider === 'github') {
             return Socialite::driver($provider)
                 ->scopes(['repo', 'read:org', 'user:email'])
@@ -24,6 +35,10 @@ class SocialiteController extends Controller
 
     public function callback(string $provider)
     {
+        if (! in_array($provider, self::SUPPORTED_PROVIDERS, true)) {
+            abort(404, 'OAuth provider not supported.');
+        }
+
         try {
             $socialUser = Socialite::driver($provider)->user();
         } catch (\Exception $e) {
@@ -36,7 +51,9 @@ class SocialiteController extends Controller
             $user = User::where('email', $socialUser->getEmail())->first();
         }
 
+        $isNew = false;
         if (! $user) {
+            $isNew = true;
             $user = User::create([
                 'github_id' => $socialUser->id,
                 'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'GitHub User',
@@ -57,6 +74,13 @@ class SocialiteController extends Controller
         }
 
         Auth::login($user);
+
+        $this->activityLogService->log(
+            $user,
+            null,
+            $isNew ? 'user_registered_oauth' : 'user_login_oauth',
+            "Authenticated via {$provider}"
+        );
 
         return redirect()->route('dashboard');
     }

@@ -1,11 +1,12 @@
 <?php
 
-use Livewire\Component;
-use Illuminate\Support\Facades\Http;
+use App\Models\Site;
+use App\Services\ActivityLogService;
+use App\Services\GitHubService;
+use App\Services\SiteDeploymentService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Models\Site;
-use App\Models\ActivityLog;
+use Livewire\Component;
 
 new class extends Component
 {
@@ -16,96 +17,61 @@ new class extends Component
     public $search = '';
     public $autoDeploy = true;
 
-    public function mount()
+    public function mount(GitHubService $gitHubService)
     {
-        $this->fetchRepositories();
+        $this->fetchRepositories($gitHubService);
     }
 
-    public function fetchRepositories()
+    public function fetchRepositories(GitHubService $gitHubService)
     {
         $this->loading = true;
         $this->error = null;
 
         try {
             $token = auth()->user()->github_token;
-            
-            if (!$token) {
-                $this->error = "GitHub account not connected or token expired. Please reconnect your account.";
+
+            if (! $token) {
+                $this->error = 'GitHub account not connected or token expired. Please reconnect your account.';
                 $this->loading = false;
+
                 return;
             }
 
-            // Fetch user repos (up to 100 recent)
-            $response = Http::withToken($token)->get('https://api.github.com/user/repos', [
-                'sort' => 'updated',
-                'per_page' => 100,
-            ]);
-
-            if ($response->failed()) {
-                throw new \Exception("Failed to fetch repositories: " . ($response->json()['message'] ?? $response->body()));
-            }
-
-            $this->repositories = $response->json();
-        } catch (\Exception $e) {
+            $this->repositories = $gitHubService->getUserRepositories($token, 100);
+        } catch (\Throwable $e) {
             $this->error = $e->getMessage();
         }
 
         $this->loading = false;
     }
 
-    public function deploy($fullName)
-    {
+    public function deploy(
+        string $fullName,
+        GitHubService $gitHubService,
+        SiteDeploymentService $deploymentService,
+        ActivityLogService $activityLogService
+    ) {
         $this->deploying = true;
-        
+
+        $tempPath = null;
         try {
             $token = auth()->user()->github_token;
             $repo = collect($this->repositories)->firstWhere('full_name', $fullName);
-            
-            if (!$repo) throw new \Exception("Repository not found.");
+
+            if (! $repo) {
+                throw new \Exception('Repository not found.');
+            }
 
             $slug = Str::random(8);
             $path = "sites/{$slug}";
             $defaultBranch = $repo['default_branch'] ?? 'main';
-            
-            // Download archive
-            $archiveUrl = "https://api.github.com/repos/{$fullName}/zipball/{$defaultBranch}";
-            $response = Http::withToken($token)->get($archiveUrl);
-            
-            if ($response->failed()) {
-                throw new \Exception("Failed to download repository archive. Please check permissions.");
-            }
 
             $tempPath = storage_path("app/temp_{$slug}.zip");
-            file_put_contents($tempPath, $response->body());
+            $gitHubService->downloadRepositoryArchive($fullName, $defaultBranch, $token, $tempPath);
 
-            // Extract
-            $zip = new \ZipArchive;
-            if ($zip->open($tempPath) === TRUE) {
-                $extractPath = Storage::disk('public')->path($path);
-                Storage::disk('public')->makeDirectory($path);
-                
-                $zip->extractTo($extractPath);
-                $zip->close();
-                
-                // Hoisting logic: if ZIP contains a single top-level directory, move its contents up
-                $items = array_diff(scandir($extractPath), ['.', '..']);
-                if (count($items) === 1) {
-                    $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
-                    if (is_dir($innerDir)) {
-                        $files = array_diff(scandir($innerDir), ['.', '..']);
-                        foreach ($files as $file) {
-                            rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
-                        }
-                        rmdir($innerDir);
-                    }
-                }
-            } else {
-                throw new \Exception('Could not extract repository archive.');
-            }
-
-            if (file_exists($tempPath)) {
-                unlink($tempPath);
-            }
+            $extractPath = Storage::disk('public')->path($path);
+            Storage::disk('public')->makeDirectory($path);
+            $deploymentService->extractZipSafely($tempPath, $extractPath);
 
             $site = Site::create([
                 'slug' => $slug,
@@ -118,7 +84,6 @@ new class extends Component
                 'auto_deploy' => $this->autoDeploy,
             ]);
 
-            // Track deployment
             $site->deployments()->create([
                 'status' => 'success',
                 'source' => 'github_manual',
@@ -127,56 +92,33 @@ new class extends Component
             ]);
 
             if ($this->autoDeploy) {
-                $this->setupWebhook($site, $token);
+                $gitHubService->setupWebhook($site, $token);
             }
 
-            ActivityLog::create([
-                'user_id' => auth()->id(),
-                'site_id' => $site->id,
-                'action' => 'github_deployed',
-                'description' => "Deployed repository: {$fullName} ({$defaultBranch})",
-                'ip_address' => request()->ip(),
-            ]);
+            $activityLogService->log(
+                auth()->user(),
+                $site,
+                'github_deployed',
+                "Deployed repository: {$fullName} ({$defaultBranch})"
+            );
 
-            Flux::toast("Repository deployed successfully!");
+            Flux::toast('Repository deployed successfully!');
             $this->dispatch('site-published', slug: $slug);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Flux::toast(variant: 'danger', text: $e->getMessage());
+        } finally {
+            if ($tempPath && file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
         }
 
         $this->deploying = false;
     }
 
-    public function setupWebhook(Site $site, $token)
-    {
-        try {
-            $fullName = $site->github_repo_full_name;
-            $webhookUrl = url('/webhooks/github');
-            
-            $response = Http::withToken($token)->post("https://api.github.com/repos/{$fullName}/hooks", [
-                'name' => 'web',
-                'active' => true,
-                'events' => ['push'],
-                'config' => [
-                    'url' => $webhookUrl,
-                    'content_type' => 'json',
-                    'insecure_ssl' => '0',
-                ],
-            ]);
-
-            if ($response->successful()) {
-                $hookData = $response->json();
-                $site->update(['github_webhook_id' => $hookData['id'] ?? null]);
-            }
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("Failed to setup GitHub webhook for {$site->slug}: " . $e->getMessage());
-        }
-    }
-
     public function render()
     {
         $filteredRepos = collect($this->repositories)
-            ->filter(fn($repo) => empty($this->search) || str_contains(strtolower($repo['full_name'] ?? ''), strtolower($this->search)))
+            ->filter(fn ($repo) => empty($this->search) || str_contains(strtolower($repo['full_name'] ?? ''), strtolower($this->search)))
             ->values();
 
         return view('components.dashboard.⚡github-deploy', [

@@ -3,16 +3,24 @@
 namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityLog;
+use App\Jobs\DeployGitHubRepositoryJob;
 use App\Models\Site;
+use App\Services\GitHubService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 
 class GithubWebhookController extends Controller
 {
+    public function __construct(
+        protected GitHubService $gitHubService
+    ) {}
+
     public function handle(Request $request)
     {
+        // Verify GitHub webhook HMAC signature if secret configured
+        if (! $this->gitHubService->verifyWebhookSignature($request)) {
+            return response()->json(['message' => 'Invalid webhook signature'], 401);
+        }
+
         $payload = $request->all();
 
         // Basic verification
@@ -30,86 +38,9 @@ class GithubWebhookController extends Controller
             ->get();
 
         foreach ($sites as $site) {
-            $this->deploySite($site, $payload);
+            DeployGitHubRepositoryJob::dispatch($site, $payload);
         }
 
         return response()->json(['message' => 'Deployments triggered'], 200);
-    }
-
-    protected function deploySite(Site $site, array $payload)
-    {
-        try {
-            $user = $site->user;
-            if (! $user || ! $user->github_token) {
-                return;
-            }
-
-            $fullName = $site->github_repo_full_name;
-            $branch = $site->github_branch;
-            $token = $user->github_token;
-
-            $archiveUrl = "https://api.github.com/repos/{$fullName}/zipball/{$branch}";
-            $response = Http::withToken($token)->get($archiveUrl);
-
-            if ($response->failed()) {
-                throw new \Exception('Failed to download archive');
-            }
-
-            $tempPath = storage_path("app/temp_webhook_{$site->slug}.zip");
-            file_put_contents($tempPath, $response->body());
-
-            // Extract to public storage
-            $zip = new \ZipArchive;
-            if ($zip->open($tempPath) === true) {
-                $extractPath = Storage::disk('public')->path($site->path);
-
-                // Clear old files
-                Storage::disk('public')->deleteDirectory($site->path);
-                Storage::disk('public')->makeDirectory($site->path);
-
-                $zip->extractTo($extractPath);
-                $zip->close();
-
-                // Hoisting logic: if ZIP contains a single top-level directory, move its contents up
-                $items = array_diff(scandir($extractPath), ['.', '..']);
-                if (count($items) === 1) {
-                    $innerDir = $extractPath.DIRECTORY_SEPARATOR.array_shift($items);
-                    if (is_dir($innerDir)) {
-                        $files = array_diff(scandir($innerDir), ['.', '..']);
-                        foreach ($files as $file) {
-                            rename("{$innerDir}".DIRECTORY_SEPARATOR."{$file}", "{$extractPath}".DIRECTORY_SEPARATOR."{$file}");
-                        }
-                        rmdir($innerDir);
-                    }
-                }
-            }
-
-            if (file_exists($tempPath)) {
-                unlink($tempPath);
-            }
-
-            $site->deployments()->create([
-                'status' => 'success',
-                'source' => 'github_webhook',
-                'commit_hash' => $payload['after'] ?? null,
-                'commit_message' => $payload['head_commit']['message'] ?? 'Auto-deploy from push',
-                'metadata' => $payload,
-            ]);
-
-            ActivityLog::create([
-                'user_id' => $user->id,
-                'site_id' => $site->id,
-                'action' => 'github_auto_deployed',
-                'description' => "Auto-deployed from GitHub: {$fullName} ({$branch})",
-                'ip_address' => request()->ip(),
-            ]);
-
-        } catch (\Exception $e) {
-            $site->deployments()->create([
-                'status' => 'failed',
-                'source' => 'github_webhook',
-                'commit_message' => 'Auto-deploy failed: '.$e->getMessage(),
-            ]);
-        }
     }
 }

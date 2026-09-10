@@ -1,10 +1,8 @@
 <?php
 
+use App\Services\SiteDeploymentService;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Str;
-use App\Models\Site;
-use Illuminate\Support\Facades\Storage;
 
 new class extends Component
 {
@@ -13,94 +11,50 @@ new class extends Component
     public $file;
     public $uploading = false;
     public $message = '';
+    public $errorMessage = '';
 
-    public function updatedFile()
+    public function updatedFile(SiteDeploymentService $deploymentService)
     {
         $this->validate([
             'file' => 'required|max:51200', // 50MB max
         ]);
 
-        $this->upload();
+        $this->upload($deploymentService);
     }
 
-    public function upload()
+    public function upload(SiteDeploymentService $deploymentService)
     {
         $this->uploading = true;
-        
+        $this->message = '';
+        $this->errorMessage = '';
+
         try {
             $originalName = $this->file->getClientOriginalName();
-            $extension = $this->file->getClientOriginalExtension();
-            
-            $slug = Str::random(8);
-            $path = "sites/{$slug}";
+            $user = auth()->user();
 
-            if (strtolower($extension) === 'zip') {
-                $zip = new \ZipArchive;
-                if ($zip->open($this->file->getRealPath()) === TRUE) {
-                    $extractPath = Storage::disk('public')->path($path);
-                    Storage::disk('public')->makeDirectory($path);
-                    
-                    $zip->extractTo($extractPath);
-                    $zip->close();
+            $site = $deploymentService->createSiteFromUpload(
+                $this->file,
+                $originalName,
+                $user
+            );
 
-                    // Automatically hoist contents if the ZIP contains a single root directory
-                    $items = array_diff(scandir($extractPath), ['.', '..']);
-                    if (count($items) === 1) {
-                        $innerDir = $extractPath . DIRECTORY_SEPARATOR . array_shift($items);
-                        if (is_dir($innerDir)) {
-                            $files = array_diff(scandir($innerDir), ['.', '..']);
-                            foreach ($files as $file) {
-                                rename("{$innerDir}" . DIRECTORY_SEPARATOR . "{$file}", "{$extractPath}" . DIRECTORY_SEPARATOR . "{$file}");
-                            }
-                            rmdir($innerDir);
-                        }
-                    }
-                } else {
-                    throw new \Exception('Could not open ZIP file');
-                }
-            } else {
-                // Save single file
-                $this->file->storeAs($path, $originalName, 'public');
-                
-                // If it's a single html file but not named index.html, 
-                // we might want to allow accessing it directly or rename it.
-                // For now, SiteController handles index.html default.
-            }
-            
-            $site = Site::create([
-                'slug' => $slug,
-                'original_name' => $originalName,
-                'path' => $path,
-                'user_id' => auth()->id(),
-                'expires_at' => auth()->check() ? now()->addDays(30) : now()->addHours(24),
-            ]);
-
-            if (auth()->check()) {
-                \App\Models\ActivityLog::create([
-                    'user_id' => auth()->id(),
-                    'site_id' => $site->id,
-                    'action' => 'site_uploaded',
-                    'description' => "Uploaded site: {$originalName}",
-                    'ip_address' => request()->ip(),
-                ]);
-            }
-            
             $host = parse_url(config('app.url'), PHP_URL_HOST);
             $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?? 'http';
-            
-            $pathUrl = url("/s/{$slug}");
-            $subdomainUrl = ($host && $host !== 'localhost') ? "{$scheme}://{$slug}.{$host}" : null;
 
-            $this->message = "Site published!";
+            $pathUrl = url("/s/{$site->slug}");
+            $subdomainUrl = ($host && $host !== 'localhost') ? "{$scheme}://{$site->slug}.{$host}" : null;
+
+            $this->message = "Site published successfully!";
             if ($subdomainUrl) {
-                $this->message .= " Access it at: <a href='{$subdomainUrl}' class='underline' target='_blank'>{$subdomainUrl}</a> or <a href='{$pathUrl}' class='underline' target='_blank'>{$pathUrl}</a>";
+                $this->message .= " Access it at: <a href='{$subdomainUrl}' class='underline font-medium' target='_blank'>{$subdomainUrl}</a> or <a href='{$pathUrl}' class='underline font-medium' target='_blank'>{$pathUrl}</a>";
             } else {
-                $this->message .= " Access it at: <a href='{$pathUrl}' class='underline' target='_blank'>{$pathUrl}</a>";
+                $this->message .= " Access it at: <a href='{$pathUrl}' class='underline font-medium' target='_blank'>{$pathUrl}</a>";
             }
-            
-            $this->dispatch('site-published', slug: $slug);
-        } catch (\Exception $e) {
-            $this->message = "Error: " . $e->getMessage();
+
+            $this->dispatch('site-published', slug: $site->slug);
+            $this->reset('file');
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
         }
 
         $this->uploading = false;
@@ -183,6 +137,15 @@ new class extends Component
                 {!! $message !!}
             </div>
             <flux:button variant="ghost" size="sm" icon="x-mark" wire:click="$set('message', '')" />
+        </div>
+    @endif
+
+    @if ($errorMessage)
+        <div class="mt-4 p-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg shadow-sm border border-red-200 dark:border-red-800 flex items-center justify-between">
+            <div class="flex-1 text-sm font-medium">
+                {{ $errorMessage }}
+            </div>
+            <flux:button variant="ghost" size="sm" icon="x-mark" wire:click="$set('errorMessage', '')" />
         </div>
     @endif
 </div>

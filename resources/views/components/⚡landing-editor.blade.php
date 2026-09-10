@@ -1,9 +1,7 @@
 <?php
 
+use App\Services\SiteDeploymentService;
 use Livewire\Component;
-use Illuminate\Support\Str;
-use App\Models\Site;
-use Illuminate\Support\Facades\Storage;
 
 new class extends Component
 {
@@ -45,50 +43,29 @@ HTML;
     public $uploading = false;
     public $deployedUrl = null;
 
-    public function deploy()
+    public function deploy(SiteDeploymentService $deploymentService)
     {
         $this->uploading = true;
 
         try {
-            $slug = Str::random(8);
-            $path = "sites/{$slug}";
-
-            Storage::disk('public')->makeDirectory($path);
-            Storage::disk('public')->put("{$path}/index.html", $this->code);
-
-            $site = Site::create([
-                'slug' => $slug,
-                'original_name' => 'index.html',
-                'path' => $path,
-                'user_id' => auth()->id(), // null if guest
-                'expires_at' => auth()->check() ? now()->addDays(30) : now()->addHours(24),
-            ]);
-
-            if (auth()->check()) {
-                \App\Models\ActivityLog::create([
-                    'user_id' => auth()->id(),
-                    'site_id' => $site->id,
-                    'action' => 'site_uploaded',
-                    'description' => 'Deployed site from interactive editor',
-                    'ip_address' => request()->ip(),
-                ]);
-            }
+            $user = auth()->user();
+            $site = $deploymentService->createSiteFromContent($this->code, 'index.html', $user);
 
             $host = parse_url(config('app.url'), PHP_URL_HOST);
             $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?? 'http';
 
             if ($host && $host !== 'localhost') {
-                $this->deployedUrl = "{$scheme}://{$slug}.{$host}";
+                $this->deployedUrl = "{$scheme}://{$site->slug}.{$host}";
             } else {
-                $this->deployedUrl = url("/s/{$slug}");
+                $this->deployedUrl = url("/s/{$site->slug}");
             }
-        } catch (\Exception $e) {
-            // Handle error quietly or add an error property
+        } catch (\Throwable $e) {
+            // Handle error gracefully
         }
 
         $this->uploading = false;
     }
-    
+
     public function resetDeploy()
     {
         $this->deployedUrl = null;
