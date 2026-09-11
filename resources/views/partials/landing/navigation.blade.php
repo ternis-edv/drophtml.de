@@ -28,13 +28,14 @@
             <div class="flex items-center gap-3">
                 <!-- Theme Toggle Button -->
                 <button 
-                    @click="darkMode = !darkMode"
+                    @click="$flux.appearance = document.documentElement.classList.contains('dark') ? 'light' : 'dark'"
                     type="button"
                     class="p-2 rounded-full text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
                     aria-label="Toggle theme"
+                    title="Toggle Theme"
                 >
-                    <flux:icon.sun x-show="darkMode" class="w-4 h-4 text-amber-400" />
-                    <flux:icon.moon x-show="!darkMode" class="w-4 h-4 text-indigo-600" />
+                    <flux:icon.sun class="w-4 h-4 text-amber-400 hidden dark:block" />
+                    <flux:icon.moon class="w-4 h-4 text-indigo-600 block dark:hidden" />
                 </button>
 
                 @auth

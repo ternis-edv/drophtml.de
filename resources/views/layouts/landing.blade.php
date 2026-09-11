@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches) }" x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))" :class="{ 'dark': darkMode }">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'DropHTML') }} - Ship HTML in seconds</title>
+    <title>{{ filled($title ?? null) ? $title.' - '.config('app.name', 'DropHTML') : config('app.name', 'DropHTML').' - Ship HTML in seconds' }}</title>
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -11,6 +15,7 @@
 
     <!-- Scripts / Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @fluxAppearance
     
     <!-- Alpine Intersect -->
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
