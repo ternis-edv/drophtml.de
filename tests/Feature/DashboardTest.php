@@ -24,4 +24,22 @@ class DashboardTest extends TestCase
         $response = $this->get(route('dashboard'));
         $response->assertOk();
     }
+
+    public function test_authenticated_users_can_visit_the_sites_upload_page(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('dashboard.sites.upload'));
+        $response->assertOk();
+    }
+
+    public function test_authenticated_users_can_visit_the_activity_page(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('dashboard.activity'));
+        $response->assertOk();
+    }
 }
