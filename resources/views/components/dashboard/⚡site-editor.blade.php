@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\MediaAsset;
 use App\Models\Site;
 use App\Services\ActivityLogService;
+use App\Services\MediaStorageService;
 use App\Services\SiteDeploymentService;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -20,12 +22,19 @@ new class extends Component
 
     public $newFileName = '';
     public $uploadFile = null;
+    public $cloudUploadFile = null;
+    public $explorerTab = 'code'; // 'code' or 'assets'
 
     public $oldFileName = '';
     public $newRenameName = '';
     public $fileFilter = '';
     public $previewMode = 'split'; // 'editor', 'split', 'preview'
     public $viewportMode = 'desktop'; // 'desktop', 'tablet', 'mobile'
+
+    public function setExplorerTab($tab)
+    {
+        $this->explorerTab = in_array($tab, ['code', 'assets'], true) ? $tab : 'code';
+    }
 
     public function mount($siteId)
     {
@@ -268,12 +277,75 @@ new class extends Component
         );
 
         if ($this->currentFile === $this->oldFileName) {
-            $this->currentFile = cleanNew;
+            $this->currentFile = $cleanNew;
         }
 
         $this->loadFiles();
         Flux::modal('rename-file-modal')->close();
         Flux::toast('File renamed.');
+    }
+
+    public function updatedCloudUploadFile(MediaStorageService $mediaStorageService)
+    {
+        if (! $this->cloudUploadFile) {
+            return;
+        }
+
+        try {
+            $asset = $mediaStorageService->store(
+                $this->cloudUploadFile,
+                auth()->user(),
+                $this->site,
+                'asset_storage'
+            );
+            $this->cloudUploadFile = null;
+            Flux::toast("Uploaded to Cloud Asset Storage: {$asset->original_name}");
+        } catch (\Exception $e) {
+            Flux::toast(variant: 'danger', text: "Cloud upload failed: {$e->getMessage()}");
+            $this->cloudUploadFile = null;
+        }
+    }
+
+    public function insertAssetSnippet($snippet)
+    {
+        if ($this->isBinary || ! $this->currentFile) {
+            Flux::toast('Please select an editable HTML/CSS file first.');
+
+            return;
+        }
+
+        $this->fileContent .= "\n".$snippet;
+        Flux::toast('Asset snippet inserted into code editor!');
+    }
+
+    public function migrateCurrentFileToCloud(MediaStorageService $mediaStorageService)
+    {
+        if (! $this->currentFile || ! $this->isBinary) {
+            return;
+        }
+
+        try {
+            $asset = $mediaStorageService->promoteCodeFileToAssetStorage(
+                $this->site,
+                $this->currentFile,
+                auth()->user(),
+                true
+            );
+
+            $oldName = $this->currentFile;
+            $this->currentFile = null;
+            $this->isBinary = false;
+            $this->fileContent = '';
+            $this->loadFiles();
+
+            if (! empty($this->files)) {
+                $this->selectFile(in_array('index.html', $this->files) ? 'index.html' : $this->files[0]);
+            }
+
+            Flux::toast("Migrated '{$oldName}' to Cloud Asset Storage (S3/R2)!");
+        } catch (\Exception $e) {
+            Flux::toast(variant: 'danger', text: "Migration failed: {$e->getMessage()}");
+        }
     }
 
     public function render()
@@ -284,8 +356,11 @@ new class extends Component
             $filteredFiles = array_filter($this->files, fn ($f) => str_contains(strtolower($f), $filter));
         }
 
+        $cloudAssets = $this->site->mediaAssets()->assetStorage()->latest()->get();
+
         return view('components.dashboard.⚡site-editor', [
             'filteredFiles' => $filteredFiles,
+            'cloudAssets' => $cloudAssets,
         ]);
     }
 };
@@ -376,106 +451,212 @@ new class extends Component
         <!-- File Explorer Sidebar (3 Cols) -->
         <div class="lg:col-span-3 flex flex-col space-y-3">
             <div class="glass-card rounded-2xl p-3.5 flex flex-col h-full">
-                <!-- Explorer Toolbar -->
-                <div class="flex items-center justify-between pb-3 mb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <div class="flex items-center gap-2">
-                        <flux:icon.folder class="size-4 text-indigo-500" />
-                        <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Explorer</span>
-                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold">{{ count($files) }}</span>
-                    </div>
+                <!-- Explorer Tab Switcher (Code vs Cloud Assets) -->
+                <div class="grid grid-cols-2 gap-1 p-1 mb-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-[11px] font-semibold">
+                    <button 
+                        type="button" 
+                        wire:click="setExplorerTab('code')" 
+                        class="py-1 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 {{ $explorerTab === 'code' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' }}"
+                    >
+                        <flux:icon.code-bracket class="size-3.5" />
+                        <span>Code ({{ count($files) }})</span>
+                    </button>
+                    <button 
+                        type="button" 
+                        wire:click="setExplorerTab('assets')" 
+                        class="py-1 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 {{ $explorerTab === 'assets' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' }}"
+                    >
+                        <flux:icon.cloud-arrow-up class="size-3.5" />
+                        <span>Cloud R2/S3 ({{ $cloudAssets->count() }})</span>
+                    </button>
+                </div>
 
-                    <div class="flex items-center gap-1">
-                        <flux:modal.trigger name="create-file-modal">
+                @if($explorerTab === 'code')
+                    <!-- Explorer Toolbar -->
+                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-zinc-100 dark:border-zinc-800">
+                        <div class="flex items-center gap-2">
+                            <flux:icon.folder class="size-4 text-indigo-500" />
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Files</span>
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold">{{ count($files) }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-1">
+                            <flux:modal.trigger name="create-file-modal">
+                                <button 
+                                    type="button" 
+                                    class="p-1.5 rounded-lg text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer" 
+                                    title="New File"
+                                >
+                                    <flux:icon.plus class="size-4" />
+                                </button>
+                            </flux:modal.trigger>
+
                             <button 
                                 type="button" 
+                                @click="$refs.mgrUploadInput.click()" 
                                 class="p-1.5 rounded-lg text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer" 
-                                title="New File"
+                                title="Upload File to Code"
                             >
-                                <flux:icon.plus class="size-4" />
+                                <flux:icon.arrow-up-tray class="size-4" />
                             </button>
-                        </flux:modal.trigger>
-
-                        <button 
-                            type="button" 
-                            @click="$refs.mgrUploadInput.click()" 
-                            class="p-1.5 rounded-lg text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer" 
-                            title="Upload File"
-                        >
-                            <flux:icon.arrow-up-tray class="size-4" />
-                        </button>
-                        <input type="file" class="hidden" x-ref="mgrUploadInput" wire:model="uploadFile" />
+                            <input type="file" class="hidden" x-ref="mgrUploadInput" wire:model="uploadFile" />
+                        </div>
                     </div>
-                </div>
 
-                <!-- Filter search input -->
-                <div class="relative mb-3">
-                    <flux:icon.magnifying-glass class="size-3.5 text-zinc-400 absolute left-2.5 top-2.5 pointer-events-none" />
-                    <input 
-                        wire:model.live.debounce.150ms="fileFilter" 
-                        type="text" 
-                        placeholder="Filter files..." 
-                        class="w-full pl-8 pr-7 py-1.5 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
-                    />
-                    @if($fileFilter)
+                    <!-- Filter search input -->
+                    <div class="relative mb-3">
+                        <flux:icon.magnifying-glass class="size-3.5 text-zinc-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                        <input 
+                            wire:model.live.debounce.150ms="fileFilter" 
+                            type="text" 
+                            placeholder="Filter files..." 
+                            class="w-full pl-8 pr-7 py-1.5 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+                        />
+                        @if($fileFilter)
+                            <button 
+                                type="button" 
+                                wire:click="$set('fileFilter', '')" 
+                                class="absolute right-2.5 top-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                            >
+                                <flux:icon.x-mark class="size-3.5" />
+                            </button>
+                        @endif
+                    </div>
+
+                    <!-- File List Tree -->
+                    <div class="flex-1 overflow-y-auto max-h-[600px] space-y-1 pr-1 custom-scrollbar">
+                        @forelse($filteredFiles as $file)
+                            @php
+                                $isSelected = ($currentFile === $file);
+                                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                            @endphp
+                            <div class="group flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-all {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold ring-1 ring-indigo-500/20 shadow-xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/60' }}">
+                                <button 
+                                    type="button"
+                                    wire:click="selectFile('{{ $file }}')" 
+                                    class="flex-1 flex items-center gap-2 text-left truncate cursor-pointer"
+                                    title="{{ $file }}"
+                                >
+                                    @if(in_array($ext, ['html', 'htm']))
+                                        <flux:icon.code-bracket class="size-4 text-indigo-500 shrink-0" />
+                                    @elseif($ext === 'css')
+                                        <flux:icon.hashtag class="size-4 text-pink-500 shrink-0" />
+                                    @elseif(in_array($ext, ['js', 'mjs', 'ts']))
+                                        <flux:icon.bolt class="size-4 text-amber-500 shrink-0" />
+                                    @elseif(in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']))
+                                        <flux:icon.photo class="size-4 text-emerald-500 shrink-0" />
+                                    @elseif(in_array($ext, ['json', 'xml', 'yaml', 'yml']))
+                                        <flux:icon.circle-stack class="size-4 text-cyan-500 shrink-0" />
+                                    @elseif(in_array($ext, ['md', 'txt']))
+                                        <flux:icon.document-text class="size-4 text-violet-500 shrink-0" />
+                                    @else
+                                        <flux:icon.document class="size-4 text-zinc-400 shrink-0" />
+                                    @endif
+                                    <span class="truncate font-mono text-[12px]">{{ $file }}</span>
+                                </button>
+
+                                <flux:dropdown>
+                                    <button type="button" class="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                        <flux:icon.ellipsis-vertical class="size-3.5" />
+                                    </button>
+                                    <flux:menu>
+                                        <flux:menu.item icon="pencil-square" wire:click="startRename('{{ $file }}')">Rename</flux:menu.item>
+                                        <flux:menu.item icon="trash" wire:click="deleteFile('{{ $file }}')" wire:confirm="Are you sure you want to delete '{{ $file }}'?" class="text-rose-600">Delete</flux:menu.item>
+                                    </flux:menu>
+                                </flux:dropdown>
+                            </div>
+                        @empty
+                            <div class="text-center py-10 px-3">
+                                <flux:icon.magnifying-glass class="size-6 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
+                                <p class="text-xs text-zinc-500">No matching files</p>
+                            </div>
+                        @endforelse
+                    </div>
+                @else
+                    <!-- Cloud Assets (S3/R2) Panel -->
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100 dark:border-zinc-800">
+                        <div class="flex items-center gap-1.5">
+                            <flux:icon.cloud class="size-4 text-emerald-500" />
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">R2 / S3 Assets</span>
+                        </div>
+
                         <button 
                             type="button" 
-                            wire:click="$set('fileFilter', '')" 
-                            class="absolute right-2.5 top-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                            @click="$refs.cloudUploadInput.click()" 
+                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs cursor-pointer" 
+                            title="Upload to Cloud Asset Storage"
                         >
-                            <flux:icon.x-mark class="size-3.5" />
+                            <flux:icon.plus class="size-3.5" />
+                            <span>Upload</span>
                         </button>
-                    @endif
-                </div>
+                        <input type="file" class="hidden" x-ref="cloudUploadInput" wire:model="cloudUploadFile" />
+                    </div>
 
-                <!-- File List Tree -->
-                <div class="flex-1 overflow-y-auto max-h-[600px] space-y-1 pr-1 custom-scrollbar">
-                    @forelse($filteredFiles as $file)
-                        @php
-                            $isSelected = ($currentFile === $file);
-                            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                        @endphp
-                        <div class="group flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-all {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold ring-1 ring-indigo-500/20 shadow-xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/60' }}">
-                            <button 
-                                type="button"
-                                wire:click="selectFile('{{ $file }}')" 
-                                class="flex-1 flex items-center gap-2 text-left truncate cursor-pointer"
-                                title="{{ $file }}"
-                            >
-                                @if(in_array($ext, ['html', 'htm']))
-                                    <flux:icon.code-bracket class="size-4 text-indigo-500 shrink-0" />
-                                @elseif($ext === 'css')
-                                    <flux:icon.hashtag class="size-4 text-pink-500 shrink-0" />
-                                @elseif(in_array($ext, ['js', 'mjs', 'ts']))
-                                    <flux:icon.bolt class="size-4 text-amber-500 shrink-0" />
-                                @elseif(in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']))
-                                    <flux:icon.photo class="size-4 text-emerald-500 shrink-0" />
-                                @elseif(in_array($ext, ['json', 'xml', 'yaml', 'yml']))
-                                    <flux:icon.circle-stack class="size-4 text-cyan-500 shrink-0" />
-                                @elseif(in_array($ext, ['md', 'txt']))
-                                    <flux:icon.document-text class="size-4 text-violet-500 shrink-0" />
-                                @else
-                                    <flux:icon.document class="size-4 text-zinc-400 shrink-0" />
-                                @endif
-                                <span class="truncate font-mono text-[12px]">{{ $file }}</span>
-                            </button>
+                    <div class="flex-1 overflow-y-auto max-h-[600px] space-y-2 pr-1 custom-scrollbar">
+                        @forelse($cloudAssets as $cAsset)
+                            <div class="p-2.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 shadow-2xs space-y-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="size-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center shrink-0">
+                                        @if($cAsset->isImage())
+                                            <img src="{{ $cAsset->resolved_url }}" alt="" class="size-full object-cover" />
+                                        @elseif($cAsset->isVideo())
+                                            <flux:icon.film class="size-4 text-indigo-500" />
+                                        @elseif($cAsset->isPdf())
+                                            <flux:icon.document-text class="size-4 text-rose-500" />
+                                        @else
+                                            <flux:icon.document class="size-4 text-zinc-400" />
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate" title="{{ $cAsset->original_name }}">
+                                            {{ $cAsset->original_name }}
+                                        </p>
+                                        <p class="text-[10px] font-mono text-zinc-400">{{ $cAsset->formatted_size }} &bull; S3/R2</p>
+                                    </div>
+                                </div>
 
-                            <flux:dropdown>
-                                <button type="button" class="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                    <flux:icon.ellipsis-vertical class="size-3.5" />
+                                <div class="flex items-center gap-1.5 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
+                                    <button 
+                                        type="button" 
+                                        wire:click="insertAssetSnippet(`{{ addslashes($cAsset->html_tag) }}`)" 
+                                        class="flex-1 py-1 px-2 text-[11px] font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors text-center cursor-pointer"
+                                        title="Insert HTML snippet into current editor file"
+                                    >
+                                        Insert Tag
+                                    </button>
+
+                                    <button 
+                                        type="button" 
+                                        x-data="{ copied: false }" 
+                                        @click="
+                                            navigator.clipboard.writeText('{{ $cAsset->resolved_url }}');
+                                            copied = true;
+                                            setTimeout(() => copied = false, 1500);
+                                        "
+                                        class="p-1 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                        title="Copy CDN URL"
+                                    >
+                                        <flux:icon.link class="size-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-10 px-3">
+                                <flux:icon.cloud-arrow-up class="size-7 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
+                                <p class="text-xs font-semibold text-zinc-600 dark:text-zinc-400">No cloud assets yet</p>
+                                <p class="text-[11px] text-zinc-400 mt-1 max-w-xs mx-auto">Upload large videos, images, or PDFs to Cloudflare R2 / S3 to optimize site speed.</p>
+                                <button 
+                                    type="button" 
+                                    @click="$refs.cloudUploadInput.click()" 
+                                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs cursor-pointer"
+                                >
+                                    <flux:icon.plus class="size-3.5" />
+                                    <span>Upload Media</span>
                                 </button>
-                                <flux:menu>
-                                    <flux:menu.item icon="pencil-square" wire:click="startRename('{{ $file }}')">Rename</flux:menu.item>
-                                    <flux:menu.item icon="trash" wire:click="deleteFile('{{ $file }}')" wire:confirm="Are you sure you want to delete '{{ $file }}'?" class="text-rose-600">Delete</flux:menu.item>
-                                </flux:menu>
-                            </flux:dropdown>
-                        </div>
-                    @empty
-                        <div class="text-center py-10 px-3">
-                            <flux:icon.magnifying-glass class="size-6 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
-                            <p class="text-xs text-zinc-500">No matching files</p>
-                        </div>
-                    @endforelse
-                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -572,10 +753,33 @@ new class extends Component
                                             </div>
                                             <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{{ $currentFile }}</p>
                                             <p class="text-xs text-zinc-400 max-w-xs mt-1 mb-4">Binary file format cannot be directly edited as plain text.</p>
+                                        @endif
+
+                                        <!-- Actions & S3/R2 Migration Banner -->
+                                        <div class="flex flex-col items-center gap-3 mt-4 max-w-sm w-full">
                                             <a href="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" download="{{ basename($currentFile) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-xs font-medium transition-colors">
                                                 <flux:icon.arrow-down-tray class="size-3.5" /> Download Asset
                                             </a>
-                                        @endif
+
+                                            <div class="w-full p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/50 text-left">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <flux:icon.sparkles class="size-4 text-indigo-600 dark:text-indigo-400" />
+                                                    <span class="text-xs font-bold text-indigo-900 dark:text-indigo-200">Optimize with S3/R2 Cloud</span>
+                                                </div>
+                                                <p class="text-[11px] text-zinc-600 dark:text-zinc-400 mb-2.5">
+                                                    Move this file to Cloudflare R2 / S3 Asset Storage to reduce deployment bundle size and serve via global CDN.
+                                                </p>
+                                                <flux:button 
+                                                    wire:click="migrateCurrentFileToCloud" 
+                                                    wire:confirm="Move '{{ $currentFile }}' to Cloud Asset Storage? It will be removed from your local code repository and hosted on S3/R2 CDN."
+                                                    size="xs" 
+                                                    variant="primary" 
+                                                    class="w-full cursor-pointer"
+                                                >
+                                                    Migrate to S3/R2 Asset Storage
+                                                </flux:button>
+                                            </div>
+                                        </div>
                                     </div>
                                 @else
                                     <textarea 

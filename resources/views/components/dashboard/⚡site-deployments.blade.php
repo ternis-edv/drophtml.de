@@ -80,7 +80,7 @@ new class extends Component
 
     <div class="space-y-6">
         <!-- Top Info / Action Banner -->
-        <div class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="glass-card p-6 sm:p-7 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
                     <div class="size-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/20">
@@ -134,7 +134,7 @@ new class extends Component
                         $totalBytes = $metadata['total_bytes'] ?? null;
                         $source = $deployment->source ?: 'manual';
                     @endphp
-                    <div class="glass-card rounded-2xl transition-all p-5 {{ $isActive ? 'ring-2 ring-emerald-500/30 dark:ring-emerald-500/40 border-emerald-500/40 bg-emerald-50/10 dark:bg-emerald-950/10' : '' }}">
+                    <div class="glass-card rounded-2xl transition-all p-5 border border-zinc-200/80 dark:border-zinc-800 shadow-xs {{ $isActive ? 'ring-2 ring-emerald-500/30 dark:ring-emerald-500/40 !border-emerald-500/40 bg-emerald-50/10 dark:bg-emerald-950/10' : '' }}">
                         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <!-- Left: Status, Info, Message -->
                             <div class="space-y-2.5 flex-1 min-w-0">

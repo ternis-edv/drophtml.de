@@ -131,7 +131,7 @@ new class extends Component
 
     <div class="max-w-3xl space-y-6">
         <!-- Main Settings Form -->
-        <div class="glass-card p-6 sm:p-8 rounded-2xl">
+        <div class="glass-card p-6 sm:p-8 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
             <form wire:submit="save" class="space-y-8">
                 <!-- General & Status -->
                 <div>
@@ -275,7 +275,7 @@ new class extends Component
         </div>
 
         <!-- Danger Zone Card -->
-        <div class="glass-card p-6 rounded-2xl border-rose-200/80 dark:border-rose-900/40 bg-rose-50/10 dark:bg-rose-950/10">
+        <div class="glass-card p-6 sm:p-7 rounded-3xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/10 dark:bg-rose-950/10 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h3 class="font-bold text-sm text-rose-600 dark:text-rose-400 flex items-center gap-2">

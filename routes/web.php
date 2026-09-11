@@ -81,6 +81,8 @@ Route::domain($appDomain)->group(function () {
 
             return $deploymentService->downloadZip($site);
         })->name('dashboard.sites.download');
+        Route::view('dashboard/media', 'dashboard.media')->name('dashboard.media');
+        Route::view('dashboard/sites/{site}/media', 'dashboard.site-media')->name('dashboard.sites.media');
         Route::view('dashboard/sites/{site}/settings', 'dashboard.site-settings')->name('dashboard.sites.settings');
         Route::view('dashboard/activity', 'dashboard.activity')->name('dashboard.activity');
     });

@@ -48,26 +48,26 @@ new class extends Component
                 <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>Activity Log</flux:breadcrumbs.item>
             </flux:breadcrumbs>
-            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1.5 flex items-center gap-2.5">
-                <div class="size-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/20">
-                    <flux:icon.clipboard-document-list class="size-4" />
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 mt-1.5 flex items-center gap-3">
+                <div class="size-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/20 shadow-2xs">
+                    <flux:icon.clipboard-document-list class="size-4.5" />
                 </div>
                 <span>Audit & Activity Log</span>
             </h1>
         </div>
 
         <!-- Filter Pills -->
-        <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 text-xs font-semibold">
-            <button wire:click="setFilter('all')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'all' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All</button>
-            <button wire:click="setFilter('deploys')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'deploys' ? 'bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Deploys</button>
-            <button wire:click="setFilter('files')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'files' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Files</button>
-            <button wire:click="setFilter('domains')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'domains' ? 'bg-white dark:bg-zinc-900 text-purple-600 dark:text-purple-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Domains</button>
-            <button wire:click="setFilter('lifecycle')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'lifecycle' ? 'bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Lifecycle</button>
+        <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 text-xs font-semibold shrink-0">
+            <button wire:click="setFilter('all')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'all' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All</button>
+            <button wire:click="setFilter('deploys')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'deploys' ? 'bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Deploys</button>
+            <button wire:click="setFilter('files')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'files' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Files</button>
+            <button wire:click="setFilter('domains')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'domains' ? 'bg-white dark:bg-zinc-900 text-purple-600 dark:text-purple-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Domains</button>
+            <button wire:click="setFilter('lifecycle')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'lifecycle' ? 'bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Lifecycle</button>
         </div>
     </div>
 
     <!-- Activity Log List Card -->
-    <div class="glass-card rounded-2xl p-5">
+    <div class="glass-card rounded-3xl p-6 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
         <div class="overflow-x-auto">
             <flux:table>
                 <flux:table.columns>
@@ -80,7 +80,7 @@ new class extends Component
 
                 <flux:table.rows>
                     @forelse ($logs as $log)
-                        <flux:table.row>
+                        <flux:table.row class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                             <flux:table.cell>
                                 @php
                                     $action = $log->action;
@@ -117,8 +117,8 @@ new class extends Component
                     @empty
                         <flux:table.row>
                             <flux:table.cell colspan="5" class="text-center py-16 text-zinc-400 text-xs">
-                                <flux:icon.magnifying-glass class="size-6 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
-                                <div>No activity recorded for this filter.</div>
+                                <flux:icon.magnifying-glass class="size-8 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
+                                <div class="font-semibold">No activity recorded for this filter.</div>
                             </flux:table.cell>
                         </flux:table.row>
                     @endforelse
@@ -127,7 +127,7 @@ new class extends Component
         </div>
         
         @if($logs->hasPages())
-            <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+            <div class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                 {{ $logs->links() }}
             </div>
         @endif

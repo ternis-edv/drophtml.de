@@ -169,6 +169,12 @@ new class extends Component
                             <kbd class="text-[10px] text-zinc-400 font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Upload</kbd>
                         </a>
 
+                        <a href="{{ route('dashboard.media') }}" wire:navigate @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                            <flux:icon.photo class="size-4 text-cyan-500" />
+                            <span class="flex-1 font-medium text-xs">Media Storage (S3 / Cloudflare R2)</span>
+                            <kbd class="text-[10px] text-zinc-400 font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Media</kbd>
+                        </a>
+
                         <a href="{{ route('dashboard') }}" wire:navigate @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                             <flux:icon.home class="size-4 text-zinc-500" />
                             <span class="flex-1 font-medium text-xs">Sites Overview Dashboard</span>
