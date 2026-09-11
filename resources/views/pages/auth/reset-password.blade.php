@@ -1,52 +1,69 @@
 <x-layouts::auth :title="__('Reset password')">
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Reset password')" :description="__('Please enter your new password below')" />
+        <!-- Header -->
+        <div class="text-center space-y-1.5">
+            <div class="inline-flex size-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-2">
+                <flux:icon.lock-closed class="size-6" />
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ __('Set new password') }}</h1>
+            <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">{{ __('Please enter your new password to complete the reset') }}</p>
+        </div>
 
         <!-- Session Status -->
-        <x-auth-session-status class="text-center" :status="session('status')" />
+        <x-auth-session-status :status="session('status')" />
 
-        <form method="POST" action="{{ route('password.update') }}" class="flex flex-col gap-6">
+        <form method="POST" action="{{ route('password.update') }}" class="flex flex-col gap-4">
             @csrf
+
             <!-- Token -->
             <input type="hidden" name="token" value="{{ request()->route('token') }}">
 
             <!-- Email Address -->
-            <flux:input
-                name="email"
-                value="{{ request('email') }}"
-                :label="__('Email')"
-                type="email"
-                required
-                autocomplete="email"
-            />
+            <div>
+                <flux:input
+                    name="email"
+                    value="{{ request('email') }}"
+                    :label="__('Email address')"
+                    type="email"
+                    required
+                    autocomplete="email"
+                />
+            </div>
 
             <!-- Password -->
-            <flux:input
-                name="password"
-                :label="__('Password')"
-                type="password"
-                required
-                autocomplete="new-password"
-                :placeholder="__('Password')"
-                viewable
-            />
+            <div>
+                <flux:input
+                    name="password"
+                    :label="__('New Password')"
+                    type="password"
+                    required
+                    autocomplete="new-password"
+                    :placeholder="__('Create a strong password')"
+                    viewable
+                />
+            </div>
 
             <!-- Confirm Password -->
-            <flux:input
-                name="password_confirmation"
-                :label="__('Confirm password')"
-                type="password"
-                required
-                autocomplete="new-password"
-                :placeholder="__('Confirm password')"
-                viewable
-            />
-
-            <div class="flex items-center justify-end">
-                <flux:button type="submit" variant="primary" class="w-full" data-test="reset-password-button">
-                    {{ __('Reset password') }}
-                </flux:button>
+            <div>
+                <flux:input
+                    name="password_confirmation"
+                    :label="__('Confirm Password')"
+                    type="password"
+                    required
+                    autocomplete="new-password"
+                    :placeholder="__('Re-enter your new password')"
+                    viewable
+                />
             </div>
+
+            <button 
+                type="submit" 
+                data-test="reset-password-button"
+                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+            >
+                <flux:icon.check class="size-4" />
+                <span>{{ __('Update password') }}</span>
+            </button>
         </form>
     </div>
 </x-layouts::auth>

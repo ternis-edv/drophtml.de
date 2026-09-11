@@ -80,21 +80,23 @@ new class extends Component
 
     <div class="space-y-6">
         <!-- Top Info / Action Banner -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/60 dark:to-zinc-900/20 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <flux:icon.archive-box class="size-5 text-indigo-500" />
+                <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+                    <div class="size-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/20">
+                        <flux:icon.archive-box class="size-4.5" />
+                    </div>
                     <span>Deployment Snapshots & Rollback History</span>
                 </h2>
-                <p class="text-xs text-zinc-500 mt-1 max-w-xl">
-                    Every deployment automatically captures an immutable file archive. You can instantly restore your site to any previous point in time.
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 max-w-xl leading-relaxed">
+                    Every deployment automatically captures an immutable file archive. You can instantly restore your site to any previous point in time with zero downtime.
                 </p>
             </div>
 
             <button 
                 type="button" 
                 wire:click="createManualSnapshot" 
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors cursor-pointer"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-colors cursor-pointer shrink-0"
             >
                 <flux:icon.camera class="size-4" />
                 <span>Take Snapshot Now</span>
@@ -103,25 +105,25 @@ new class extends Component
 
         <!-- Deployments List -->
         @if($deployments->isEmpty())
-            <flux:card class="text-center py-12 px-4">
-                <div class="size-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 flex items-center justify-center mx-auto mb-3">
-                    <flux:icon.archive-box class="size-6" />
+            <div class="glass-card text-center py-16 px-4 rounded-2xl">
+                <div class="size-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center mx-auto mb-3.5 ring-1 ring-indigo-500/20">
+                    <flux:icon.archive-box class="size-8" />
                 </div>
-                <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">No Deployment Snapshots Yet</h3>
+                <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">No Deployment Snapshots Yet</h3>
                 <p class="text-xs text-zinc-500 mt-1 max-w-md mx-auto">
                     Take a manual snapshot of your active files now to start recording deployment history and enable instant rollbacks.
                 </p>
-                <div class="mt-4">
+                <div class="mt-5">
                     <button 
                         type="button" 
                         wire:click="createManualSnapshot" 
-                        class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors cursor-pointer"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-colors cursor-pointer"
                     >
                         <flux:icon.camera class="size-4" />
                         <span>Create Initial Snapshot</span>
                     </button>
                 </div>
-            </flux:card>
+            </div>
         @else
             <div class="space-y-3">
                 @foreach($deployments as $index => $deployment)
@@ -132,43 +134,43 @@ new class extends Component
                         $totalBytes = $metadata['total_bytes'] ?? null;
                         $source = $deployment->source ?: 'manual';
                     @endphp
-                    <flux:card class="transition-all hover:border-zinc-300 dark:hover:border-zinc-700 p-4 sm:p-5 {{ $isActive ? 'ring-2 ring-emerald-500/20 dark:ring-emerald-500/30 border-emerald-500/30' : '' }}">
+                    <div class="glass-card rounded-2xl transition-all p-5 {{ $isActive ? 'ring-2 ring-emerald-500/30 dark:ring-emerald-500/40 border-emerald-500/40 bg-emerald-50/10 dark:bg-emerald-950/10' : '' }}">
                         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <!-- Left: Status, Info, Message -->
-                            <div class="space-y-2 flex-1 min-w-0">
+                            <div class="space-y-2.5 flex-1 min-w-0">
                                 <div class="flex items-center gap-2.5 flex-wrap">
                                     @if($isActive)
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
-                                            <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 shadow-xs">
+                                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                             Active Release
                                         </span>
                                     @endif
 
                                     <!-- Source Badge -->
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300">
                                         @if($source === 'github_webhook')
-                                            <flux:icon.folder-git-2 class="size-3 text-zinc-500" />
+                                            <flux:icon.folder-git-2 class="size-3.5 text-zinc-500" />
                                             GitHub Push
                                         @elseif($source === 'upload')
-                                            <flux:icon.arrow-up-tray class="size-3 text-indigo-500" />
+                                            <flux:icon.arrow-up-tray class="size-3.5 text-indigo-500" />
                                             ZIP Upload
                                         @elseif($source === 'editor')
-                                            <flux:icon.pencil-square class="size-3 text-amber-500" />
+                                            <flux:icon.pencil-square class="size-3.5 text-amber-500" />
                                             Code Studio
                                         @elseif($source === 'rollback')
-                                            <flux:icon.arrow-path class="size-3 text-purple-500" />
+                                            <flux:icon.arrow-path class="size-3.5 text-purple-500" />
                                             Rollback
                                         @elseif($source === 'api')
-                                            <flux:icon.command-line class="size-3 text-blue-500" />
+                                            <flux:icon.command-line class="size-3.5 text-blue-500" />
                                             CLI / API
                                         @else
-                                            <flux:icon.camera class="size-3 text-zinc-500" />
+                                            <flux:icon.camera class="size-3.5 text-zinc-500" />
                                             Manual Snapshot
                                         @endif
                                     </span>
 
                                     <!-- Deployment Status -->
-                                    <span class="text-[11px] font-mono px-1.5 py-0.5 rounded {{ $deployment->status === 'success' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30' : 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30' }}">
+                                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded-md {{ $deployment->status === 'success' ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' : 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40' }}">
                                         {{ ucfirst($deployment->status) }}
                                     </span>
 
@@ -178,32 +180,32 @@ new class extends Component
                                     </span>
                                 </div>
 
-                                <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                                <div class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                                     {{ $deployment->commit_message ?: 'Deployment #' . substr($deployment->id, 0, 8) }}
                                 </div>
 
-                                <div class="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 flex-wrap">
-                                    <span class="flex items-center gap-1" title="{{ $deployment->created_at->format('Y-m-d H:i:s T') }}">
+                                <div class="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 flex-wrap font-mono">
+                                    <span class="flex items-center gap-1.5" title="{{ $deployment->created_at->format('Y-m-d H:i:s T') }}">
                                         <flux:icon.clock class="size-3.5 text-zinc-400" />
                                         {{ $deployment->created_at->diffForHumans() }}
                                     </span>
 
                                     @if($fileCount !== null)
-                                        <span class="flex items-center gap-1">
+                                        <span class="flex items-center gap-1.5">
                                             <flux:icon.document-duplicate class="size-3.5 text-zinc-400" />
                                             {{ $fileCount }} {{ Str::plural('file', $fileCount) }}
                                         </span>
                                     @endif
 
                                     @if($totalBytes !== null)
-                                        <span class="flex items-center gap-1">
+                                        <span class="flex items-center gap-1.5">
                                             <flux:icon.circle-stack class="size-3.5 text-zinc-400" />
                                             {{ $this->formatBytes($totalBytes) }}
                                         </span>
                                     @endif
 
                                     @if($deployment->commit_hash)
-                                        <span class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+                                        <span class="text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
                                             {{ substr($deployment->commit_hash, 0, 7) }}
                                         </span>
                                     @endif
@@ -211,13 +213,13 @@ new class extends Component
                             </div>
 
                             <!-- Right: Actions -->
-                            <div class="flex items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-zinc-100 dark:border-zinc-800">
+                            <div class="flex items-center gap-2 pt-3 lg:pt-0 border-t lg:border-t-0 border-zinc-100 dark:border-zinc-800">
                                 @if(!$isActive && $deployment->status === 'success')
                                     <button 
                                         type="button" 
                                         wire:click="rollback('{{ $deployment->id }}')" 
-                                        wire:confirm="Are you sure you want to rollback to deployment #{{ substr($deployment->id, 0, 8) }}? This will replace your active site files."
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-purple-50 dark:bg-zinc-800 dark:hover:bg-purple-950/30 text-zinc-800 hover:text-purple-600 dark:text-zinc-200 dark:hover:text-purple-400 border border-zinc-200 dark:border-zinc-700 hover:border-purple-200 dark:hover:border-purple-800 transition-colors cursor-pointer"
+                                        wire:confirm="Are you sure you want to rollback to deployment #{{ substr($deployment->id, 0, 8) }}? This will restore your active site files to this snapshot."
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 transition-colors cursor-pointer shadow-xs"
                                         title="Restore site files to this version"
                                     >
                                         <flux:icon.arrow-path class="size-3.5" />
@@ -228,7 +230,7 @@ new class extends Component
                                 @if(!empty($metadata['snapshot_path']))
                                     <a 
                                         href="{{ route('dashboard.sites.deployments.download', [$site, $deployment]) }}" 
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors shadow-xs"
                                         title="Download snapshot ZIP archive"
                                     >
                                         <flux:icon.arrow-down-tray class="size-3.5" />
@@ -237,7 +239,7 @@ new class extends Component
                                 @endif
                             </div>
                         </div>
-                    </flux:card>
+                    </div>
                 @endforeach
             </div>
         @endif
