@@ -18,6 +18,7 @@
 - **🔒 Password Protection:** Protect any site, staging environment, or client preview behind password authentication with session unlocking.
 - **🌐 Custom Domains & Subdomains:** Route your sites through custom domains with real-time CNAME and DNS verification.
 - **📁 In-Browser File Manager & Editor:** Browse nested directory structures (`css/`, `js/`, `assets/`, `images/`), edit code in real-time, preview binary assets, and use keyboard shortcuts (`Cmd+S`/`Ctrl+S`).
+- **☁️ Static Media Hosting (S3 / Cloudflare R2):** Host images, videos, audio, and PDFs with zero code bundle bloat. Choose between cloud **Asset Storage** (S3/R2 with global CDN delivery) or bundled **In Code**, with instant 1-click migration and code snippet generator.
 - **📊 Privacy-Friendly Analytics:** Track daily page views, unique visitors, referral sources, and device distribution with built-in Chart.js visualisations.
 - **⚡ REST API & OpenAPI Docs:** Complete REST API with interactive API documentation powered by Scramble (`/docs/api`).
 - **🛡️ Secure Authentication:** Full Two-Factor Authentication (2FA), signed email verification, and GitHub OAuth support with Laravel Fortify and Socialite.

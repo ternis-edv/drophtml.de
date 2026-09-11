@@ -73,4 +73,9 @@ class Site extends Model
     {
         return $this->hasMany(Deployment::class);
     }
+
+    public function mediaAssets()
+    {
+        return $this->hasMany(MediaAsset::class);
+    }
 }
