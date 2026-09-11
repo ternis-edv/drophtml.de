@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DomainController;
 use App\Http\Controllers\Api\MediaAssetController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SiteController;
+use App\Http\Controllers\Api\SiteRedirectController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
@@ -21,6 +22,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::post('sites/{site}/duplicate', [SiteController::class, 'duplicate']);
     Route::get('sites/{site}/download', [SiteController::class, 'download']);
     Route::apiResource('sites', SiteController::class);
+
+    // Redirects (Nested under sites)
+    Route::apiResource('sites.redirects', SiteRedirectController::class);
 
     // Domains (Nested under sites)
     Route::apiResource('sites.domains', DomainController::class)->except(['update']);

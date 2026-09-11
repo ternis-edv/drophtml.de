@@ -56,6 +56,7 @@ Route::domain($appDomain)->group(function () {
         Route::view('dashboard', 'dashboard')->name('dashboard');
         Route::view('dashboard/sites/upload', 'dashboard.sites-upload')->name('dashboard.sites.upload');
         Route::view('dashboard/sites/{site}/edit', 'dashboard.site-editor')->name('dashboard.sites.edit');
+        Route::view('dashboard/sites/{site}/redirects', 'dashboard.site-redirects')->name('dashboard.sites.redirects');
         Route::view('dashboard/sites/{site}/domains', 'dashboard.site-domains')->name('dashboard.sites.domains');
         Route::view('dashboard/sites/{site}/deployments', 'dashboard.site-deployments')->name('dashboard.sites.deployments');
         Route::get('dashboard/sites/{site}/deployments/{deployment}/download', function (Site $site, Deployment $deployment, SiteDeploymentService $deploymentService) {

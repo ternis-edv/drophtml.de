@@ -7,6 +7,7 @@
     $tabTitles = [
         'editor' => 'Code Studio',
         'media' => 'Media Assets',
+        'redirects' => 'Redirect URLs',
         'stats' => 'Site Analytics',
         'deployments' => 'Deployments & Rollbacks',
         'domains' => 'Custom Domains',
@@ -118,6 +119,15 @@
                         <span>Media Assets</span>
                         <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">Cloud</span>
                     </span>
+                </a>
+
+                <a 
+                    href="{{ route('dashboard.sites.redirects', $site) }}" 
+                    wire:navigate 
+                    class="inline-flex items-center gap-2 py-2 px-3.5 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap {{ $current === 'redirects' ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-2xs' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60' }}"
+                >
+                    <flux:icon.arrows-right-left class="size-4" />
+                    <span>Redirects</span>
                 </a>
 
                 <a 

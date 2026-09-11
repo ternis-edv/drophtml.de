@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Site;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -49,8 +50,14 @@ class AnalyticsService
     /**
      * Parse incoming request to extract rich analytics metadata.
      */
-    public function extractMetadata(Request $request, ?string $path, bool $isHtml): array
-    {
+    public function extractMetadata(
+        Request $request,
+        ?string $path,
+        bool $isHtml,
+        int $statusCode = 200,
+        bool $isRedirect = false,
+        ?string $redirectId = null
+    ): array {
         $userAgent = (string) $request->userAgent();
         $referer = (string) $request->header('referer');
         $isBot = $this->detectIsBot($userAgent);
@@ -64,6 +71,9 @@ class AnalyticsService
             'referer' => $referer ?: null,
             'referer_domain' => $refererDomain,
             'path' => $normalizedPath,
+            'status_code' => $statusCode,
+            'is_redirect' => $isRedirect,
+            'redirect_id' => $redirectId,
             'country_code' => $this->detectCountryCode($request),
             'browser' => $this->detectBrowser($userAgent),
             'os' => $this->detectOs($userAgent),
@@ -74,7 +84,7 @@ class AnalyticsService
             'utm_campaign' => $request->query('utm_campaign') ? substr((string) $request->query('utm_campaign'), 0, 100) : null,
             'utm_term' => $request->query('utm_term') ? substr((string) $request->query('utm_term'), 0, 100) : null,
             'utm_content' => $request->query('utm_content') ? substr((string) $request->query('utm_content'), 0, 100) : null,
-            'is_quiet' => ! $isHtml,
+            'is_quiet' => ! $isHtml && ! $isRedirect,
         ];
     }
 
@@ -332,6 +342,18 @@ class AnalyticsService
     }
 
     /**
+     * Get real-time active unique visitor count within the past N minutes.
+     */
+    public function getActiveVisitorsCount(Site $site, int $minutes = 15): int
+    {
+        return (int) $site->siteViews()
+            ->where('is_quiet', false)
+            ->where('is_bot', false)
+            ->where('created_at', '>=', now()->subMinutes($minutes))
+            ->count(DB::raw('DISTINCT ip_address'));
+    }
+
+    /**
      * Get high-level summary overview metrics with previous period comparisons.
      */
     public function getOverview(Site $site, int $days = 7, bool $includeBots = false): array
@@ -349,11 +371,29 @@ class AnalyticsService
         }
 
         $totalViews = (clone $currentQuery)->count();
-        $uniqueVisitors = (clone $currentQuery)->distinct('ip_address')->count('ip_address');
+        $uniqueVisitors = (clone $currentQuery)->count(DB::raw('DISTINCT ip_address'));
 
         // Asset requests (quiet views)
         $assetRequests = $site->siteViews()
             ->where('is_quiet', true)
+            ->where('created_at', '>=', $currentStart)
+            ->count();
+
+        // Redirect hits
+        $redirectHits = $site->siteViews()
+            ->where('is_redirect', true)
+            ->where('created_at', '>=', $currentStart)
+            ->count();
+
+        // 404 broken link requests
+        $notFoundHits = $site->siteViews()
+            ->where('status_code', 404)
+            ->where('created_at', '>=', $currentStart)
+            ->count();
+
+        // Bot views count
+        $botViews = $site->siteViews()
+            ->where('is_bot', true)
             ->where('created_at', '>=', $currentStart)
             ->count();
 
@@ -367,7 +407,7 @@ class AnalyticsService
         }
 
         $prevTotalViews = (clone $previousQuery)->count();
-        $prevUniqueVisitors = (clone $previousQuery)->distinct('ip_address')->count('ip_address');
+        $prevUniqueVisitors = (clone $previousQuery)->count(DB::raw('DISTINCT ip_address'));
 
         $viewsGrowth = $prevTotalViews > 0
             ? round((($totalViews - $prevTotalViews) / $prevTotalViews) * 100, 1)
@@ -381,9 +421,15 @@ class AnalyticsService
             ? round($totalViews / $uniqueVisitors, 1)
             : ($totalViews > 0 ? 1.0 : 0.0);
 
+        $activeNow = $this->getActiveVisitorsCount($site, 15);
+
         return [
             'total_views' => $totalViews,
             'unique_visitors' => $uniqueVisitors,
+            'active_now' => $activeNow,
+            'redirect_hits' => $redirectHits,
+            'not_found_hits' => $notFoundHits,
+            'bot_views' => $botViews,
             'asset_requests' => $assetRequests,
             'views_growth' => $viewsGrowth,
             'visitors_growth' => $visitorsGrowth,
@@ -726,6 +772,95 @@ class AnalyticsService
     }
 
     /**
+     * Telemetry performance breakdown for configured redirect rules.
+     */
+    public function getRedirectPerformance(Site $site, int $days = 7): Collection
+    {
+        $redirects = $site->redirects()->get();
+
+        return $redirects->map(function ($redirect) use ($site, $days) {
+            $viewQuery = $site->siteViews()
+                ->where('redirect_id', $redirect->id)
+                ->when($days > 0, fn ($q) => $q->where('created_at', '>=', now()->subDays($days)));
+
+            $periodHits = (clone $viewQuery)->count();
+            $uniques = (clone $viewQuery)->count(DB::raw('DISTINCT ip_address'));
+
+            return [
+                'id' => $redirect->id,
+                'from_path' => $redirect->from_path,
+                'to_url' => $redirect->to_url,
+                'status_code' => (int) $redirect->status_code,
+                'is_active' => (bool) $redirect->is_active,
+                'total_hits' => (int) $redirect->hit_count,
+                'period_hits' => $periodHits,
+                'uniques' => $uniques,
+                'last_accessed_at' => $redirect->last_accessed_at,
+                'description' => $redirect->description,
+            ];
+        })->sortByDesc('period_hits')->values();
+    }
+
+    /**
+     * Top 404 broken link paths visited by users or bots.
+     */
+    public function getBrokenLinks(Site $site, int $days = 7, int $limit = 10): Collection
+    {
+        $query = $site->siteViews()
+            ->where('status_code', 404)
+            ->when($days > 0, fn ($q) => $q->where('created_at', '>=', now()->subDays($days)));
+
+        $records = $query
+            ->select(
+                DB::raw("COALESCE(path, '/') as path"),
+                DB::raw('count(*) as count'),
+                DB::raw('max(created_at) as last_seen')
+            )
+            ->groupBy('path')
+            ->orderByDesc('count')
+            ->limit($limit)
+            ->get();
+
+        return $records->map(function ($row) {
+            return [
+                'path' => $row->path,
+                'count' => (int) $row->count,
+                'last_seen' => $row->last_seen ? Carbon::parse($row->last_seen) : null,
+            ];
+        });
+    }
+
+    /**
+     * 24-hour distribution of visits to pinpoint peak visitor activity hours.
+     */
+    public function getHourlyDistribution(Site $site, int $days = 7): array
+    {
+        $query = $this->buildViewQuery($site, $days, false, false);
+        $driver = DB::connection()->getDriverName();
+        $hourExpr = $driver === 'sqlite'
+            ? "CAST(strftime('%H', created_at) AS INTEGER)"
+            : 'HOUR(created_at)';
+
+        $counts = $query
+            ->select(DB::raw("{$hourExpr} as hour"), DB::raw('count(*) as count'))
+            ->groupBy('hour')
+            ->pluck('count', 'hour')
+            ->toArray();
+
+        $labels = [];
+        $data = [];
+        for ($h = 0; $h < 24; $h++) {
+            $labels[] = sprintf('%02d:00', $h);
+            $data[] = (int) ($counts[$h] ?? 0);
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data,
+        ];
+    }
+
+    /**
      * Stream CSV export of analytics views for the site.
      */
     public function exportCsv(Site $site, int $days = 30): StreamedResponse
@@ -754,6 +889,8 @@ class AnalyticsService
             fputcsv($handle, [
                 'Timestamp (UTC)',
                 'Type',
+                'Status Code',
+                'Is Redirect',
                 'Path',
                 'IP Address',
                 'Country',
@@ -770,9 +907,20 @@ class AnalyticsService
 
             $query->chunk(500, function ($views) use ($handle) {
                 foreach ($views as $v) {
+                    $type = 'Page View';
+                    if ($v->is_redirect) {
+                        $type = 'Redirect ('.$v->status_code.')';
+                    } elseif ($v->status_code === 404) {
+                        $type = '404 Not Found';
+                    } elseif ($v->is_quiet) {
+                        $type = 'Asset';
+                    }
+
                     fputcsv($handle, [
                         $v->created_at?->toIso8601String(),
-                        $v->is_quiet ? 'Asset' : 'Page View',
+                        $type,
+                        $v->status_code ?? 200,
+                        $v->is_redirect ? 'Yes' : 'No',
                         $v->path ?: '/',
                         $v->ip_address,
                         $v->country_code,

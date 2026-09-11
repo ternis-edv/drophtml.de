@@ -89,10 +89,64 @@ class SiteServingService
             ]);
         }
 
-        // Evaluate _redirects if configured
+        $directExists = $cleanPath !== null && $disk->fileExists("{$site->path}/{$cleanPath}");
+
+        // 1. Evaluate database-driven redirect rules if configured
+        $dbRedirects = $site->redirects()->where('is_active', true)->get();
+        if ($dbRedirects->isNotEmpty()) {
+            $dbRules = $dbRedirects->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'model' => $r,
+                    'from' => $r->from_path,
+                    'to' => $r->to_url,
+                    'status' => (int) $r->status_code,
+                    'force' => true,
+                ];
+            })->all();
+
+            $matchedDbRedirect = $this->matchRedirect($dbRules, $requestPath, $directExists);
+
+            if ($matchedDbRedirect) {
+                $ruleModel = $matchedDbRedirect['rule']['model'] ?? null;
+                if ($ruleModel) {
+                    $ruleModel->increment('hit_count');
+                    $ruleModel->update(['last_accessed_at' => now()]);
+                }
+
+                if ($matchedDbRedirect['status'] === 200) {
+                    // Internal Rewrite (e.g. SPA fallback /* /index.html 200)
+                    $cleanPath = $this->sanitizePath(ltrim($matchedDbRedirect['to'], '/'));
+                } else {
+                    // HTTP 301, 302, 307, 308 Redirect
+                    $this->recordAnalytics(
+                        $site,
+                        $request,
+                        $requestPath,
+                        true,
+                        $matchedDbRedirect['status'],
+                        true,
+                        $ruleModel?->id
+                    );
+
+                    $to = $matchedDbRedirect['to'];
+                    $targetUrl = (str_starts_with($to, 'http://') || str_starts_with($to, 'https://'))
+                        ? $to
+                        : rtrim($baseUrl, '/').'/'.ltrim($to, '/');
+
+                    $qs = $request->getQueryString();
+                    if (! empty($qs) && ! str_contains($targetUrl, '?')) {
+                        $targetUrl .= '?'.$qs;
+                    }
+
+                    return redirect()->to($targetUrl, $matchedDbRedirect['status']);
+                }
+            }
+        }
+
+        // 2. Evaluate file-based _redirects if configured
         if ($disk->fileExists("{$site->path}/_redirects")) {
             $redirectRules = $this->parseRedirectRules($disk->get("{$site->path}/_redirects"));
-            $directExists = $cleanPath !== null && $disk->fileExists("{$site->path}/{$cleanPath}");
             $matchedRedirect = $this->matchRedirect($redirectRules, $requestPath, $directExists);
 
             if ($matchedRedirect) {
@@ -101,6 +155,16 @@ class SiteServingService
                     $cleanPath = $this->sanitizePath(ltrim($matchedRedirect['to'], '/'));
                 } else {
                     // HTTP 301, 302, 307, 308 Redirect
+                    $this->recordAnalytics(
+                        $site,
+                        $request,
+                        $requestPath,
+                        true,
+                        $matchedRedirect['status'],
+                        true,
+                        null
+                    );
+
                     $to = $matchedRedirect['to'];
                     $targetUrl = (str_starts_with($to, 'http://') || str_starts_with($to, 'https://'))
                         ? $to
@@ -137,6 +201,7 @@ class SiteServingService
                 $resolvedPath = '404.html';
                 $isCustom404 = true;
             } else {
+                $this->recordAnalytics($site, $request, $requestPath, false, 404);
                 abort(404, 'File not found.');
             }
         }
@@ -153,6 +218,7 @@ class SiteServingService
                 $realFilePath = realpath($disk->path("{$site->path}/404.html"));
                 $isCustom404 = true;
             } else {
+                $this->recordAnalytics($site, $request, $requestPath, false, 404);
                 abort(404, 'File not found.');
             }
         }
@@ -161,7 +227,8 @@ class SiteServingService
         $isHtml = in_array($extension, ['html', 'htm'], true);
 
         // Record visitor analytics
-        $this->recordAnalytics($site, $request, $path ?? $resolvedPath, $isHtml);
+        $statusCode = $isCustom404 ? 404 : 200;
+        $this->recordAnalytics($site, $request, $path ?? $resolvedPath, $isHtml, $statusCode);
 
         $lastModified = filemtime($realFilePath);
         $fileSize = filesize($realFilePath);
@@ -353,13 +420,27 @@ class SiteServingService
     /**
      * Record analytics view for a site visit.
      */
-    protected function recordAnalytics(Site $site, Request $request, ?string $path, bool $isHtml): void
-    {
-        $metadata = $this->analyticsService->extractMetadata($request, $path, $isHtml);
+    protected function recordAnalytics(
+        Site $site,
+        Request $request,
+        ?string $path,
+        bool $isHtml,
+        int $statusCode = 200,
+        bool $isRedirect = false,
+        ?string $redirectId = null
+    ): void {
+        $metadata = $this->analyticsService->extractMetadata(
+            $request,
+            $path,
+            $isHtml,
+            $statusCode,
+            $isRedirect,
+            $redirectId
+        );
 
         $site->siteViews()->create($metadata);
 
-        if ($isHtml) {
+        if ($isHtml && ! $isRedirect && $statusCode === 200) {
             $site->increment('views');
         }
     }
@@ -492,6 +573,7 @@ class SiteServingService
                 return [
                     'to' => $rule['to'],
                     'status' => $rule['status'],
+                    'rule' => $rule,
                 ];
             }
 
@@ -515,6 +597,7 @@ class SiteServingService
                     return [
                         'to' => $target,
                         'status' => $rule['status'],
+                        'rule' => $rule,
                     ];
                 }
             }

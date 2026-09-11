@@ -280,3 +280,107 @@ test('site stats csv export works for site owner and forbids non-owners', functi
     $response->assertOk();
     $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
 });
+
+test('analytics service tracks real-time active visitors, broken links, and hourly distribution', function () {
+    $service = app(AnalyticsService::class);
+    $user = User::factory()->create();
+    $site = Site::create([
+        'user_id' => $user->id,
+        'slug' => 'realtime-test-site',
+        'path' => 'sites/realtime-test-site',
+        'status' => 'active',
+    ]);
+
+    // 1. Create active visitor view (within last 5 minutes)
+    View::create([
+        'site_id' => $site->id,
+        'ip_address' => '203.0.113.10',
+        'path' => '/',
+        'status_code' => 200,
+        'is_quiet' => false,
+        'is_bot' => false,
+        'created_at' => now()->subMinutes(2),
+    ]);
+
+    // 2. Create another active visitor view (within last 10 minutes)
+    View::create([
+        'site_id' => $site->id,
+        'ip_address' => '203.0.113.20',
+        'path' => '/about',
+        'status_code' => 200,
+        'is_quiet' => false,
+        'is_bot' => false,
+        'created_at' => now()->subMinutes(8),
+    ]);
+
+    // 3. Create an older view (30 minutes ago, not in 15m window)
+    View::create([
+        'site_id' => $site->id,
+        'ip_address' => '203.0.113.30',
+        'path' => '/pricing',
+        'status_code' => 200,
+        'is_quiet' => false,
+        'is_bot' => false,
+        'created_at' => now()->subMinutes(30),
+    ]);
+
+    // 4. Create 404 broken link view
+    View::create([
+        'site_id' => $site->id,
+        'ip_address' => '203.0.113.40',
+        'path' => '/old-docs',
+        'status_code' => 404,
+        'is_quiet' => false,
+        'is_bot' => false,
+        'created_at' => now()->subMinutes(5),
+    ]);
+
+    // Check active visitors count (3 active visitors within 15 minutes: 203.0.113.10, 203.0.113.20, 203.0.113.40)
+    $activeCount = $service->getActiveVisitorsCount($site, 15);
+    expect($activeCount)->toBe(3);
+
+    // Check overview
+    $overview = $service->getOverview($site, 7, false);
+    expect($overview['active_now'])->toBe(3);
+    expect($overview['not_found_hits'])->toBe(1);
+
+    // Check broken links
+    $brokenLinks = $service->getBrokenLinks($site, 7);
+    expect($brokenLinks)->toHaveCount(1);
+    expect($brokenLinks->first()['path'])->toBe('/old-docs');
+    expect($brokenLinks->first()['count'])->toBe(1);
+
+    // Check hourly distribution
+    $hourly = $service->getHourlyDistribution($site, 7);
+    expect($hourly['labels'])->toHaveCount(24);
+    expect(array_sum($hourly['data']))->toBeGreaterThan(0);
+});
+
+test('site stats component renders tabs and switches between them', function () {
+    $user = User::factory()->create();
+    $site = Site::create([
+        'user_id' => $user->id,
+        'slug' => 'tabs-test-site',
+        'path' => 'sites/tabs-test-site',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test('dashboard.site-stats', ['siteId' => $site->id])
+        ->assertSet('activeTab', 'traffic')
+        ->assertSee('Traffic Timeline')
+        ->call('setTab', 'pages')
+        ->assertSet('activeTab', 'pages')
+        ->assertSee('Top Visited Pages')
+        ->assertSee('Broken Links')
+        ->call('setTab', 'sources')
+        ->assertSet('activeTab', 'sources')
+        ->assertSee('Inbound Traffic Sources')
+        ->call('setTab', 'redirects')
+        ->assertSet('activeTab', 'redirects')
+        ->assertSee('Redirect URL Performance')
+        ->call('setTab', 'activity')
+        ->assertSet('activeTab', 'activity')
+        ->assertSee('Live Request Activity Stream');
+});

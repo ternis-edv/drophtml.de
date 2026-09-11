@@ -85,4 +85,9 @@ class Site extends Model
     {
         return $this->hasMany(MediaAsset::class);
     }
+
+    public function redirects()
+    {
+        return $this->hasMany(SiteRedirect::class)->orderBy('from_path');
+    }
 }

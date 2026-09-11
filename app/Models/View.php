@@ -32,16 +32,27 @@ class View extends Model
         'utm_term',
         'utm_content',
         'is_quiet',
+        'status_code',
+        'is_redirect',
+        'redirect_id',
+        'created_at',
     ];
 
     protected $casts = [
         'is_quiet' => 'boolean',
         'is_bot' => 'boolean',
+        'is_redirect' => 'boolean',
+        'status_code' => 'integer',
     ];
 
     public function site()
     {
         return $this->belongsTo(Site::class);
+    }
+
+    public function redirect()
+    {
+        return $this->belongsTo(SiteRedirect::class, 'redirect_id');
     }
 
     /**
@@ -58,6 +69,22 @@ class View extends Model
     public function scopeHuman($query)
     {
         return $query->where('is_bot', false);
+    }
+
+    /**
+     * Scope for redirect hits.
+     */
+    public function scopeRedirects($query)
+    {
+        return $query->where('is_redirect', true);
+    }
+
+    /**
+     * Scope for 404 not found views.
+     */
+    public function scopeNotFound($query)
+    {
+        return $query->where('status_code', 404);
     }
 
     /**

@@ -319,13 +319,19 @@ new class extends Component
                             description="Automatically rewrite non-file URLs (like /dashboard or /profile) to /index.html with status 200. Essential for React, Vue, Vite, and Next.js static exports." 
                         />
 
-                        <div class="p-4 rounded-xl bg-zinc-50/70 dark:bg-zinc-900/40 border border-zinc-200/70 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 space-y-2">
-                            <div class="font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                                <flux:icon.information-circle class="size-3.5 text-blue-500" />
-                                <span>Advanced Routing &amp; Headers</span>
+                        <div class="p-4 rounded-xl bg-zinc-50/70 dark:bg-zinc-900/40 border border-zinc-200/70 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                                    <flux:icon.arrows-right-left class="size-3.5 text-indigo-500" />
+                                    <span>Custom Redirect URLs &amp; Routing</span>
+                                </div>
+                                <a href="{{ route('dashboard.sites.redirects', $site) }}" wire:navigate class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+                                    <span>Manage Redirects ({{ $site->redirects()->count() }})</span>
+                                    <flux:icon.arrow-right class="size-3" />
+                                </a>
                             </div>
                             <p class="leading-relaxed">
-                                You can also commit a <code class="font-mono bg-zinc-200/60 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-900 dark:text-zinc-100">_redirects</code> or <code class="font-mono bg-zinc-200/60 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-900 dark:text-zinc-100">_headers</code> file at your project root for custom 301/302 redirects, wildcard splats, CORS, and security policies.
+                                Manage per-site 301/302 redirects, marketing shortlinks, and 200 rewrites with telemetry and hit tracking directly in the dashboard, or commit a <code class="font-mono bg-zinc-200/60 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-900 dark:text-zinc-100">_redirects</code> file.
                             </p>
                         </div>
                     </div>
