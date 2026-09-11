@@ -221,3 +221,33 @@ test('livewire site-redirects component allows creating, editing, toggling, and 
 
     expect($site->redirects()->count())->toBe(0);
 });
+
+test('redirect creation rejects unsafe protocols like javascript or data', function () {
+    $user = User::factory()->create();
+    $site = Site::create([
+        'slug' => 'security-redirect-site',
+        'path' => 'sites/security-redirect-site',
+        'user_id' => $user->id,
+        'status' => 'active',
+    ]);
+
+    // API should reject javascript:
+    $response = $this->actingAs($user)->postJson("/api/sites/{$site->id}/redirects", [
+        'from_path' => '/xss',
+        'to_url' => 'javascript:alert(1)',
+        'status_code' => 301,
+    ]);
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(['to_url']);
+
+    // Livewire should reject data:
+    Livewire::actingAs($user)
+        ->test('dashboard.site-redirects', ['siteId' => $site->id])
+        ->set('fromPath', '/bad')
+        ->set('toUrl', 'data:text/html,<script>alert(1)</script>')
+        ->set('statusCode', 301)
+        ->call('createRedirect')
+        ->assertHasErrors(['toUrl']);
+
+    expect($site->redirects()->count())->toBe(0);
+});

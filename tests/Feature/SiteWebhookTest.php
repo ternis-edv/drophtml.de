@@ -91,3 +91,22 @@ test('deployToExistingSite dispatches webhook job when webhook_url is set', func
         return $job->site->id === $site->id && $job->event === 'site.deployed';
     });
 });
+
+test('dispatch site webhook job ignores empty or invalid URLs', function () {
+    Http::fake();
+
+    $user = User::factory()->create();
+    $site = Site::create([
+        'slug' => 'invalid-webhook-site',
+        'path' => 'sites/invalid-webhook-site',
+        'status' => 'active',
+        'user_id' => $user->id,
+        'webhook_url' => 'not-a-valid-url',
+    ]);
+
+    $job = new DispatchSiteWebhookJob($site, 'site.deployed');
+    $activityLogService = app(ActivityLogService::class);
+    $job->handle($activityLogService);
+
+    Http::assertNothingSent();
+});

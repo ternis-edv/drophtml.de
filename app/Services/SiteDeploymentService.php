@@ -295,6 +295,7 @@ class SiteDeploymentService
         }
 
         $site->mediaAssets()->forceDelete();
+        $site->redirects()->delete();
         $site->domains()->delete();
         $site->deployments()->delete();
         $site->siteViews()->delete();

@@ -37,6 +37,17 @@ class DispatchSiteWebhookJob implements ShouldQueue
             return;
         }
 
+        // SSRF protection: reject private/reserved IP addresses in production/non-testing environments
+        $host = parse_url($url, PHP_URL_HOST);
+        if ($host && ! app()->runningUnitTests()) {
+            $ip = gethostbyname($host);
+            if ($ip && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                Log::warning("SSRF blocked for webhook delivery to {$url} (resolved to {$ip})");
+
+                return;
+            }
+        }
+
         $payload = [
             'event' => $this->event,
             'site' => [
