@@ -62,21 +62,6 @@
 
             <flux:spacer />
 
-            <!-- Platform Health & Resources -->
-            <div class="px-3 py-2 space-y-2.5">
-                <!-- Edge CDN Status Pill -->
-                <div class="p-2.5 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 flex items-center justify-between text-[11px]">
-                    <div class="flex items-center gap-2">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        <span class="font-medium text-zinc-700 dark:text-zinc-300">Global Edge CDN</span>
-                    </div>
-                    <span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400 text-[10px]">99.99%</span>
-                </div>
-            </div>
-
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Developer Resources')">
                     <flux:sidebar.item icon="document-text" href="/docs/api">
