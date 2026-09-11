@@ -3,7 +3,7 @@
         <div x-data="{ 
             headlines: [
                 'Ship HTML in seconds.',
-                'Stream media on S3 / Cloudflare R2.',
+                'Stream 4K media with global Cloud CDN.',
                 'Automate with GitHub CI/CD webhooks.',
                 'Lock client staging behind passwords.'
             ],
@@ -22,7 +22,7 @@
                         <span class="animate-ping absolute inline-flex size-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full size-2 bg-emerald-500"></span>
                     </span>
-                    <span><strong>Engine 2.0 Released:</strong> S3 / Cloudflare R2 Static Media Hosting</span>
+                    <span><strong>Engine 2.0:</strong> Global Cloud Media Storage &amp; Streaming</span>
                     <flux:icon.arrow-right class="size-3 text-indigo-500 group-hover:translate-x-0.5 transition-transform" />
                 </a>
 
@@ -38,7 +38,7 @@
                 
                 <!-- Subtitle -->
                 <p class="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto mb-10 leading-relaxed font-normal">
-                    Drag, drop, and publish HTML or ZIP files in seconds. Connect GitHub repositories with zero configuration, host heavy images, videos, and PDFs on high-speed S3/R2 object storage, protect staging behind passwords, and map custom domains with automated SSL.
+                    Drag, drop, and publish HTML or ZIP files in seconds. Connect GitHub repositories with zero configuration, host heavy images, videos, and PDFs on dedicated high-speed cloud object storage, protect staging behind passwords, and map custom domains with automated SSL.
                 </p>
 
                 <!-- Primary CTAs -->
@@ -66,7 +66,7 @@
                         <flux:icon.bolt class="size-3.5 text-amber-500" /> &lt;15ms Global Edge TTFB
                     </div>
                     <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
-                        <flux:icon.cloud-arrow-up class="size-3.5 text-cyan-500" /> Cloudflare R2 / S3 Powered
+                        <flux:icon.cloud-arrow-up class="size-3.5 text-cyan-500" /> Global Edge Cloud Storage
                     </div>
                     <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
                         <flux:icon.shield-check class="size-3.5 text-emerald-500" /> Free Auto Let's Encrypt SSL
@@ -113,7 +113,7 @@
                                         Next-Gen Static Sites Without Server Overheads
                                     </h3>
                                     <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                                        Deployed via Webhook from GitHub &bull; Assets hosted on Cloudflare R2 &bull; 0ms cold starts
+                                        Deployed via Webhook from GitHub &bull; Assets on Global Cloud Storage &bull; 0ms cold starts
                                     </p>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
@@ -131,7 +131,7 @@
                                     <span class="text-[11px] text-zinc-500 block mt-0.5">HTML, CSS, lightweight JS</span>
                                 </div>
                                 <div class="p-4 rounded-xl bg-zinc-100/70 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/80">
-                                    <span class="text-zinc-400 font-mono text-[10px] uppercase block mb-1">Cloud Media (R2/S3)</span>
+                                    <span class="text-zinc-400 font-mono text-[10px] uppercase block mb-1">Cloud Media Storage</span>
                                     <span class="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">148.2 MB</span>
                                     <span class="text-[11px] text-zinc-500 block mt-0.5">4K Videos, WebP images, PDFs</span>
                                 </div>

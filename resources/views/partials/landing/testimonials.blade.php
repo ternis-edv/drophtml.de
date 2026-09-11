@@ -56,7 +56,7 @@
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">CI/CD Power User</span>
                     </div>
                     <p class="text-zinc-700 dark:text-zinc-300 text-sm md:text-base leading-relaxed italic">
-                        &ldquo;The GitHub webhook integration and REST API are flawless. We hooked it up to our build pipelines, and documentation deploys in under two seconds. The new S3 asset hosting is the cherry on top.&rdquo;
+                        &ldquo;The GitHub webhook integration and REST API are flawless. We hooked it up to our build pipelines, and documentation deploys in under two seconds. The new cloud asset storage is the cherry on top.&rdquo;
                     </p>
                 </div>
 

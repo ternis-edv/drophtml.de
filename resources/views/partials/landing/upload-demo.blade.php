@@ -13,8 +13,9 @@
             </p>
         </div>
 
-        <div class="glass-panel rounded-3xl p-3 sm:p-5 border border-zinc-200/80 dark:border-zinc-800 shadow-2xl relative">
-            <div class="bg-white dark:bg-[#09090c] rounded-2xl p-6 sm:p-8 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="glass-panel rounded-3xl p-3 sm:p-5 border border-zinc-200/80 dark:border-zinc-800 shadow-2xl relative overflow-hidden">
+            <div class="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent"></div>
+            <div class="bg-white dark:bg-[#09090c] rounded-2xl p-6 sm:p-8 border border-zinc-200/80 dark:border-zinc-800 shadow-inner">
                 <livewire:file-uploader />
             </div>
 

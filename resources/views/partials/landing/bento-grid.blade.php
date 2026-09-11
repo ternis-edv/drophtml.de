@@ -103,7 +103,7 @@
                 </div>
             </div>
 
-            <!-- Card 4: S3 / Cloudflare R2 Static Media (1 Col) -->
+            <!-- Card 4: Cloud Static Media (1 Col) -->
             <div class="glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 hover:border-cyan-400 dark:hover:border-cyan-500/50 hover:-translate-y-1 transition-all group relative overflow-hidden flex flex-col justify-between">
                 <div class="absolute right-[-20%] top-[-20%] w-48 h-48 bg-cyan-500/10 rounded-full blur-[60px] group-hover:bg-cyan-500/20 transition-all duration-500"></div>
                 <div class="relative z-10">
@@ -112,10 +112,10 @@
                     </div>
                     <div class="flex items-center gap-2 mb-2">
                         <h3 class="text-xl font-bold text-zinc-900 dark:text-white">Cloud Media Storage</h3>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">S3 / R2</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">Cloud CDN</span>
                     </div>
                     <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
-                        Host massive videos, raw images, and documents on AWS S3 or Cloudflare R2 without bloating your site's deploy zip. 1-click bi-directional file promotion.
+                        Host massive videos, raw images, and documents on dedicated high-speed cloud object storage without bloating your site's deploy zip. 1-click bi-directional file promotion.
                     </p>
                 </div>
                 
@@ -125,7 +125,7 @@
                             <flux:icon.film class="w-4 h-4 text-cyan-500" />
                             <span class="font-mono text-zinc-700 dark:text-zinc-300">hero.mp4 (42MB)</span>
                         </div>
-                        <span class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">R2 CDN Edge</span>
+                        <span class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">Global Cloud CDN</span>
                     </div>
                 </div>
             </div>
@@ -162,7 +162,7 @@
                         </div>
                         <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Full REST API & Interactive OpenAPI Docs</h3>
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base leading-relaxed">
-                            Programmatically manage sites, upload archives, query visitor analytics, provision custom domains, and manage S3/R2 media assets. Tested and documented with OpenAPI 3.0 specification.
+                            Programmatically manage sites, upload archives, query visitor analytics, provision custom domains, and manage cloud media assets. Tested and documented with OpenAPI 3.0 specification.
                         </p>
                         <div class="flex items-center gap-4 pt-2">
                             <a href="{{ url('/docs/api') }}" class="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:underline">

@@ -488,7 +488,7 @@
                                 class="w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-colors"
                             >
                                 <span class="flex items-center gap-1.5">
-                                    <span>Cloud Media (S3/R2) API</span>
+                                    <span>Cloud Media API</span>
                                     <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold">NEW</span>
                                 </span>
                                 <flux:icon.arrow-right class="w-3.5 h-3.5" />
@@ -573,9 +573,9 @@
 }</code></pre>
                             </template>
 
-                            <!-- Cloud Media (S3 / R2) -->
+                            <!-- Cloud Media API -->
                             <template x-if="termTab === 'media'">
-                                <pre class="leading-relaxed"><code><span class="text-zinc-500"># Direct upload static media to high-speed S3/R2 storage</span>
+                                <pre class="leading-relaxed"><code><span class="text-zinc-500"># Direct upload static media to high-speed cloud asset storage</span>
 <span class="text-emerald-400">curl</span> -X POST https://drophtml.de/api/media \
   -H <span class="text-yellow-300">"Authorization: Bearer $TOKEN"</span> \
   -H <span class="text-yellow-300">"Accept: application/json"</span> \

@@ -20,7 +20,7 @@
 
                 <!-- Subtext -->
                 <p class="text-indigo-100/80 dark:text-zinc-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-                    Join developers, designers, and agencies deploying lightning-fast websites with drag &amp; drop, GitHub CI/CD, and S3/R2 static media storage.
+                    Join developers, designers, and agencies deploying lightning-fast websites with drag &amp; drop, GitHub CI/CD, and cloud static media storage.
                 </p>
 
                 <!-- Actions -->

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ filled($title ?? null) ? $title.' - '.config('app.name', 'DropHTML') : config('app.name', 'DropHTML').' - Instant Static Sites & Media Cloud' }}</title>
 
-    <meta name="description" content="Instant static site hosting and S3/R2-powered static media hosting for developers. Drag & drop HTML or ZIP, GitHub CI/CD, password protection, and custom domains with free automatic SSL.">
+    <meta name="description" content="Instant static site hosting and high-speed cloud static media hosting for developers. Drag & drop HTML or ZIP, GitHub CI/CD, password protection, and custom domains with free automatic SSL.">
 
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -34,29 +34,38 @@
         .animate-float { animation: float-gentle 4s ease-in-out infinite; }
         
         .glass-panel {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.07);
         }
         .dark .glass-panel {
-            background: rgba(14, 14, 18, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(12, 12, 16, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(0, 0, 0, 0.08);
         }
         .dark .glass-card {
-            background: rgba(18, 18, 23, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(16, 16, 22, 0.8);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .bg-grid-mesh {
+            background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .dark .bg-grid-mesh {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
         }
         
         html { scroll-behavior: smooth; }
@@ -64,7 +73,7 @@
     </style>
 </head>
 <body class="antialiased selection:bg-indigo-500 selection:text-white bg-zinc-50 dark:bg-[#070709] text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
-    <div class="relative min-h-screen flex flex-col overflow-hidden">
+    <div class="relative min-h-screen flex flex-col overflow-hidden bg-grid-mesh">
         <!-- Ambient Background Glow Mesh -->
         <div class="absolute top-[-12%] left-[-10%] w-[55%] h-[55%] rounded-full bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/10 dark:from-indigo-600/25 dark:via-purple-600/20 dark:to-cyan-500/15 blur-[140px] animate-ambient pointer-events-none"></div>
         <div class="absolute top-[35%] right-[-15%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-purple-500/15 via-indigo-500/15 to-emerald-500/10 dark:from-purple-600/20 dark:via-indigo-600/20 dark:to-emerald-600/15 blur-[140px] animate-ambient-delayed pointer-events-none"></div>

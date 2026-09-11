@@ -42,14 +42,14 @@
                     type="button"
                     class="w-full px-6 py-5 text-left flex items-center justify-between gap-4 font-bold text-zinc-900 dark:text-white text-base md:text-lg cursor-pointer select-none"
                 >
-                    <span>How does the S3 / Cloudflare R2 Static Media Hosting work?</span>
+                    <span>How does Cloud Media Storage work?</span>
                     <flux:icon.chevron-down 
                         class="w-5 h-5 text-zinc-400 transition-transform duration-200 shrink-0" 
                         ::class="openFaq === 2 ? 'rotate-180 text-indigo-500' : ''"
                     />
                 </button>
                 <div x-show="openFaq === 2" x-collapse class="px-6 pb-6 text-sm md:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed border-t border-zinc-100 dark:border-zinc-800/60 pt-4">
-                    Heavy files like 4K videos, high-resolution graphics, and PDF documents can bloat your site archive. With DropHTML Media Hosting, you can upload them to high-speed S3/R2 storage with global edge caching and get 1-click embed tags (<code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, Markdown, or raw URLs). You can also migrate files between "Code" and "Asset Storage" at any time with a single click.
+                    Heavy files like 4K videos, high-resolution graphics, and PDF documents can bloat your site archive. With DropHTML Cloud Media, you can upload them to dedicated high-speed cloud asset storage with global edge caching and get 1-click embed tags (<code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, Markdown, or raw URLs). You can also migrate files between "Code" and "Asset Storage" at any time with a single click.
                 </div>
             </div>
 

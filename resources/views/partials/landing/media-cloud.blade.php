@@ -15,7 +15,7 @@
                 Heavy Assets Don't Belong in Your Zip Bundles
             </h2>
             <p class="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto text-base md:text-lg">
-                Images, 4K videos, and PDFs shouldn't slow down your site deployments. Store static media in high-speed S3/R2 asset storage or keep them in-code — switch with a single click.
+                Images, 4K videos, and PDFs shouldn't slow down your site deployments. Store static media in high-speed cloud asset storage or keep them in-code — switch with a single click.
             </p>
         </div>
 
@@ -71,7 +71,7 @@
                             class="px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                             <flux:icon.cloud class="w-3.5 h-3.5" />
-                            <span>Cloud Asset Storage (S3/R2)</span>
+                            <span>Cloud Asset Storage</span>
                             <span class="px-1.5 py-0.2 rounded text-[10px] bg-white/20 text-white font-bold">Recommended</span>
                         </button>
                         <button 
@@ -105,7 +105,7 @@
                         </h3>
                         <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
                             <span x-show="mode === 'asset_storage'">
-                                Assets stream directly from AWS S3 or Cloudflare R2 with global edge caching. Your site deployments stay microscopic, unzipping in milliseconds without hitting memory limits.
+                                Assets stream directly from dedicated high-speed cloud object storage with global edge caching. Your site deployments stay microscopic, unzipping in milliseconds without hitting memory limits.
                             </span>
                             <span x-show="mode === 'code'">
                                 Assets live directly within your site folder alongside <code>index.html</code>. Ideal for offline exports or ultra-light sites with only a favicon and CSS.
@@ -167,7 +167,7 @@
                             <span 
                                 class="px-2.5 py-1 rounded-full text-[10px] font-sans font-bold"
                                 :class="mode === 'asset_storage' ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'"
-                                x-text="mode === 'asset_storage' ? 'S3 / R2 Cloud Asset' : 'Code Repository'"
+                                x-text="mode === 'asset_storage' ? 'Cloud Asset Storage' : 'Code Repository'"
                             ></span>
                         </div>
                     </div>
@@ -239,7 +239,7 @@
                         <button 
                             @click="mode = (mode === 'asset_storage' ? 'code' : 'asset_storage')"
                             class="text-cyan-400 hover:text-cyan-300 font-semibold underline cursor-pointer"
-                            x-text="mode === 'asset_storage' ? 'Simulate 1-Click Move to Code &rarr;' : 'Simulate 1-Click Move to S3/R2 &rarr;'"
+                            x-text="mode === 'asset_storage' ? 'Simulate 1-Click Move to Code &rarr;' : 'Simulate 1-Click Move to Cloud Storage &rarr;'"
                         ></button>
                     </div>
 
@@ -276,7 +276,7 @@
                 </div>
                 <h4 class="font-bold text-zinc-900 dark:text-white text-base mb-2">1-Click Migration</h4>
                 <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Changed your mind? Promote files found in your site code to S3/R2 or pull cloud files into your repository with one click.
+                    Changed your mind? Promote files found in your site code to cloud asset storage or pull cloud files into your repository with one click.
                 </p>
             </div>
 

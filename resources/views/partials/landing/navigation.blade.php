@@ -25,7 +25,7 @@
                 <a href="#demo" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-white transition-colors">Live Studio</a>
                 <a href="#media-cloud" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-white transition-colors flex items-center gap-1.5">
                     <span>Media Cloud</span>
-                    <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold border border-emerald-500/20">R2/S3</span>
+                    <span class="px-1.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[9px] font-bold border border-cyan-500/20">Cloud CDN</span>
                 </a>
                 <a href="#benchmarks" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-white transition-colors">Benchmarks</a>
                 <a href="#pricing" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-white transition-colors">Pricing</a>
@@ -90,7 +90,7 @@
     >
         <a @click="mobileMenuOpen = false" href="#features" class="block py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-indigo-600">Features</a>
         <a @click="mobileMenuOpen = false" href="#demo" class="block py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-indigo-600">Live Studio</a>
-        <a @click="mobileMenuOpen = false" href="#media-cloud" class="block py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-indigo-600">Static Media Cloud (S3/R2)</a>
+        <a @click="mobileMenuOpen = false" href="#media-cloud" class="block py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-indigo-600">Cloud Media Storage</a>
         <a @click="mobileMenuOpen = false" href="#benchmarks" class="block py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-indigo-600">Benchmarks</a>
         <a @click="mobileMenuOpen = false" href="#pricing" class="block py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-indigo-600">Pricing</a>
         <a @click="mobileMenuOpen = false" href="#faq" class="block py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-indigo-600">FAQ</a>

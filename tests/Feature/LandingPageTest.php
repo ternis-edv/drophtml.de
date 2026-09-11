@@ -26,6 +26,11 @@ class LandingPageTest extends TestCase
         $response->assertSee('Deploy Free');
         $response->assertDontSee('@fluxStyles');
         $response->assertDontSee('copySnippet() { navigator.clipboard.writeText');
+        $response->assertDontSee('S3');
+        $response->assertDontSee('R2');
+        $response->assertDontSee('Cloudflare');
+        $response->assertSee('Cloud Media Storage');
+        $response->assertSee('Cloud Asset Storage');
     }
 
     public function test_landing_page_shows_dashboard_link_when_authenticated(): void

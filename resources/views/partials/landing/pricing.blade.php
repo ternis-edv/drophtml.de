@@ -56,7 +56,7 @@
                             <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Up to 50MB per single site upload
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> 100MB S3/R2 Cloud Asset storage
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> 100MB Cloud Asset Storage
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
                             <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Global Edge CDN distribution
@@ -105,7 +105,7 @@
                             <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Unlimited custom domains</strong> with auto SSL
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Unlimited S3/R2 Cloud Asset Storage</strong> & 4K streaming
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Unlimited Cloud Asset Storage</strong> & 4K streaming
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
                             <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Password protection</strong> for client previews
