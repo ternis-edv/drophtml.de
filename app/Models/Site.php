@@ -31,6 +31,7 @@ class Site extends Model
         'path',
         'user_id',
         'views',
+        'storage_bytes',
         'is_permanent',
         'is_spa',
         'status',
@@ -46,6 +47,8 @@ class Site extends Model
     ];
 
     protected $casts = [
+        'views' => 'integer',
+        'storage_bytes' => 'integer',
         'expires_at' => 'datetime',
         'is_permanent' => 'boolean',
         'is_spa' => 'boolean',

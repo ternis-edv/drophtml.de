@@ -54,6 +54,9 @@
                             <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-cyan-50 dark:bg-cyan-950/80 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">NEW</span>
                         </span>
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="circle-stack" :href="route('settings.storage')" :current="request()->routeIs('settings.storage')" wire:navigate>
+                        {{ __('Storage & Usage') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="clock" :href="route('dashboard.activity')" :current="request()->routeIs('dashboard.activity')" wire:navigate>
                         {{ __('Activity Log') }}
                     </flux:sidebar.item>
@@ -146,6 +149,9 @@
                     <flux:menu.radio.group>
                         <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                             {{ __('Settings') }}
+                        </flux:menu.item>
+                        <flux:menu.item :href="route('settings.storage')" icon="circle-stack" wire:navigate>
+                            {{ __('Storage & Usage') }}
                         </flux:menu.item>
                         <flux:menu.item :href="route('api-tokens.edit')" icon="key" wire:navigate>
                             {{ __('API Tokens') }}

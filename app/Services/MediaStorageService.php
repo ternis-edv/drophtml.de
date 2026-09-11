@@ -38,6 +38,8 @@ class MediaStorageService
         $size = $file->getSize() ?: 0;
         $fileType = $this->determineFileType($mimeType, $extension);
 
+        app(StorageUsageService::class)->enforceQuota($user, (int) $size);
+
         $safeBase = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
         if (empty($safeBase)) {
             $safeBase = 'asset';
@@ -85,6 +87,8 @@ class MediaStorageService
                 'media_uploaded_to_code',
                 "Uploaded media '{$originalName}' to site code ({$relativeSitePath})"
             );
+
+            app(StorageUsageService::class)->calculateSiteStorageBytes($site);
 
             return $asset;
         }
@@ -147,7 +151,16 @@ class MediaStorageService
             );
         }
 
-        return (bool) $asset->forceDelete();
+        $site = $asset->site;
+        $isCode = $asset->storage_driver === 'code';
+
+        $deleted = (bool) $asset->forceDelete();
+
+        if ($deleted && $isCode && $site) {
+            app(StorageUsageService::class)->calculateSiteStorageBytes($site);
+        }
+
+        return $deleted;
     }
 
     /**

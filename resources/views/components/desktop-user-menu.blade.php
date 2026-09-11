@@ -32,6 +32,9 @@
             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                 {{ __('Account Settings') }}
             </flux:menu.item>
+            <flux:menu.item :href="route('settings.storage')" icon="circle-stack" wire:navigate>
+                {{ __('Storage & Usage') }}
+            </flux:menu.item>
             <flux:menu.item :href="route('api-tokens.edit')" icon="key" wire:navigate>
                 {{ __('API Tokens & CLI') }}
             </flux:menu.item>

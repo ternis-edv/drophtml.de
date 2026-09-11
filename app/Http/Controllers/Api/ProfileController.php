@@ -7,6 +7,7 @@ use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\ProfileResource;
 use App\Services\SiteDeploymentService;
+use App\Services\StorageUsageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -73,5 +74,15 @@ class ProfileController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'Account deleted successfully.']);
+    }
+
+    /**
+     * Get storage usage telemetry and quota for authenticated user.
+     */
+    public function storage(Request $request, StorageUsageService $storageUsageService)
+    {
+        $stats = $storageUsageService->getUserStorageStats($request->user());
+
+        return response()->json($stats);
     }
 }

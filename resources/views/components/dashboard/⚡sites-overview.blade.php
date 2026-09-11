@@ -114,6 +114,7 @@ new class extends Component
         $totalMediaAssets = auth()->user()->mediaAssets()->count();
         $totalMediaBytes = (int) auth()->user()->mediaAssets()->sum('size');
         $formattedMediaBytes = MediaAsset::formatBytes($totalMediaBytes);
+        $storageStats = app(\App\Services\StorageUsageService::class)->getUserStorageStats(auth()->user());
 
         return view('components.dashboard.⚡sites-overview', [
             'sites' => $sites,
@@ -124,6 +125,7 @@ new class extends Component
             'totalMediaAssets' => $totalMediaAssets,
             'totalMediaBytes' => $totalMediaBytes,
             'formattedMediaBytes' => $formattedMediaBytes,
+            'storageStats' => $storageStats,
         ]);
     }
 };
@@ -276,32 +278,28 @@ new class extends Component
             </div>
         </div>
 
-        <!-- Stat 4: Cloud Media Assets -->
-        <div class="glass-card rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
+        <!-- Stat 4: Storage & Quota -->
+        <a href="{{ route('settings.storage') }}" wire:navigate class="glass-card rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 relative overflow-hidden group hover:border-cyan-500/40 transition-all block cursor-pointer">
             <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 to-indigo-500"></div>
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Cloud Media Assets</span>
-                    <div class="text-2xl sm:text-3xl font-black text-cyan-600 dark:text-cyan-400 mt-1">{{ number_format($totalMediaAssets) }}</div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Storage &amp; Quota</span>
+                    <div class="text-2xl sm:text-3xl font-black text-cyan-600 dark:text-cyan-400 mt-1 font-mono">{{ $storageStats['formatted']['total_used'] }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
-                    <flux:icon.cloud-arrow-up class="size-5" />
+                <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 group-hover:scale-105 transition-transform">
+                    <flux:icon.circle-stack class="size-5" />
                 </div>
             </div>
             <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
                 <span class="flex items-center gap-1.5 truncate">
-                    <span>Cloud Asset Storage</span>
-                    @if($totalMediaBytes > 0)
-                        <span class="font-mono text-cyan-600 dark:text-cyan-400 font-semibold">({{ $formattedMediaBytes }})</span>
-                    @endif
+                    <span>of {{ $storageStats['formatted']['quota'] }} ({{ $storageStats['used_percentage'] }}%)</span>
                 </span>
-                @if($expiringCount > 0)
-                    <button wire:click="setFilter('expiring')" class="text-amber-500 hover:underline font-semibold cursor-pointer">
-                        {{ $expiringCount }} expiring &rarr;
-                    </button>
-                @endif
+                <span class="text-indigo-600 dark:text-indigo-400 group-hover:underline font-semibold flex items-center gap-1">
+                    <span>Manage</span>
+                    <span>&rarr;</span>
+                </span>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Main Container: Search, Filters & Content -->

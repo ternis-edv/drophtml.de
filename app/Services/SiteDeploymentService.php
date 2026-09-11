@@ -27,9 +27,14 @@ class SiteDeploymentService
         'env', 'htaccess', 'htpasswd', 'conf', 'config',
     ];
 
+    protected StorageUsageService $storageUsageService;
+
     public function __construct(
-        protected ActivityLogService $activityLogService
-    ) {}
+        protected ActivityLogService $activityLogService,
+        ?StorageUsageService $storageUsageService = null
+    ) {
+        $this->storageUsageService = $storageUsageService ?? app(StorageUsageService::class);
+    }
 
     /**
      * Create a site from an uploaded file (ZIP archive or single HTML/asset file).
@@ -40,6 +45,10 @@ class SiteDeploymentService
         ?User $user = null,
         array $options = []
     ): Site {
+        if ($user) {
+            $this->storageUsageService->enforceQuota($user, (int) $file->getSize());
+        }
+
         $slug = $this->generateUniqueSlug($originalName);
         $storagePath = "sites/{$slug}";
 
@@ -88,6 +97,7 @@ class SiteDeploymentService
             ],
         ]);
         $this->createDeploymentSnapshot($site, $deployment);
+        $this->storageUsageService->calculateSiteStorageBytes($site);
 
         if ($user) {
             $this->activityLogService->log(
@@ -430,6 +440,9 @@ class SiteDeploymentService
             $newSlug = $this->generateUniqueSlug($newSlug);
         }
 
+        $siteStorageStats = $this->storageUsageService->getSiteStorageStats($site);
+        $this->storageUsageService->enforceQuota($user, $siteStorageStats['total_bytes']);
+
         $newPath = "sites/{$newSlug}";
         $disk->makeDirectory($newPath);
 
@@ -512,6 +525,8 @@ class SiteDeploymentService
             ]);
         }
 
+        $this->storageUsageService->calculateSiteStorageBytes($clonedSite);
+
         return $clonedSite;
     }
 
@@ -577,6 +592,10 @@ class SiteDeploymentService
         ?string $commitMessage = null,
         string $source = 'upload'
     ): Deployment {
+        if ($actor) {
+            $this->storageUsageService->enforceQuota($actor, (int) $file->getSize());
+        }
+
         $publicDisk = Storage::disk('public');
         $fullStoragePath = $publicDisk->path($site->path);
 
@@ -610,6 +629,7 @@ class SiteDeploymentService
         ]);
 
         $this->createDeploymentSnapshot($site, $deployment);
+        $this->storageUsageService->calculateSiteStorageBytes($site);
 
         if ($actor) {
             $this->activityLogService->log(
@@ -671,6 +691,7 @@ class SiteDeploymentService
         ]);
 
         $this->createDeploymentSnapshot($site, $newDeployment);
+        $this->storageUsageService->calculateSiteStorageBytes($site);
 
         if ($actor) {
             $this->activityLogService->log(

@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'github_id', 'github_token', 'github_refresh_token', 'password_set_at', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'github_id', 'github_token', 'github_refresh_token', 'password_set_at', 'email_verified_at', 'storage_limit_bytes'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'password_set_at' => 'datetime',
+            'storage_limit_bytes' => 'integer',
         ];
     }
 

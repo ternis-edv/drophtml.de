@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     // Profile
     Route::get('/user', [ProfileController::class, 'show']);
+    Route::get('/user/storage', [ProfileController::class, 'storage']);
     Route::put('/user', [ProfileController::class, 'update']);
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
     Route::delete('/user', [ProfileController::class, 'destroy']);
