@@ -116,7 +116,7 @@
                     <flux:icon.photo class="size-4" />
                     <span class="flex items-center gap-1.5">
                         <span>Media Assets</span>
-                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">R2/S3</span>
+                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">Cloud</span>
                     </span>
                 </a>
 

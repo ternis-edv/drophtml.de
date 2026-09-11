@@ -50,7 +50,7 @@
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="photo" :href="route('dashboard.media')" :current="request()->routeIs('dashboard.media')" wire:navigate>
                         <span class="flex items-center justify-between w-full">
-                            <span>{{ __('Cloud Media (S3/R2)') }}</span>
+                            <span>{{ __('Cloud Media') }}</span>
                             <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-cyan-50 dark:bg-cyan-950/80 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">NEW</span>
                         </span>
                     </flux:sidebar.item>

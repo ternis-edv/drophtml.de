@@ -16,7 +16,7 @@ new class extends Component
     public $selectedSiteId = null;
 
     public $uploadFiles = [];
-    public $storageDestination = 'asset_storage'; // 'asset_storage' (S3/R2) or 'code' (Site repository)
+    public $storageDestination = 'asset_storage'; // 'asset_storage' (Cloud Asset Storage) or 'code' (Site repository)
     public $customSubdir = '';
 
     public $search = '';
@@ -91,7 +91,7 @@ new class extends Component
         }
 
         $this->uploadFiles = [];
-        $targetLabel = $this->storageDestination === 'asset_storage' ? 'Cloud Asset Storage (S3/R2)' : 'Site Code';
+        $targetLabel = $this->storageDestination === 'asset_storage' ? 'Cloud Asset Storage' : 'Site Code';
         Flux::toast("Successfully uploaded {$count} file(s) to {$targetLabel}!");
         Flux::modal('upload-media-modal')->close();
     }
@@ -132,7 +132,7 @@ new class extends Component
 
         try {
             $mediaStorageService->migrate($asset, $targetDriver, $targetSite, auth()->user());
-            $targetName = $targetDriver === 'asset_storage' ? 'Cloud Asset Storage (S3/R2)' : 'Site Code';
+            $targetName = $targetDriver === 'asset_storage' ? 'Cloud Asset Storage' : 'Site Code';
             Flux::toast("Asset migrated to {$targetName} successfully.");
         } catch (\Exception $e) {
             Flux::toast(variant: 'danger', text: "Migration failed: {$e->getMessage()}");
@@ -221,7 +221,7 @@ new class extends Component
                     </span>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl">
-                    High-performance static object storage powered by Cloudflare R2 / S3. Store images, videos, and PDFs with zero code bundle bloat, or toggle placement directly into your site repository.
+                    High-performance static object storage with global edge distribution. Store images, videos, and PDFs with zero code bundle bloat, or toggle placement directly into your site repository.
                 </p>
             </div>
 
@@ -271,7 +271,7 @@ new class extends Component
                 <flux:icon.sparkles class="size-5" />
             </div>
             <div>
-                <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Asset Storage (R2/S3)</p>
+                <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Cloud Asset Storage</p>
                 <div class="flex items-baseline gap-1.5">
                     <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400">{{ $stats['cloud_count'] }}</span>
                     <span class="text-xs text-zinc-400 font-mono">in cloud</span>
@@ -357,7 +357,7 @@ new class extends Component
                 class="py-1.5 px-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
                 <option value="all">All Storage</option>
-                <option value="asset_storage">Cloud (S3/R2)</option>
+                <option value="asset_storage">Cloud Asset Storage</option>
                 <option value="code">In Code</option>
             </select>
 
@@ -389,7 +389,7 @@ new class extends Component
             </div>
             <h3 class="text-base font-bold text-zinc-800 dark:text-zinc-200">No media assets found</h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mt-1.5 mb-5">
-                Upload your images, videos, audio, or PDFs to fast S3/R2 Cloud Storage or bundle them directly in your site's code.
+                Upload your images, videos, audio, or PDFs to fast Cloud Asset Storage or bundle them directly in your site's code.
             </p>
             <flux:modal.trigger name="upload-media-modal">
                 <flux:button variant="primary" icon="arrow-up-tray" class="rounded-xl shadow-xs cursor-pointer">
@@ -431,7 +431,7 @@ new class extends Component
                         <div class="absolute top-2 left-2">
                             @if($asset->storage_driver === 'asset_storage')
                                 <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase bg-emerald-500/90 text-white shadow-xs">
-                                    Cloud R2/S3
+                                    Cloud Asset
                                 </span>
                             @else
                                 <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase bg-purple-500/90 text-white shadow-xs">
@@ -509,7 +509,7 @@ new class extends Component
                                             icon="cloud-arrow-up" 
                                             wire:click="migrateAsset('{{ $asset->id }}', 'asset_storage', null)"
                                         >
-                                            Migrate to S3/R2 Asset Storage
+                                            Migrate to Cloud Asset Storage
                                         </flux:menu.item>
                                     @elseif($asset->storage_driver === 'asset_storage' && $asset->site_id)
                                         <flux:menu.item 
@@ -589,7 +589,7 @@ new class extends Component
                                     @if($asset->storage_driver === 'asset_storage')
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-500/20">
                                             <flux:icon.cloud-arrow-up class="size-3" />
-                                            Cloud R2/S3
+                                            Cloud Asset
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-500/20">
@@ -665,7 +665,7 @@ new class extends Component
         <form wire:submit="uploadMedia" class="space-y-5">
             <div>
                 <flux:heading size="lg">Upload Static Media</flux:heading>
-                <flux:subheading>Upload images, videos, or PDFs powered by Cloudflare R2 / S3 object storage.</flux:subheading>
+                <flux:subheading>Upload images, videos, or PDFs powered by high-speed cloud object storage.</flux:subheading>
             </div>
 
             <!-- Storage Choice Toggle -->
@@ -676,7 +676,7 @@ new class extends Component
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                                 <flux:icon.cloud-arrow-up class="size-4 text-emerald-500" />
-                                <span>Asset Storage (R2/S3)</span>
+                                <span>Cloud Asset Storage</span>
                             </span>
                             <input type="radio" wire:model.live="storageDestination" value="asset_storage" class="text-indigo-600" />
                         </div>
@@ -770,7 +770,7 @@ new class extends Component
                     <div>
                         <flux:heading size="lg" class="truncate max-w-md">{{ $previewAsset->original_name }}</flux:heading>
                         <flux:subheading>
-                            {{ $previewAsset->storage_driver === 'asset_storage' ? 'Cloud Asset Storage (S3/R2)' : 'Site Code' }} &bull; {{ $previewAsset->formatted_size }} &bull; {{ $previewAsset->mime_type }}
+                            {{ $previewAsset->storage_driver === 'asset_storage' ? 'Cloud Asset Storage' : 'Site Code' }} &bull; {{ $previewAsset->formatted_size }} &bull; {{ $previewAsset->mime_type }}
                         </flux:subheading>
                     </div>
                 </div>

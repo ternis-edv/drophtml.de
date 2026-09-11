@@ -188,7 +188,7 @@ new class extends Component
                     Welcome back, {{ auth()->user()->name }}
                 </h1>
                 <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Deploy static sites with automated SSL, manage Cloudflare R2 / S3 static media, and inspect real-time traffic across global Edge CDN nodes.
+                    Deploy static sites with automated SSL, manage static media with zero-bloat cloud asset storage, and inspect real-time traffic across global Edge CDN nodes.
                 </p>
             </div>
 
@@ -273,7 +273,7 @@ new class extends Component
             </div>
         </div>
 
-        <!-- Stat 4: Cloud Media Assets (S3/R2) -->
+        <!-- Stat 4: Cloud Media Assets -->
         <div class="glass-card rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
             <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 to-indigo-500"></div>
             <div class="flex items-center justify-between">
@@ -286,7 +286,7 @@ new class extends Component
                 </div>
             </div>
             <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
-                <span>S3 / Cloudflare R2</span>
+                <span>Cloud Asset Storage</span>
                 @if($expiringCount > 0)
                     <button wire:click="setFilter('expiring')" class="text-amber-500 hover:underline font-semibold cursor-pointer">
                         {{ $expiringCount }} expiring &rarr;

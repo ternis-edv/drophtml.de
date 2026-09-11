@@ -342,7 +342,7 @@ new class extends Component
                 $this->selectFile(in_array('index.html', $this->files) ? 'index.html' : $this->files[0]);
             }
 
-            Flux::toast("Migrated '{$oldName}' to Cloud Asset Storage (S3/R2)!");
+            Flux::toast("Migrated '{$oldName}' to Cloud Asset Storage!");
         } catch (\Exception $e) {
             Flux::toast(variant: 'danger', text: "Migration failed: {$e->getMessage()}");
         }
@@ -467,7 +467,7 @@ new class extends Component
                         class="py-1 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 {{ $explorerTab === 'assets' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' }}"
                     >
                         <flux:icon.cloud-arrow-up class="size-3.5" />
-                        <span>Cloud R2/S3 ({{ $cloudAssets->count() }})</span>
+                        <span>Cloud Media ({{ $cloudAssets->count() }})</span>
                     </button>
                 </div>
 
@@ -573,11 +573,11 @@ new class extends Component
                         @endforelse
                     </div>
                 @else
-                    <!-- Cloud Assets (S3/R2) Panel -->
+                    <!-- Cloud Assets Panel -->
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100 dark:border-zinc-800">
                         <div class="flex items-center gap-1.5">
                             <flux:icon.cloud class="size-4 text-emerald-500" />
-                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">R2 / S3 Assets</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Cloud Assets</span>
                         </div>
 
                         <button 
@@ -609,9 +609,9 @@ new class extends Component
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate" title="{{ $cAsset->original_name }}">
-                                            {{ $cAsset->original_name }}
+                                             {{ $cAsset->original_name }}
                                         </p>
-                                        <p class="text-[10px] font-mono text-zinc-400">{{ $cAsset->formatted_size }} &bull; S3/R2</p>
+                                        <p class="text-[10px] font-mono text-zinc-400">{{ $cAsset->formatted_size }} &bull; Cloud CDN</p>
                                     </div>
                                 </div>
 
@@ -644,7 +644,7 @@ new class extends Component
                             <div class="text-center py-10 px-3">
                                 <flux:icon.cloud-arrow-up class="size-7 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
                                 <p class="text-xs font-semibold text-zinc-600 dark:text-zinc-400">No cloud assets yet</p>
-                                <p class="text-[11px] text-zinc-400 mt-1 max-w-xs mx-auto">Upload large videos, images, or PDFs to Cloudflare R2 / S3 to optimize site speed.</p>
+                                <p class="text-[11px] text-zinc-400 mt-1 max-w-xs mx-auto">Upload large videos, images, or PDFs to Cloud Asset Storage to optimize site speed.</p>
                                 <button 
                                     type="button" 
                                     @click="$refs.cloudUploadInput.click()" 
@@ -755,7 +755,7 @@ new class extends Component
                                             <p class="text-xs text-zinc-400 max-w-xs mt-1 mb-4">Binary file format cannot be directly edited as plain text.</p>
                                         @endif
 
-                                        <!-- Actions & S3/R2 Migration Banner -->
+                                        <!-- Actions & Cloud Migration Banner -->
                                         <div class="flex flex-col items-center gap-3 mt-4 max-w-sm w-full">
                                             <a href="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" download="{{ basename($currentFile) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-xs font-medium transition-colors">
                                                 <flux:icon.arrow-down-tray class="size-3.5" /> Download Asset
@@ -764,19 +764,19 @@ new class extends Component
                                             <div class="w-full p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/50 text-left">
                                                 <div class="flex items-center gap-2 mb-1">
                                                     <flux:icon.sparkles class="size-4 text-indigo-600 dark:text-indigo-400" />
-                                                    <span class="text-xs font-bold text-indigo-900 dark:text-indigo-200">Optimize with S3/R2 Cloud</span>
+                                                    <span class="text-xs font-bold text-indigo-900 dark:text-indigo-200">Optimize with Cloud Media</span>
                                                 </div>
                                                 <p class="text-[11px] text-zinc-600 dark:text-zinc-400 mb-2.5">
-                                                    Move this file to Cloudflare R2 / S3 Asset Storage to reduce deployment bundle size and serve via global CDN.
+                                                    Move this file to Cloud Asset Storage to reduce deployment bundle size and serve via global CDN.
                                                 </p>
                                                 <flux:button 
                                                     wire:click="migrateCurrentFileToCloud" 
-                                                    wire:confirm="Move '{{ $currentFile }}' to Cloud Asset Storage? It will be removed from your local code repository and hosted on S3/R2 CDN."
+                                                    wire:confirm="Move '{{ $currentFile }}' to Cloud Asset Storage? It will be removed from your local code repository and hosted on Cloud CDN."
                                                     size="xs" 
                                                     variant="primary" 
                                                     class="w-full cursor-pointer"
                                                 >
-                                                    Migrate to S3/R2 Asset Storage
+                                                    Migrate to Cloud Asset Storage
                                                 </flux:button>
                                             </div>
                                         </div>
