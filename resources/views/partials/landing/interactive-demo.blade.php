@@ -2,14 +2,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Section Header -->
-        <div class="text-center mb-12" x-data="{ shown: false }" x-intersect.once="shown = true">
+        <div class="text-center mb-12">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-4 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
                 <flux:icon.bolt class="w-3.5 h-3.5 text-indigo-500" /> Live Interactive Showcase
             </div>
-            <h2 :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-3xl md:text-5xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">
                 Experience the Speed Before You Sign Up
             </h2>
-            <p :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto text-base md:text-lg">
+            <p class="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto text-base md:text-lg">
                 No mockups, no video recordings. Interact directly with our deploy simulator, real-time code editor, and developer terminal.
             </p>
         </div>
@@ -482,6 +482,17 @@
                                 <span>Custom Domain API</span>
                                 <flux:icon.arrow-right class="w-3.5 h-3.5" />
                             </button>
+                            <button 
+                                @click="termTab = 'media'"
+                                :class="termTab === 'media' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 font-bold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'"
+                                class="w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-colors"
+                            >
+                                <span class="flex items-center gap-1.5">
+                                    <span>Cloud Media (S3/R2) API</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold">NEW</span>
+                                </span>
+                                <flux:icon.arrow-right class="w-3.5 h-3.5" />
+                            </button>
                         </div>
                     </div>
 
@@ -559,6 +570,26 @@
   <span class="text-indigo-400">"domain"</span>: <span class="text-yellow-300">"docs.mycompany.com"</span>,
   <span class="text-indigo-400">"verified_at"</span>: <span class="text-yellow-300">"2026-09-10T18:24:00Z"</span>,
   <span class="text-indigo-400">"dns_target"</span>: <span class="text-yellow-300">"sites.drophtml.de"</span>
+}</code></pre>
+                            </template>
+
+                            <!-- Cloud Media (S3 / R2) -->
+                            <template x-if="termTab === 'media'">
+                                <pre class="leading-relaxed"><code><span class="text-zinc-500"># Direct upload static media to high-speed S3/R2 storage</span>
+<span class="text-emerald-400">curl</span> -X POST https://drophtml.de/api/media \
+  -H <span class="text-yellow-300">"Authorization: Bearer $TOKEN"</span> \
+  -H <span class="text-yellow-300">"Accept: application/json"</span> \
+  -F <span class="text-yellow-300">"file=@hero-video-4k.mp4"</span> \
+  -F <span class="text-yellow-300">"storage_driver=asset_storage"</span> \
+  -F <span class="text-yellow-300">"site_id=019183ab-41c9-7ef2-a7cb-29f10928a01f"</span>
+
+<span class="text-zinc-500 mt-4 block"># Response (HTTP 201 Created):</span>
+{
+  <span class="text-indigo-400">"id"</span>: <span class="text-yellow-300">"019183b2-9a02-7c31-9f33-10928a01f"</span>,
+  <span class="text-indigo-400">"filename"</span>: <span class="text-yellow-300">"hero-video-4k.mp4"</span>,
+  <span class="text-indigo-400">"storage_driver"</span>: <span class="text-yellow-300">"asset_storage"</span>,
+  <span class="text-indigo-400">"url"</span>: <span class="text-yellow-300">"https://assets.drophtml.de/media/sites/.../hero-video-4k.mp4"</span>,
+  <span class="text-indigo-400">"html_snippet"</span>: <span class="text-yellow-300">"&lt;video controls src=\"...\"&gt;&lt;/video&gt;"</span>
 }</code></pre>
                             </template>
                         </div>

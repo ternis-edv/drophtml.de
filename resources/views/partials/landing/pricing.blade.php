@@ -1,15 +1,16 @@
 <section id="pricing" class="py-24 relative z-10" x-data="{ annual: true }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div class="text-center mb-16" x-data="{ shown: false }" x-intersect.once="shown = true">
+        <!-- Header -->
+        <div class="text-center mb-16">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-4 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
                 Transparent Plans
             </div>
-            <h2 :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-3xl md:text-5xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">
                 Simple, Honest Pricing
             </h2>
-            <p :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto text-base">
-                Get started completely free. Upgrade when you need permanent retention, custom domains, and team automation.
+            <p class="text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto text-base">
+                Get started completely free. Upgrade when you need permanent retention, custom domains, and production automation.
             </p>
 
             <!-- Billing Toggle -->
@@ -32,10 +33,10 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto" x-data="{ shown: false }" x-intersect.once="shown = true">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             
             <!-- Personal Free Plan -->
-            <div :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden flex flex-col justify-between group hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:shadow-xl">
+            <div class="glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden flex flex-col justify-between group hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:shadow-xl transition-all">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Community</h3>
@@ -45,14 +46,17 @@
                         <span class="text-5xl font-black text-zinc-900 dark:text-white">&euro;0</span>
                         <span class="text-zinc-500 text-sm">/month</span>
                     </div>
-                    <p class="text-zinc-600 dark:text-zinc-400 text-sm mb-6">Ideal for prototypes, portfolio showcases, homework, and quick staging tests.</p>
+                    <p class="text-zinc-600 dark:text-zinc-400 text-sm mb-6">Ideal for quick prototypes, developer portfolios, student projects, and staging tests.</p>
                     
                     <ul class="space-y-3.5 mb-8 text-sm">
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Unlimited 30-day temporary sites
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Unlimited temporary sites (30-day auto cleanup)
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
                             <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Up to 50MB per single site upload
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> 100MB S3/R2 Cloud Asset storage
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
                             <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> Global Edge CDN distribution
@@ -64,7 +68,7 @@
                             <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> GitHub OAuth & Webhook auto-deploys
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> In-browser code editor & file manager
+                            <flux:icon.check-circle class="w-5 h-5 text-indigo-500 shrink-0" /> In-browser Code Studio & File Manager
                         </li>
                     </ul>
                 </div>
@@ -75,7 +79,7 @@
             </div>
 
             <!-- Pro / Commercial Plan -->
-            <div :class="shown ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border-2 border-indigo-500/80 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-indigo-500/10">
+            <div class="glass-panel rounded-3xl p-8 border-2 border-indigo-500/80 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-indigo-500/10">
                 <div class="absolute top-0 right-8 transform -translate-y-1/2">
                     <span class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
                         Most Popular
@@ -85,7 +89,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Pro & Commercial</h3>
-                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-xs font-bold">Everything Unlimited</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-xs font-bold">Production Ready</span>
                     </div>
                     <div class="flex items-baseline gap-2 mb-4">
                         <span class="text-5xl font-black text-zinc-900 dark:text-white" x-text="annual ? '&euro;4.80' : '&euro;6'"></span>
@@ -95,10 +99,13 @@
                     
                     <ul class="space-y-3.5 mb-8 text-sm">
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Permanent hosting</strong> (zero expiration)
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Permanent site retention</strong> (never expires)
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
                             <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Unlimited custom domains</strong> with auto SSL
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Unlimited S3/R2 Cloud Asset Storage</strong> & 4K streaming
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
                             <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Password protection</strong> for client previews
@@ -107,10 +114,10 @@
                             <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Full REST API & Personal Access Tokens
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Real-time traffic & device analytics
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Real-time traffic analytics & 1-click rollbacks
                         </li>
                         <li class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Priority infrastructure support
+                            <flux:icon.check-circle class="w-5 h-5 text-emerald-500 shrink-0" /> Priority infrastructure support & 99.99% SLA
                         </li>
                     </ul>
                 </div>

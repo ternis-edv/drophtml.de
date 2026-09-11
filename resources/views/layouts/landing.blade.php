@@ -3,7 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ filled($title ?? null) ? $title.' - '.config('app.name', 'DropHTML') : config('app.name', 'DropHTML').' - Ship HTML in seconds' }}</title>
+    <title>{{ filled($title ?? null) ? $title.' - '.config('app.name', 'DropHTML') : config('app.name', 'DropHTML').' - Instant Static Sites & Media Cloud' }}</title>
+
+    <meta name="description" content="Instant static site hosting and S3/R2-powered static media hosting for developers. Drag & drop HTML or ZIP, GitHub CI/CD, password protection, and custom domains with free automatic SSL.">
 
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -11,49 +13,63 @@
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
     <!-- Scripts / Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
     
-    <!-- Alpine Intersect -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
-    
     @fluxStyles
     <style>
-        /* Custom Animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-20px) scale(1.05); }
+        @keyframes ambient-glow {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+            50% { transform: translate(25px, -25px) scale(1.1); opacity: 0.65; }
         }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-float-delayed { animation: float 6s ease-in-out 3s infinite; }
+        @keyframes float-gentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .animate-ambient { animation: ambient-glow 10s ease-in-out infinite alternate; }
+        .animate-ambient-delayed { animation: ambient-glow 12s ease-in-out 4s infinite alternate; }
+        .animate-float { animation: float-gentle 4s ease-in-out infinite; }
         
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
         }
         .dark .glass-panel {
-            background: rgba(24, 24, 27, 0.65);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(14, 14, 18, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        .dark .glass-card {
+            background: rgba(18, 18, 23, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
         
-        body {
-            overflow-x: hidden;
-        }
-        
-        /* Smooth scrolling */
         html { scroll-behavior: smooth; }
+        body { overflow-x: hidden; }
     </style>
 </head>
-<body class="antialiased selection:bg-indigo-500 selection:text-white bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+<body class="antialiased selection:bg-indigo-500 selection:text-white bg-zinc-50 dark:bg-[#070709] text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
     <div class="relative min-h-screen flex flex-col overflow-hidden">
-        <!-- Ambient Background Glows -->
-        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/30 dark:bg-indigo-600/20 blur-[120px] animate-float pointer-events-none"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-400/30 dark:bg-purple-600/20 blur-[120px] animate-float-delayed pointer-events-none"></div>
+        <!-- Ambient Background Glow Mesh -->
+        <div class="absolute top-[-12%] left-[-10%] w-[55%] h-[55%] rounded-full bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/10 dark:from-indigo-600/25 dark:via-purple-600/20 dark:to-cyan-500/15 blur-[140px] animate-ambient pointer-events-none"></div>
+        <div class="absolute top-[35%] right-[-15%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-purple-500/15 via-indigo-500/15 to-emerald-500/10 dark:from-purple-600/20 dark:via-indigo-600/20 dark:to-emerald-600/15 blur-[140px] animate-ambient-delayed pointer-events-none"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-[45%] h-[45%] rounded-full bg-indigo-500/10 dark:bg-indigo-700/15 blur-[130px] pointer-events-none"></div>
 
         @include('partials.landing.navigation')
         

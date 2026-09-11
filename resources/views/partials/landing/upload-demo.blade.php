@@ -1,22 +1,53 @@
-<section id="upload" class="py-24 relative z-10">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12" x-data="{ shown: false }" x-intersect.once="shown = true">
-            <h2 :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-3xl md:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">Deploy Right Now</h2>
-            <p :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-zinc-600 dark:text-zinc-400">Drag and drop your HTML or ZIP file below. It's completely free and works instantly.</p>
+<section id="upload" class="py-20 relative z-10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-3 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+                <flux:icon.arrow-up-tray class="size-3.5 text-indigo-500" />
+                <span>Drag &amp; Drop Publisher</span>
+            </div>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">
+                Deploy Instantly in Your Browser
+            </h2>
+            <p class="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
+                No command-line setup or account required to test. Drop single <code>.html</code> files or full <code>.zip</code> archives below to publish immediately.
+            </p>
         </div>
 
-        <div 
-            x-data="{ shown: false }" 
-            x-intersect.once="shown = true"
-            :class="shown ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-10'" 
-            class="transition-all duration-700 ease-out glass-panel rounded-3xl p-2 md:p-4 border border-zinc-200 dark:border-zinc-800 shadow-[0_20px_50px_-12px_rgba(79,70,229,0.15)] dark:shadow-[0_20px_50px_-12px_rgba(79,70,229,0.3)]"
-        >
-            <div class="bg-zinc-50 dark:bg-[#09090b] rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800">
+        <div class="glass-panel rounded-3xl p-3 sm:p-5 border border-zinc-200/80 dark:border-zinc-800 shadow-2xl relative">
+            <div class="bg-white dark:bg-[#09090c] rounded-2xl p-6 sm:p-8 border border-zinc-200/80 dark:border-zinc-800">
                 <livewire:file-uploader />
             </div>
+
+            <!-- 3-Step Pipeline Visual Footer -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 mt-3 pt-4 border-t border-zinc-200/60 dark:border-zinc-800/60 text-xs">
+                <div class="flex items-start gap-3">
+                    <span class="size-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">1</span>
+                    <div>
+                        <p class="font-bold text-zinc-900 dark:text-zinc-100">Drop your file</p>
+                        <p class="text-[11px] text-zinc-500 mt-0.5">Accepts single HTML, CSS, JS, or zipped project folders.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <span class="size-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">2</span>
+                    <div>
+                        <p class="font-bold text-zinc-900 dark:text-zinc-100">Automatic Edge Caching</p>
+                        <p class="text-[11px] text-zinc-500 mt-0.5">Zip Slip protection, sanitized file extraction &amp; SSL generation.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <span class="size-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">3</span>
+                    <div>
+                        <p class="font-bold text-zinc-900 dark:text-zinc-100">Live URL in &lt; 2s</p>
+                        <p class="text-[11px] text-zinc-500 mt-0.5">Share with clients, lock with password, or connect your domain.</p>
+                    </div>
+                </div>
+            </div>
+
             @guest
-                <div class="mt-4 text-center text-sm text-zinc-500">
-                    Sites uploaded without an account expire in 24 hours. <a href="{{ route('register') }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">Create a free account</a> to keep them longer.
+                <div class="mt-4 text-center text-xs text-zinc-500">
+                    Guest uploads expire in 24 hours. <a href="{{ route('register') }}" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Create a free account</a> to retain them permanently and connect custom domains.
                 </div>
             @endguest
         </div>

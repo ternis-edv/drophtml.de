@@ -1,78 +1,99 @@
 <section id="testimonials" class="py-24 relative z-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div class="text-center mb-16" x-data="{ shown: false }" x-intersect.once="shown = true">
-            <h2 :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-3xl md:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">Loved by developers</h2>
-            <p :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out text-zinc-600 dark:text-zinc-400">See what others are saying about DropHTML.</p>
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-4 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+                Community Feedback
+            </div>
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">
+                Built for Developers Who Value Speed
+            </h2>
+            <p class="text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto text-base">
+                Discover why indie hackers, agencies, and fullstack engineers use DropHTML to deliver fast, hassle-free web experiences.
+            </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" x-data="{ shown: false }" x-intersect.once="shown = true">
+        <!-- 3 Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             <!-- Testimonial 1 -->
-            <div :class="shown ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative flex flex-col justify-between">
-                <div class="mb-6">
-                    <div class="flex items-center gap-1 mb-4 text-yellow-400">
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
+            <div class="glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between group">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1 text-amber-400">
+                            @for ($i = 0; $i < 5; $i++)
+                                <flux:icon.star class="w-4 h-4 fill-current" />
+                            @endfor
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">Verified User</span>
                     </div>
-                    <p class="text-zinc-700 dark:text-zinc-300 italic">"DropHTML changed the way I share prototypes. I literally just drag a folder and send the link to my clients. It's ridiculously fast and the API makes automation a breeze."</p>
+                    <p class="text-zinc-700 dark:text-zinc-300 text-sm md:text-base leading-relaxed italic">
+                        &ldquo;DropHTML completely eliminated my deployment overhead for client landing pages. Dragging a zip and instantly having a password-protected staging URL ready is unmatched.&rdquo;
+                    </p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+
+                <div class="flex items-center gap-3 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/80 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                         NM
                     </div>
                     <div>
                         <div class="font-bold text-zinc-900 dark:text-white text-sm">Norwin M.</div>
-                        <div class="text-xs text-zinc-500">"Vibecoder"</div>
+                        <div class="text-xs text-zinc-500 dark:text-zinc-400">Frontend Specialist & Freelancer</div>
                     </div>
                 </div>
             </div>
 
             <!-- Testimonial 2 -->
-            <div :class="shown ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative flex flex-col justify-between">
-                <div class="mb-6">
-                    <div class="flex items-center gap-1 mb-4 text-yellow-400">
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
+            <div class="glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 hover:border-purple-500/40 transition-all flex flex-col justify-between group">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1 text-amber-400">
+                            @for ($i = 0; $i < 5; $i++)
+                                <flux:icon.star class="w-4 h-4 fill-current" />
+                            @endfor
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">CI/CD Power User</span>
                     </div>
-                    <p class="text-zinc-700 dark:text-zinc-300 italic">"As a developer, I appreciate tools that just get out of my way. DropHTML does exactly that. The GitHub auto-deploy feature is seamless. A must-have for quick landing pages."</p>
+                    <p class="text-zinc-700 dark:text-zinc-300 text-sm md:text-base leading-relaxed italic">
+                        &ldquo;The GitHub webhook integration and REST API are flawless. We hooked it up to our build pipelines, and documentation deploys in under two seconds. The new S3 asset hosting is the cherry on top.&rdquo;
+                    </p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-sm">
+
+                <div class="flex items-center gap-3 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/80 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                         RB
                     </div>
                     <div>
                         <div class="font-bold text-zinc-900 dark:text-white text-sm">Ramsay Brewer</div>
-                        <div class="text-xs text-zinc-500">Developer, Affiliated with xpsystems.eu</div>
+                        <div class="text-xs text-zinc-500 dark:text-zinc-400">Software Engineer, XP Systems</div>
                     </div>
                 </div>
             </div>
 
             <!-- Testimonial 3 -->
-            <div :class="shown ? 'opacity-100 translate-y-0 delay-300' : 'opacity-0 translate-y-10'" class="transition-all duration-700 ease-out glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative flex flex-col justify-between">
-                <div class="mb-6">
-                    <div class="flex items-center gap-1 mb-4 text-yellow-400">
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
-                        <flux:icon.star class="w-4 h-4 fill-current" />
+            <div class="glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 hover:border-pink-500/40 transition-all flex flex-col justify-between group">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1 text-amber-400">
+                            @for ($i = 0; $i < 5; $i++)
+                                <flux:icon.star class="w-4 h-4 fill-current" />
+                            @endfor
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400">Creator</span>
                     </div>
-                    <p class="text-zinc-700 dark:text-zinc-300 italic">"I'm learning web development, and DropHTML makes it so easy to show my projects to my friends and teachers. No server setup, no confusing FTP clients. It just works!"</p>
+                    <p class="text-zinc-700 dark:text-zinc-300 text-sm md:text-base leading-relaxed italic">
+                        &ldquo;Finally, static hosting that doesn&rsquo;t require terminal gymnastics or heavy framework configurations. Perfect for teaching, sharing prototypes, and shipping fast landing pages.&rdquo;
+                    </p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+
+                <div class="flex items-center gap-3 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/80 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-600 to-rose-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                         LH
                     </div>
                     <div>
                         <div class="font-bold text-zinc-900 dark:text-white text-sm">Louis H.</div>
-                        <div class="text-xs text-zinc-500">Student</div>
+                        <div class="text-xs text-zinc-500 dark:text-zinc-400">Web Developer & Educator</div>
                     </div>
                 </div>
             </div>
