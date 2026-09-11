@@ -2,6 +2,7 @@
 
 use App\Concerns\PasswordValidationRules;
 use App\Livewire\Actions\Logout;
+use App\Services\SiteDeploymentService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -14,7 +15,7 @@ new class extends Component {
     /**
      * Delete the currently authenticated user.
      */
-    public function deleteUser(Logout $logout): void
+    public function deleteUser(Logout $logout, SiteDeploymentService $deploymentService): void
     {
         $user = Auth::user();
 
@@ -24,12 +25,14 @@ new class extends Component {
             ]);
         }
 
-        // Delete user's sites storage directories
+        // Delete user's sites, deployments, analytics, domains, and site media
         foreach ($user->sites as $site) {
-            if ($site->path) {
-                Storage::disk('public')->deleteDirectory($site->path);
-            }
+            $deploymentService->deleteSite($site);
         }
+
+        // Delete standalone user cloud media assets
+        Storage::disk('media')->deleteDirectory("users/{$user->id}");
+        $user->mediaAssets()->forceDelete();
 
         tap($user, $logout(...))->delete();
 

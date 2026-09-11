@@ -110,6 +110,14 @@ new class extends Component
         Flux::toast("Lifetime extended by {$days} days.");
     }
 
+    public function duplicateSite(SiteDeploymentService $deploymentService)
+    {
+        $cloned = $deploymentService->duplicateSite($this->site, auth()->user());
+        Flux::toast("Site cloned as '{$cloned->slug}'!");
+
+        return redirect()->route('dashboard.sites.settings', $cloned->id);
+    }
+
     public function deleteSite(SiteDeploymentService $deploymentService)
     {
         $deploymentService->deleteSite($this->site, auth()->user());
@@ -272,6 +280,30 @@ new class extends Component
                     </button>
                 </div>
             </form>
+        </div>
+
+        <!-- Duplicate Site Card -->
+        <div class="glass-card p-6 sm:p-7 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <flux:icon.document-duplicate class="size-4 text-indigo-500" />
+                        <span>Clone &amp; Duplicate Site</span>
+                    </h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-md leading-relaxed">
+                        Create an exact duplicate of this site with all code and cloud media assets under a new unique slug. Ideal for staging or A/B testing.
+                    </p>
+                </div>
+                <button 
+                    type="button"
+                    wire:click="duplicateSite" 
+                    wire:confirm="Clone this site into a new copy?"
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer shrink-0"
+                >
+                    <flux:icon.document-duplicate class="size-3.5 text-indigo-500" />
+                    <span>Clone Site</span>
+                </button>
+            </div>
         </div>
 
         <!-- Danger Zone Card -->

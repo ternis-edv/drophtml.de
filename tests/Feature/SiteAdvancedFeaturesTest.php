@@ -177,3 +177,27 @@ test('dashboard overview component duplicate action clones site', function () {
 
     expect(Site::where('user_id', $user->id)->count())->toBe(2);
 });
+
+test('dashboard site settings component duplicate action clones site', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $slug = 'settings-dup-site';
+    $path = "sites/{$slug}";
+    Storage::disk('public')->put("{$path}/index.html", '<h1>Settings Dup</h1>');
+
+    $site = Site::create([
+        'user_id' => $user->id,
+        'slug' => $slug,
+        'path' => $path,
+        'original_name' => 'Settings Dup Site',
+        'status' => 'active',
+    ]);
+
+    Livewire::test('dashboard.site-settings', ['siteId' => $site->id])
+        ->call('duplicateSite');
+
+    expect(Site::where('user_id', $user->id)->count())->toBe(2);
+});

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\MediaAsset;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,6 +48,7 @@ test('user can update password via API', function () {
 
 test('user can delete account via API and clean up storage', function () {
     Storage::fake('public');
+    Storage::fake('media');
 
     $user = User::factory()->create([
         'password' => Hash::make('mypassword'),
@@ -62,6 +64,17 @@ test('user can delete account via API and clean up storage', function () {
     ]);
     Storage::disk('public')->put('sites/user-site-to-delete/index.html', 'content');
 
+    $media = MediaAsset::create([
+        'user_id' => $user->id,
+        'original_name' => 'user-avatar.png',
+        'path' => "users/{$user->id}/media/user-avatar.png",
+        'disk' => 'media',
+        'storage_driver' => 'asset_storage',
+        'file_type' => 'image',
+        'size' => 512,
+    ]);
+    Storage::disk('media')->put($media->path, 'avatar');
+
     $response = $this->deleteJson('/api/user', [
         'password' => 'mypassword',
     ]);
@@ -69,4 +82,6 @@ test('user can delete account via API and clean up storage', function () {
     $response->assertOk();
     $this->assertSoftDeleted('users', ['id' => $user->id]);
     Storage::disk('public')->assertMissing('sites/user-site-to-delete');
+    Storage::disk('media')->assertMissing("users/{$user->id}");
+    $this->assertDatabaseMissing('media_assets', ['id' => $media->id]);
 });

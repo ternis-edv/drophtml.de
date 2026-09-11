@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\MediaAsset;
 use App\Models\Site;
 use App\Services\ActivityLogService;
 use App\Services\SiteDeploymentService;
@@ -111,7 +112,8 @@ new class extends Component
         $totalDomains = $allSites->pluck('domains')->flatten()->count();
         $expiringCount = $allSites->filter(fn ($s) => ! $s->is_permanent && $s->expires_at && $s->expires_at->diffInDays(now()) <= 7 && $s->expires_at->isFuture())->count();
         $totalMediaAssets = auth()->user()->mediaAssets()->count();
-        $totalMediaBytes = auth()->user()->mediaAssets()->sum('size_bytes');
+        $totalMediaBytes = (int) auth()->user()->mediaAssets()->sum('size');
+        $formattedMediaBytes = MediaAsset::formatBytes($totalMediaBytes);
 
         return view('components.dashboard.⚡sites-overview', [
             'sites' => $sites,
@@ -121,6 +123,7 @@ new class extends Component
             'expiringCount' => $expiringCount,
             'totalMediaAssets' => $totalMediaAssets,
             'totalMediaBytes' => $totalMediaBytes,
+            'formattedMediaBytes' => $formattedMediaBytes,
         ]);
     }
 };
@@ -286,7 +289,12 @@ new class extends Component
                 </div>
             </div>
             <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
-                <span>Cloud Asset Storage</span>
+                <span class="flex items-center gap-1.5 truncate">
+                    <span>Cloud Asset Storage</span>
+                    @if($totalMediaBytes > 0)
+                        <span class="font-mono text-cyan-600 dark:text-cyan-400 font-semibold">({{ $formattedMediaBytes }})</span>
+                    @endif
+                </span>
                 @if($expiringCount > 0)
                     <button wire:click="setFilter('expiring')" class="text-amber-500 hover:underline font-semibold cursor-pointer">
                         {{ $expiringCount }} expiring &rarr;

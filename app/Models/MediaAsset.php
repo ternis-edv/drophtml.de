@@ -94,11 +94,10 @@ class MediaAsset extends Model
     }
 
     /**
-     * Get human-readable formatted file size.
+     * Format a byte count into a human-readable string.
      */
-    public function getFormattedSizeAttribute(): string
+    public static function formatBytes(int $bytes): string
     {
-        $bytes = (int) $this->size;
         if ($bytes >= 1073741824) {
             return number_format($bytes / 1073741824, 2).' GB';
         }
@@ -110,6 +109,14 @@ class MediaAsset extends Model
         }
 
         return $bytes.' B';
+    }
+
+    /**
+     * Get human-readable formatted file size.
+     */
+    public function getFormattedSizeAttribute(): string
+    {
+        return static::formatBytes((int) $this->size);
     }
 
     /**

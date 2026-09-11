@@ -9,6 +9,7 @@ use App\Http\Resources\ProfileResource;
 use App\Services\SiteDeploymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -63,6 +64,10 @@ class ProfileController extends Controller
         foreach ($user->sites as $site) {
             $this->siteDeploymentService->deleteSite($site);
         }
+
+        // Clean up standalone user cloud media assets
+        Storage::disk('media')->deleteDirectory("users/{$user->id}");
+        $user->mediaAssets()->forceDelete();
 
         $user->tokens()->delete();
         $user->delete();

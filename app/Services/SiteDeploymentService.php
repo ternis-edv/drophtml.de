@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Deployment;
+use App\Models\MediaAsset;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -270,6 +271,9 @@ class SiteDeploymentService
             Storage::disk('local')->deleteDirectory("snapshots/{$site->id}");
         }
 
+        // Clean up cloud media assets directory for this site
+        Storage::disk('media')->deleteDirectory("sites/{$site->id}");
+
         if ($actor) {
             $this->activityLogService->log(
                 $actor,
@@ -279,6 +283,7 @@ class SiteDeploymentService
             );
         }
 
+        $site->mediaAssets()->forceDelete();
         $site->domains()->delete();
         $site->deployments()->delete();
         $site->siteViews()->delete();
@@ -400,6 +405,52 @@ class SiteDeploymentService
             'expires_at' => now()->addDays(30),
             'views' => 0,
         ]);
+
+        // Duplicate media assets associated with the site
+        foreach ($site->mediaAssets as $mediaAsset) {
+            if ($mediaAsset->storage_driver === 'code') {
+                $relPath = $mediaAsset->metadata['relative_code_path'] ?? basename($mediaAsset->path);
+                MediaAsset::create([
+                    'user_id' => $user->id,
+                    'site_id' => $clonedSite->id,
+                    'original_name' => $mediaAsset->original_name,
+                    'path' => "{$newPath}/{$relPath}",
+                    'disk' => 'public',
+                    'storage_driver' => 'code',
+                    'file_type' => $mediaAsset->file_type,
+                    'mime_type' => $mediaAsset->mime_type,
+                    'size' => $mediaAsset->size,
+                    'public_url' => url("/s/{$clonedSite->slug}/".ltrim($relPath, '/')),
+                    'metadata' => $mediaAsset->metadata,
+                ]);
+            } else {
+                $cloudSourcePath = $mediaAsset->path;
+                $cloudFileName = basename($cloudSourcePath);
+                $newCloudPath = "sites/{$clonedSite->id}/media/{$cloudFileName}";
+
+                if (Storage::disk('media')->exists($cloudSourcePath)) {
+                    Storage::disk('media')->copy($cloudSourcePath, $newCloudPath);
+                    $newPublicUrl = Storage::disk('media')->url($newCloudPath);
+                } else {
+                    $newCloudPath = $cloudSourcePath;
+                    $newPublicUrl = $mediaAsset->public_url;
+                }
+
+                MediaAsset::create([
+                    'user_id' => $user->id,
+                    'site_id' => $clonedSite->id,
+                    'original_name' => $mediaAsset->original_name,
+                    'path' => $newCloudPath,
+                    'disk' => 'media',
+                    'storage_driver' => 'asset_storage',
+                    'file_type' => $mediaAsset->file_type,
+                    'mime_type' => $mediaAsset->mime_type,
+                    'size' => $mediaAsset->size,
+                    'public_url' => $newPublicUrl,
+                    'metadata' => $mediaAsset->metadata,
+                ]);
+            }
+        }
 
         $this->activityLogService->log(
             $user,

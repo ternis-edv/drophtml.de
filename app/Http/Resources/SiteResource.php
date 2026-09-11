@@ -28,6 +28,7 @@ class SiteResource extends JsonResource
             'github_branch' => $this->github_branch,
             'auto_deploy' => (bool) $this->auto_deploy,
             'is_password_protected' => (bool) $this->is_password_protected,
+            'media_assets_count' => (int) ($this->media_assets_count ?? $this->mediaAssets()->count()),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'domains' => DomainResource::collection($this->whenLoaded('domains')),

@@ -114,4 +114,26 @@ class SiteController extends Controller
             ->response()
             ->setStatusCode(201);
     }
+
+    /**
+     * Duplicate/clone an existing site.
+     */
+    public function duplicate(Request $request, Site $site)
+    {
+        Gate::authorize('update', $site);
+
+        $request->validate([
+            'custom_slug' => 'nullable|string|max:64|alpha_dash',
+        ]);
+
+        $clonedSite = $this->siteDeploymentService->duplicateSite(
+            $site,
+            $request->user(),
+            $request->input('custom_slug')
+        );
+
+        return (new SiteResource($clonedSite))
+            ->response()
+            ->setStatusCode(201);
+    }
 }
