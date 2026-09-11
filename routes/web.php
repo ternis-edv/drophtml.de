@@ -74,12 +74,12 @@ Route::domain($appDomain)->group(function () {
 
             return $analytics->exportCsv($site, $days);
         })->name('dashboard.sites.stats.export');
-        Route::get('dashboard/sites/{site}/download', function (Site $site, SiteDeploymentService $deploymentService) {
+        Route::get('dashboard/sites/{site}/download', function (Request $request, Site $site, SiteDeploymentService $deploymentService) {
             if ($site->user_id !== auth()->id()) {
                 abort(403);
             }
 
-            return $deploymentService->downloadZip($site);
+            return $deploymentService->downloadZip($site, $request->boolean('media', false));
         })->name('dashboard.sites.download');
         Route::view('dashboard/media', 'dashboard.media')->name('dashboard.media');
         Route::view('dashboard/sites/{site}/media', 'dashboard.site-media')->name('dashboard.sites.media');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\DispatchSiteWebhookJob;
 use App\Models\Site;
 use App\Services\ActivityLogService;
 use App\Services\GitHubService;
@@ -17,6 +18,9 @@ new class extends Component
     public $status;
     public $isPasswordProtected;
     public $sitePassword = '';
+    public $isSpa = false;
+    public $webhookUrl = '';
+    public $webhookSecret = '';
 
     public function mount($siteId)
     {
@@ -27,6 +31,9 @@ new class extends Component
         $this->isPermanent = (bool) $this->site->is_permanent;
         $this->status = $this->site->status;
         $this->isPasswordProtected = (bool) $this->site->is_password_protected;
+        $this->isSpa = (bool) $this->site->is_spa;
+        $this->webhookUrl = (string) ($this->site->webhook_url ?? '');
+        $this->webhookSecret = (string) ($this->site->webhook_secret ?? '');
     }
 
     public function save(GitHubService $gitHubService, ActivityLogService $activityLogService)
@@ -36,6 +43,9 @@ new class extends Component
             'isPermanent' => 'boolean',
             'autoDeploy' => 'boolean',
             'isPasswordProtected' => 'boolean',
+            'isSpa' => 'boolean',
+            'webhookUrl' => 'nullable|url|max:2048',
+            'webhookSecret' => 'nullable|string|max:255',
         ];
 
         if ($this->isPasswordProtected && empty($this->site->site_password)) {
@@ -53,6 +63,9 @@ new class extends Component
             'is_permanent' => $this->isPermanent,
             'status' => $this->status,
             'is_password_protected' => $this->isPasswordProtected,
+            'is_spa' => $this->isSpa,
+            'webhook_url' => ! empty($this->webhookUrl) ? $this->webhookUrl : null,
+            'webhook_secret' => ! empty($this->webhookSecret) ? $this->webhookSecret : null,
         ];
 
         if ($this->isPermanent) {
@@ -116,6 +129,27 @@ new class extends Component
         Flux::toast("Site cloned as '{$cloned->slug}'!");
 
         return redirect()->route('dashboard.sites.settings', $cloned->id);
+    }
+
+    public function sendWebhookTestPing()
+    {
+        if (empty($this->webhookUrl) || ! filter_var($this->webhookUrl, FILTER_VALIDATE_URL)) {
+            Flux::toast('Please enter a valid Webhook URL first.', variant: 'danger');
+
+            return;
+        }
+
+        $this->site->update([
+            'webhook_url' => $this->webhookUrl,
+            'webhook_secret' => ! empty($this->webhookSecret) ? $this->webhookSecret : null,
+        ]);
+
+        DispatchSiteWebhookJob::dispatch($this->site, 'test.ping', [
+            'triggered_by' => auth()->user()->email,
+            'message' => 'Test ping dispatched from DropHTML dashboard',
+        ]);
+
+        Flux::toast('Test ping dispatched to webhook URL!');
     }
 
     public function deleteSite(SiteDeploymentService $deploymentService)
@@ -271,6 +305,80 @@ new class extends Component
                     </div>
                 @endif
 
+                <!-- Routing & Framework Support -->
+                <div>
+                    <div class="flex items-center gap-2 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
+                        <flux:icon.arrows-right-left class="size-4.5 text-blue-500" />
+                        <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100">Routing &amp; Frameworks</h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        <flux:checkbox 
+                            wire:model="isSpa" 
+                            label="Single Page Application (SPA) Fallback" 
+                            description="Automatically rewrite non-file URLs (like /dashboard or /profile) to /index.html with status 200. Essential for React, Vue, Vite, and Next.js static exports." 
+                        />
+
+                        <div class="p-4 rounded-xl bg-zinc-50/70 dark:bg-zinc-900/40 border border-zinc-200/70 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 space-y-2">
+                            <div class="font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                                <flux:icon.information-circle class="size-3.5 text-blue-500" />
+                                <span>Advanced Routing &amp; Headers</span>
+                            </div>
+                            <p class="leading-relaxed">
+                                You can also commit a <code class="font-mono bg-zinc-200/60 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-900 dark:text-zinc-100">_redirects</code> or <code class="font-mono bg-zinc-200/60 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-900 dark:text-zinc-100">_headers</code> file at your project root for custom 301/302 redirects, wildcard splats, CORS, and security policies.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outgoing Deployment Webhooks -->
+                <div>
+                    <div class="flex items-center gap-2 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
+                        <flux:icon.signal class="size-4.5 text-emerald-500" />
+                        <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100">Outgoing Webhooks</h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        <flux:field>
+                            <flux:label>Webhook Delivery URL</flux:label>
+                            <flux:input 
+                                wire:model="webhookUrl" 
+                                type="url" 
+                                placeholder="https://api.yourdomain.com/webhooks or Slack/Discord webhook URL" 
+                            />
+                            <flux:description class="text-xs text-zinc-500 mt-1">
+                                We will send an HTTP POST payload whenever deployments, rollbacks, or site clones occur.
+                            </flux:description>
+                        </flux:field>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <flux:field>
+                                <flux:label>Webhook Secret Key (Optional)</flux:label>
+                                <flux:input 
+                                    wire:model="webhookSecret" 
+                                    type="password" 
+                                    placeholder="Secret key for HMAC signature verification" 
+                                    viewable
+                                />
+                                <flux:description class="text-xs text-zinc-500 mt-1">
+                                    Signed via <code class="font-mono text-zinc-700 dark:text-zinc-300">X-DropHTML-Signature: sha256=...</code>
+                                </flux:description>
+                            </flux:field>
+
+                            <div class="flex items-end pb-1">
+                                <button 
+                                    type="button" 
+                                    wire:click="sendWebhookTestPing" 
+                                    class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                                >
+                                    <flux:icon.paper-airplane class="size-3.5 text-emerald-500" />
+                                    <span>Send Test Ping</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex justify-end pt-5 border-t border-zinc-100 dark:border-zinc-800">
                     <button 
                         type="submit" 
@@ -280,6 +388,37 @@ new class extends Component
                     </button>
                 </div>
             </form>
+        </div>
+
+        <!-- Universal Backup & Export Card -->
+        <div class="glass-card p-6 sm:p-7 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <flux:icon.arrow-down-tray class="size-4 text-emerald-500" />
+                        <span>Data Export &amp; Site Archive</span>
+                    </h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-md leading-relaxed">
+                        Download a complete portable ZIP archive of your site. Choose between code files only or a universal archive bundling both code and hosted cloud media.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <a 
+                        href="{{ route('dashboard.sites.download', $site) }}"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors"
+                    >
+                        <flux:icon.arrow-down-tray class="size-3.5 text-zinc-400" />
+                        <span>Code ZIP</span>
+                    </a>
+                    <a 
+                        href="{{ route('dashboard.sites.download', ['site' => $site, 'media' => 1]) }}"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-colors"
+                    >
+                        <flux:icon.archive-box class="size-3.5 text-emerald-100" />
+                        <span>Universal Archive (with Cloud Media)</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- Duplicate Site Card -->

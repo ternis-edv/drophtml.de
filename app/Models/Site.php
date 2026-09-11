@@ -32,6 +32,7 @@ class Site extends Model
         'user_id',
         'views',
         'is_permanent',
+        'is_spa',
         'status',
         'expires_at',
         'github_repo_full_name',
@@ -40,11 +41,14 @@ class Site extends Model
         'github_webhook_id',
         'is_password_protected',
         'site_password',
+        'webhook_url',
+        'webhook_secret',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
         'is_permanent' => 'boolean',
+        'is_spa' => 'boolean',
         'auto_deploy' => 'boolean',
         'is_password_protected' => 'boolean',
     ];

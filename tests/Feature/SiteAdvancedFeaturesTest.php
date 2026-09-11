@@ -1,9 +1,11 @@
 <?php
 
+use App\Jobs\DispatchSiteWebhookJob;
 use App\Models\Site;
 use App\Models\User;
 use App\Services\SiteDeploymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -200,4 +202,46 @@ test('dashboard site settings component duplicate action clones site', function 
         ->call('duplicateSite');
 
     expect(Site::where('user_id', $user->id)->count())->toBe(2);
+});
+
+test('dashboard site settings can configure SPA mode and webhooks', function () {
+    Storage::fake('public');
+    Queue::fake();
+
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $slug = 'settings-features-site';
+    $path = "sites/{$slug}";
+    Storage::disk('public')->put("{$path}/index.html", '<h1>Settings Test</h1>');
+
+    $site = Site::create([
+        'user_id' => $user->id,
+        'slug' => $slug,
+        'path' => $path,
+        'original_name' => 'Settings Features Site',
+        'status' => 'active',
+        'is_spa' => false,
+    ]);
+
+    Livewire::test('dashboard.site-settings', ['siteId' => $site->id])
+        ->set('isSpa', true)
+        ->set('webhookUrl', 'https://hooks.example.com/deploy')
+        ->set('webhookSecret', 'secret-key-123')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $site->refresh();
+    expect($site->is_spa)->toBeTrue();
+    expect($site->webhook_url)->toBe('https://hooks.example.com/deploy');
+    expect($site->webhook_secret)->toBe('secret-key-123');
+
+    // Test sending ping
+    Livewire::test('dashboard.site-settings', ['siteId' => $site->id])
+        ->call('sendWebhookTestPing')
+        ->assertHasNoErrors();
+
+    Queue::assertPushed(DispatchSiteWebhookJob::class, function ($job) use ($site) {
+        return $job->site->id === $site->id && $job->event === 'test.ping';
+    });
 });

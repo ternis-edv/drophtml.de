@@ -67,6 +67,7 @@ class SiteServingService
         }
 
         $cleanPath = $this->sanitizePath($path);
+        $requestPath = '/'.ltrim($path ?? '', '/');
         $disk = Storage::disk('public');
 
         // Dynamic SEO generation if not provided in site bundle
@@ -88,7 +89,45 @@ class SiteServingService
             ]);
         }
 
-        $resolvedPath = $this->resolveFilePath($site, $path);
+        // Evaluate _redirects if configured
+        if ($disk->fileExists("{$site->path}/_redirects")) {
+            $redirectRules = $this->parseRedirectRules($disk->get("{$site->path}/_redirects"));
+            $directExists = $cleanPath !== null && $disk->fileExists("{$site->path}/{$cleanPath}");
+            $matchedRedirect = $this->matchRedirect($redirectRules, $requestPath, $directExists);
+
+            if ($matchedRedirect) {
+                if ($matchedRedirect['status'] === 200) {
+                    // Internal Rewrite (e.g. SPA fallback /* /index.html 200)
+                    $cleanPath = $this->sanitizePath(ltrim($matchedRedirect['to'], '/'));
+                } else {
+                    // HTTP 301, 302, 307, 308 Redirect
+                    $to = $matchedRedirect['to'];
+                    $targetUrl = (str_starts_with($to, 'http://') || str_starts_with($to, 'https://'))
+                        ? $to
+                        : rtrim($baseUrl, '/').'/'.ltrim($to, '/');
+
+                    $qs = $request->getQueryString();
+                    if (! empty($qs) && ! str_contains($targetUrl, '?')) {
+                        $targetUrl .= '?'.$qs;
+                    }
+
+                    return redirect()->to($targetUrl, $matchedRedirect['status']);
+                }
+            }
+        }
+
+        $resolvedPath = $this->resolveFilePath($site, $cleanPath);
+
+        // SPA fallback mode: if route not matched and site has is_spa enabled
+        if ($resolvedPath === null && $site->is_spa) {
+            $ext = strtolower(pathinfo($cleanPath ?? '', PATHINFO_EXTENSION));
+            if (empty($ext) || in_array($ext, ['html', 'htm'], true)) {
+                if ($disk->fileExists("{$site->path}/index.html")) {
+                    $resolvedPath = 'index.html';
+                }
+            }
+        }
+
         $siteRoot = $disk->path($site->path);
 
         $isCustom404 = false;
@@ -128,15 +167,33 @@ class SiteServingService
         $fileSize = filesize($realFilePath);
         $etag = '"'.md5($lastModified.$fileSize).'"';
 
+        // Base response headers
+        $responseHeaders = [
+            'Content-Type' => $this->resolveMimeType($extension, "{$site->path}/{$resolvedPath}"),
+            'ETag' => $etag,
+            'Cache-Control' => $isHtml ? 'no-cache, must-revalidate' : 'public, max-age=86400, stale-while-revalidate=604800',
+            'X-Frame-Options' => 'SAMEORIGIN',
+            'X-Content-Type-Options' => 'nosniff',
+            'Referrer-Policy' => 'strict-origin-when-cross-origin',
+        ];
+
+        // Apply custom _headers rules if present
+        if ($disk->fileExists("{$site->path}/_headers")) {
+            $headerBlocks = $this->parseHeaderRules($disk->get("{$site->path}/_headers"));
+            $customHeaders = $this->matchHeaders($headerBlocks, $requestPath);
+            foreach ($customHeaders as $hKey => $hVal) {
+                $responseHeaders[$hKey] = $hVal;
+            }
+        }
+
         if (! $isCustom404 && $request->header('If-None-Match') === $etag) {
             return response('', 304, [
                 'ETag' => $etag,
-                'Cache-Control' => $isHtml ? 'no-cache, must-revalidate' : 'public, max-age=86400, stale-while-revalidate=604800',
+                'Cache-Control' => $responseHeaders['Cache-Control'],
             ]);
         }
 
         $fileContent = file_get_contents($realFilePath);
-        $mime = $this->resolveMimeType($extension, "{$site->path}/{$resolvedPath}");
 
         if ($isHtml) {
             $fileContent = $this->injectBaseTag($fileContent, $baseUrl);
@@ -144,14 +201,7 @@ class SiteServingService
 
         $statusCode = $isCustom404 ? 404 : 200;
 
-        return response($fileContent, $statusCode, [
-            'Content-Type' => $mime,
-            'ETag' => $etag,
-            'Cache-Control' => $isHtml ? 'no-cache, must-revalidate' : 'public, max-age=86400, stale-while-revalidate=604800',
-            'X-Frame-Options' => 'SAMEORIGIN',
-            'X-Content-Type-Options' => 'nosniff',
-            'Referrer-Policy' => 'strict-origin-when-cross-origin',
-        ]);
+        return response($fileContent, $statusCode, $responseHeaders);
     }
 
     /**
@@ -253,6 +303,12 @@ class SiteServingService
             if (str_starts_with($part, '.')) {
                 abort(404, 'Access denied.');
             }
+        }
+
+        // Disallow internal config files like _redirects and _headers from direct download
+        $targetFile = strtolower(end($parts));
+        if (in_array($targetFile, ['_redirects', '_headers', 'web.config', 'nginx.conf', '.env'], true)) {
+            abort(404, 'File not found.');
         }
 
         return implode('/', $parts);
@@ -377,5 +433,176 @@ class SiteServingService
         $xml .= "</urlset>\n";
 
         return $xml;
+    }
+
+    /**
+     * Parse _redirects file content into structured rules.
+     */
+    public function parseRedirectRules(string $content): array
+    {
+        $rules = [];
+        $lines = explode("\n", $content);
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+
+            $tokens = preg_split('/\s+/', $line);
+            if (count($tokens) < 2) {
+                continue;
+            }
+
+            $from = $tokens[0];
+            $to = $tokens[1];
+            $statusToken = $tokens[2] ?? '301';
+            $force = str_ends_with($statusToken, '!');
+            $cleanStatus = rtrim($statusToken, '!');
+            $status = is_numeric($cleanStatus) ? (int) $cleanStatus : 301;
+
+            $rules[] = [
+                'from' => $from,
+                'to' => $to,
+                'status' => $status,
+                'force' => $force,
+            ];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Match request path against redirect rules.
+     */
+    public function matchRedirect(array $rules, string $requestPath, bool $directFileExists): ?array
+    {
+        $normalized = '/'.ltrim($requestPath, '/');
+
+        foreach ($rules as $rule) {
+            $from = '/'.ltrim($rule['from'], '/');
+
+            // 200 rewrites do not shadow existing files unless forced (!)
+            if ($rule['status'] === 200 && ! ($rule['force'] ?? false) && $directFileExists) {
+                continue;
+            }
+
+            // Exact path match
+            if ($from === $normalized) {
+                return [
+                    'to' => $rule['to'],
+                    'status' => $rule['status'],
+                ];
+            }
+
+            // Wildcard splat (*) or named parameter (:param) match
+            if (str_contains($from, '*') || str_contains($from, ':')) {
+                $pattern = preg_quote($from, '#');
+                $pattern = str_replace('\\*', '(?P<splat>.*)', $pattern);
+                $pattern = preg_replace('/\\\:([a-zA-Z0-9_]+)/', '(?P<$1>[^/]+)', $pattern);
+
+                if (preg_match('#^'.$pattern.'$#', $normalized, $matches)) {
+                    $target = $rule['to'];
+                    foreach ($matches as $key => $val) {
+                        if (is_string($key)) {
+                            $target = str_replace(':'.$key, $val, $target);
+                            if ($key === 'splat') {
+                                $target = str_replace('*', $val, $target);
+                            }
+                        }
+                    }
+
+                    return [
+                        'to' => $target,
+                        'status' => $rule['status'],
+                    ];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Parse _headers file content into path-based header blocks.
+     */
+    public function parseHeaderRules(string $content): array
+    {
+        $blocks = [];
+        $currentPattern = null;
+        $currentHeaders = [];
+
+        $lines = explode("\n", $content);
+
+        foreach ($lines as $line) {
+            $rawLine = rtrim($line, "\r\n");
+            $trimmed = trim($rawLine);
+
+            if ($trimmed === '' || str_starts_with($trimmed, '#')) {
+                continue;
+            }
+
+            // A line starting with non-whitespace is a new pattern
+            if (! str_starts_with($rawLine, ' ') && ! str_starts_with($rawLine, "\t")) {
+                if ($currentPattern !== null && ! empty($currentHeaders)) {
+                    $blocks[] = [
+                        'pattern' => $currentPattern,
+                        'headers' => $currentHeaders,
+                    ];
+                }
+                $currentPattern = $trimmed;
+                $currentHeaders = [];
+            } else {
+                $parts = explode(':', $trimmed, 2);
+                if (count($parts) === 2 && $currentPattern !== null) {
+                    $name = trim($parts[0]);
+                    $val = trim($parts[1]);
+                    if ($name !== '') {
+                        $currentHeaders[$name] = $val;
+                    }
+                }
+            }
+        }
+
+        if ($currentPattern !== null && ! empty($currentHeaders)) {
+            $blocks[] = [
+                'pattern' => $currentPattern,
+                'headers' => $currentHeaders,
+            ];
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * Match custom headers by path pattern.
+     */
+    public function matchHeaders(array $blocks, string $requestPath): array
+    {
+        $headers = [];
+        $normalized = '/'.ltrim($requestPath, '/');
+
+        foreach ($blocks as $block) {
+            $pattern = '/'.ltrim($block['pattern'], '/');
+
+            $isMatch = false;
+            if ($pattern === '/*' || $pattern === $normalized) {
+                $isMatch = true;
+            } elseif (str_contains($pattern, '*')) {
+                $regex = preg_quote($pattern, '#');
+                $regex = str_replace('\\*', '.*', $regex);
+                if (preg_match('#^'.$regex.'$#', $normalized)) {
+                    $isMatch = true;
+                }
+            }
+
+            if ($isMatch) {
+                foreach ($block['headers'] as $name => $value) {
+                    $headers[$name] = $value;
+                }
+            }
+        }
+
+        return $headers;
     }
 }

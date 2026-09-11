@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\DispatchSiteWebhookJob;
 use App\Models\Deployment;
 use App\Models\MediaAsset;
 use App\Models\Site;
@@ -328,8 +329,9 @@ class SiteDeploymentService
 
     /**
      * Package the site's deployed files into a ZIP archive and stream download.
+     * When $includeMedia is true, bundles both site code and cloud media assets with a manifest.
      */
-    public function downloadZip(Site $site): BinaryFileResponse
+    public function downloadZip(Site $site, bool $includeMedia = false): BinaryFileResponse
     {
         $disk = Storage::disk('public');
         if (! $disk->exists($site->path)) {
@@ -354,12 +356,56 @@ class SiteDeploymentService
             $fullFilePath = $disk->path($file);
             if (file_exists($fullFilePath) && is_readable($fullFilePath)) {
                 $zip->addFile($fullFilePath, $relativePath);
+            } else {
+                $zip->addFromString($relativePath, $disk->get($file));
             }
+        }
+
+        if ($includeMedia) {
+            $mediaAssets = $site->mediaAssets()->get();
+            $manifestAssets = [];
+
+            foreach ($mediaAssets as $media) {
+                $targetDisk = Storage::disk($media->disk ?: 'media');
+                if ($targetDisk->exists($media->path)) {
+                    $mediaContent = $targetDisk->get($media->path);
+                    $archivePath = '_cloud_media/'.$media->original_name;
+                    $zip->addFromString($archivePath, $mediaContent);
+
+                    $manifestAssets[] = [
+                        'id' => $media->id,
+                        'original_name' => $media->original_name,
+                        'file_type' => $media->file_type,
+                        'mime_type' => $media->mime_type,
+                        'size' => $media->size,
+                        'archive_path' => $archivePath,
+                        'public_url' => $media->public_url ?? $media->resolved_url,
+                    ];
+                }
+            }
+
+            $manifest = [
+                'drophtml_export_version' => '1.0',
+                'site_id' => $site->id,
+                'slug' => $site->slug,
+                'original_name' => $site->original_name,
+                'exported_at' => now()->toIso8601String(),
+                'includes_cloud_media' => true,
+                'stats' => [
+                    'code_files_count' => count($allFiles),
+                    'cloud_media_count' => count($manifestAssets),
+                    'total_media_size_bytes' => array_sum(array_column($manifestAssets, 'size')),
+                ],
+                'media_assets' => $manifestAssets,
+            ];
+
+            $zip->addFromString('export-manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         }
 
         $zip->close();
 
-        $downloadFilename = $site->slug.'-backup-'.now()->format('Y-m-d').'.zip';
+        $prefixType = $includeMedia ? '-universal-backup-' : '-backup-';
+        $downloadFilename = $site->slug.$prefixType.now()->format('Y-m-d').'.zip';
 
         return response()->download($tempFile, $downloadFilename, [
             'Content-Type' => 'application/zip',
@@ -458,6 +504,13 @@ class SiteDeploymentService
             'site_duplicated',
             "Duplicated site from {$site->slug} to {$clonedSite->slug}"
         );
+
+        if (! empty($site->webhook_url)) {
+            DispatchSiteWebhookJob::dispatch($site, 'site.duplicated', [
+                'cloned_site_id' => $clonedSite->id,
+                'cloned_site_slug' => $clonedSite->slug,
+            ]);
+        }
 
         return $clonedSite;
     }
@@ -567,6 +620,14 @@ class SiteDeploymentService
             );
         }
 
+        if (! empty($site->webhook_url)) {
+            DispatchSiteWebhookJob::dispatch($site, 'site.deployed', [
+                'deployment_id' => $deployment->id,
+                'source' => $source,
+                'commit_message' => $message,
+            ]);
+        }
+
         return $deployment;
     }
 
@@ -618,6 +679,13 @@ class SiteDeploymentService
                 'site_rollback',
                 "Rolled back site {$site->slug} to deployment #{$shortId}"
             );
+        }
+
+        if (! empty($site->webhook_url)) {
+            DispatchSiteWebhookJob::dispatch($site, 'site.rolled_back', [
+                'deployment_id' => $newDeployment->id,
+                'target_deployment_id' => $targetDeployment->id,
+            ]);
         }
 
         return $newDeployment;

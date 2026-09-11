@@ -136,4 +136,17 @@ class SiteController extends Controller
             ->response()
             ->setStatusCode(201);
     }
+
+    /**
+     * Download the site files as a ZIP archive.
+     * Optionally includes cloud media assets if ?include_media=1.
+     */
+    public function download(Request $request, Site $site)
+    {
+        Gate::authorize('view', $site);
+
+        $includeMedia = $request->boolean('include_media', false) || $request->boolean('media', false);
+
+        return $this->siteDeploymentService->downloadZip($site, $includeMedia);
+    }
 }

@@ -18,6 +18,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     // Sites
     Route::post('sites/{site}/deploy', [SiteController::class, 'deploy']);
     Route::post('sites/{site}/duplicate', [SiteController::class, 'duplicate']);
+    Route::get('sites/{site}/download', [SiteController::class, 'download']);
     Route::apiResource('sites', SiteController::class);
 
     // Domains (Nested under sites)
