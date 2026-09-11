@@ -19,31 +19,45 @@
             </p>
         </div>
 
+        <script>
+            (function() {
+                const initMediaCloud = () => {
+                    Alpine.data('mediaCloudShowcase', () => ({
+                        mode: 'asset_storage',
+                        snippetType: 'html',
+                        copied: false,
+                        getSnippet() {
+                            if (this.mode === 'asset_storage') {
+                                if (this.snippetType === 'html') return '<img src="https://assets.drophtml.de/media/sites/k7x2q/hero-banner.webp" alt="Hero Showcase" loading="lazy" class="rounded-2xl shadow-xl">';
+                                if (this.snippetType === 'video') return '<video controls autoplay muted loop src="https://assets.drophtml.de/media/sites/k7x2q/product-demo-4k.mp4" class="w-full rounded-xl"></video>';
+                                if (this.snippetType === 'markdown') return '![Hero Showcase](https://assets.drophtml.de/media/sites/k7x2q/hero-banner.webp)';
+                                return 'https://assets.drophtml.de/media/sites/k7x2q/hero-banner.webp';
+                            } else {
+                                if (this.snippetType === 'html') return '<img src="/assets/hero-banner.webp" alt="Hero Showcase" loading="lazy">';
+                                if (this.snippetType === 'video') return '<video controls src="/assets/product-demo-4k.mp4"></video>';
+                                if (this.snippetType === 'markdown') return '![Hero Showcase](/assets/hero-banner.webp)';
+                                return 'https://drophtml.de/s/k7x2q/assets/hero-banner.webp';
+                            }
+                        },
+                        copySnippet() {
+                            navigator.clipboard.writeText(this.getSnippet());
+                            this.copied = true;
+                            setTimeout(() => this.copied = false, 2000);
+                        }
+                    }));
+                };
+
+                if (window.Alpine) {
+                    initMediaCloud();
+                } else {
+                    document.addEventListener('alpine:init', initMediaCloud);
+                }
+            })();
+        </script>
+
         <!-- Interactive Architecture & Comparison Showcase -->
         <div 
-            x-data="{
-                mode: 'asset_storage',
-                snippetType: 'html',
-                copied: false,
-                getSnippet() {
-                    if (this.mode === 'asset_storage') {
-                        if (this.snippetType === 'html') return '<img src=\"https://assets.drophtml.de/media/sites/k7x2q/hero-banner.webp\" alt=\"Hero Showcase\" loading=\"lazy\" class=\"rounded-2xl shadow-xl\">';
-                        if (this.snippetType === 'video') return '<video controls autoplay muted loop src=\"https://assets.drophtml.de/media/sites/k7x2q/product-demo-4k.mp4\" class=\"w-full rounded-xl\"></video>';
-                        if (this.snippetType === 'markdown') return '![Hero Showcase](https://assets.drophtml.de/media/sites/k7x2q/hero-banner.webp)';
-                        return 'https://assets.drophtml.de/media/sites/k7x2q/hero-banner.webp';
-                    } else {
-                        if (this.snippetType === 'html') return '<img src=\"/assets/hero-banner.webp\" alt=\"Hero Showcase\" loading=\"lazy\">';
-                        if (this.snippetType === 'video') return '<video controls src=\"/assets/product-demo-4k.mp4\"></video>';
-                        if (this.snippetType === 'markdown') return '![Hero Showcase](/assets/hero-banner.webp)';
-                        return 'https://drophtml.de/s/k7x2q/assets/hero-banner.webp';
-                    }
-                },
-                copySnippet() {
-                    navigator.clipboard.writeText(this.getSnippet());
-                    this.copied = true;
-                    setTimeout(() => this.copied = false, 2000);
-                }
-            }"
+            x-data="mediaCloudShowcase"
             class="glass-panel rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden mb-16"
         >
             <!-- Top Controls Bar -->

@@ -24,6 +24,8 @@ class LandingPageTest extends TestCase
         $response->assertSee('Frequently Asked Questions');
         $response->assertSee('Ready to Ship Your Next Static Site?');
         $response->assertSee('Deploy Free');
+        $response->assertDontSee('@fluxStyles');
+        $response->assertDontSee('copySnippet() { navigator.clipboard.writeText');
     }
 
     public function test_landing_page_shows_dashboard_link_when_authenticated(): void

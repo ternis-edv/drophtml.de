@@ -19,7 +19,6 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
     
-    @fluxStyles
     <style>
         @keyframes ambient-glow {
             0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
