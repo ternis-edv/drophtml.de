@@ -8,6 +8,11 @@
  * Note: app.css (Tailwind + Flux) is still loaded on the landing page because
  * the Livewire file-uploader component depends on it. Everything owned by the
  * landing page itself (nav, hero, upload section, info, footer) is styled here.
+ *
+ * Nesting note: `&` may only be combined with .class / :pseudo / [attr] —
+ * BEM concatenation like `&__child` is invalid CSS and gets dropped by
+ * browsers, so child elements are written as full class names inside the
+ * parent block.
  */
 
 :root {
@@ -136,11 +141,11 @@
     margin-inline: auto;
     padding-inline: 1rem;
 
-    @media (width >= 40rem) {
+    @media (min-width: 40rem) {
         padding-inline: 1.5rem;
     }
 
-    @media (width >= 64rem) {
+    @media (min-width: 64rem) {
         padding-inline: 2rem;
     }
 }
@@ -209,7 +214,7 @@ html:not(.js) .lp-reveal {
         outline-offset: 2px;
     }
 
-    &--primary {
+    &.lp-btn--primary {
         background: var(--lp-accent-solid);
         color: var(--lp-on-accent);
         box-shadow: var(--lp-shadow-sm);
@@ -224,7 +229,7 @@ html:not(.js) .lp-reveal {
         }
     }
 
-    &--ghost {
+    &.lp-btn--ghost {
         background: var(--lp-surface);
         color: var(--lp-text);
         border-color: var(--lp-border-strong);
@@ -234,7 +239,7 @@ html:not(.js) .lp-reveal {
         }
     }
 
-    &--sm {
+    &.lp-btn--sm {
         padding: 0.45rem 0.95rem;
         font-size: 0.8125rem;
         border-radius: 10px;
@@ -331,7 +336,7 @@ html:not(.js) .lp-reveal {
         }
     }
 
-    &__inner {
+    .lp-nav__inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -339,13 +344,13 @@ html:not(.js) .lp-reveal {
         height: var(--lp-nav-height);
     }
 
-    &__brand {
+    .lp-nav__brand {
         display: inline-flex;
         align-items: center;
         text-decoration: none;
     }
 
-    &__links {
+    .lp-nav__links {
         display: none;
         align-items: center;
         gap: 1.75rem;
@@ -362,12 +367,12 @@ html:not(.js) .lp-reveal {
             }
         }
 
-        @media (width >= 64rem) {
+        @media (min-width: 64rem) {
             display: flex;
         }
     }
 
-    &__actions {
+    .lp-nav__actions {
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -385,19 +390,19 @@ html:not(.js) .lp-reveal {
                 color: var(--lp-text);
             }
 
-            @media (width >= 40rem) {
+            @media (min-width: 40rem) {
                 display: inline-block;
             }
         }
     }
 
-    &__burger {
-        @media (width >= 64rem) {
+    .lp-nav__burger {
+        @media (min-width: 64rem) {
             display: none;
         }
     }
 
-    &__drawer {
+    .lp-nav__drawer {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
@@ -427,7 +432,7 @@ html:not(.js) .lp-reveal {
             border-top: 1px solid var(--lp-border);
         }
 
-        @media (width >= 64rem) {
+        @media (min-width: 64rem) {
             display: none;
         }
     }
@@ -442,16 +447,8 @@ html:not(.js) .lp-reveal {
     padding: 8rem 0 3.5rem;
     text-align: center;
 
-    @media (width >= 64rem) {
+    @media (min-width: 64rem) {
         padding: 10.5rem 0 4rem;
-    }
-
-    &__break {
-        display: none;
-
-        @media (width >= 40rem) {
-            display: inline;
-        }
     }
 
     & h1 {
@@ -463,11 +460,19 @@ html:not(.js) .lp-reveal {
         line-height: 1.08;
     }
 
-    &__accent {
+    .lp-hero__break {
+        display: none;
+
+        @media (min-width: 40rem) {
+            display: inline;
+        }
+    }
+
+    .lp-hero__accent {
         color: var(--lp-accent);
     }
 
-    &__sub {
+    .lp-hero__sub {
         max-width: 42rem;
         margin: 0 auto 2.25rem;
         font-size: 1.0625rem;
@@ -475,7 +480,7 @@ html:not(.js) .lp-reveal {
         color: var(--lp-text-muted);
     }
 
-    &__actions {
+    .lp-hero__actions {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -520,7 +525,7 @@ html:not(.js) .lp-reveal {
     position: relative;
     padding: 3.5rem 0;
 
-    @media (width >= 64rem) {
+    @media (min-width: 64rem) {
         padding: 4.5rem 0;
     }
 }
@@ -550,7 +555,7 @@ html:not(.js) .lp-reveal {
 /* ------------------------------------------------------------------ */
 
 .lp-upload {
-    &__panel {
+    .lp-upload__panel {
         position: relative;
         padding: 0.75rem;
         border: 1px solid var(--lp-border);
@@ -559,23 +564,23 @@ html:not(.js) .lp-reveal {
         box-shadow: var(--lp-shadow-md);
         overflow: hidden;
 
-        @media (width >= 40rem) {
+        @media (min-width: 40rem) {
             padding: 1.25rem;
         }
     }
 
-    &__stage {
+    .lp-upload__stage {
         padding: 1.5rem;
         border: 1px solid var(--lp-border);
         border-radius: var(--lp-radius);
         background: var(--lp-bg-subtle);
 
-        @media (width >= 40rem) {
+        @media (min-width: 40rem) {
             padding: 2rem;
         }
     }
 
-    &__steps {
+    .lp-upload__steps {
         display: grid;
         grid-template-columns: 1fr;
         gap: 1rem;
@@ -584,12 +589,12 @@ html:not(.js) .lp-reveal {
         border-top: 1px solid var(--lp-border);
         list-style: none;
 
-        @media (width >= 40rem) {
+        @media (min-width: 40rem) {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
-    &__step {
+    .lp-upload__step {
         display: flex;
         align-items: flex-start;
         gap: 0.75rem;
@@ -609,7 +614,7 @@ html:not(.js) .lp-reveal {
         }
     }
 
-    &__step-num {
+    .lp-upload__step-num {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -624,7 +629,7 @@ html:not(.js) .lp-reveal {
         font-weight: 700;
     }
 
-    &__note {
+    .lp-upload__note {
         margin: 1.25rem 0 0;
         font-size: 0.75rem;
         text-align: center;
@@ -646,62 +651,60 @@ html:not(.js) .lp-reveal {
 /* Info / features section                                             */
 /* ------------------------------------------------------------------ */
 
-.lp-features {
-    &__grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 1rem;
+.lp-features__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
 
-        @media (width >= 40rem) {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        @media (width >= 64rem) {
-            grid-template-columns: repeat(4, 1fr);
-        }
+    @media (min-width: 40rem) {
+        grid-template-columns: repeat(2, 1fr);
     }
 
-    &__card {
-        padding: 1.25rem;
-        border: 1px solid var(--lp-border);
-        border-radius: var(--lp-radius);
-        background: var(--lp-surface);
-        transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+    @media (min-width: 64rem) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
 
-        &:hover {
-            border-color: var(--lp-border-strong);
-            box-shadow: var(--lp-shadow-md);
-            transform: translateY(-2px);
-        }
+.lp-features__card {
+    padding: 1.25rem;
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+    transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
 
-        & h3 {
-            margin: 0.875rem 0 0.35rem;
-            font-size: 0.9375rem;
-            font-weight: 700;
-        }
-
-        & p {
-            margin: 0;
-            font-size: 0.8125rem;
-            line-height: 1.6;
-            color: var(--lp-text-muted);
-        }
+    &:hover {
+        border-color: var(--lp-border-strong);
+        box-shadow: var(--lp-shadow-md);
+        transform: translateY(-2px);
     }
 
-    &__icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.25rem;
-        height: 2.25rem;
-        border-radius: var(--lp-radius-sm);
-        background: var(--lp-accent-soft);
-        color: var(--lp-accent);
+    & h3 {
+        margin: 0.875rem 0 0.35rem;
+        font-size: 0.9375rem;
+        font-weight: 700;
+    }
 
-        & svg {
-            width: 1.15rem;
-            height: 1.15rem;
-        }
+    & p {
+        margin: 0;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        color: var(--lp-text-muted);
+    }
+}
+
+.lp-features__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--lp-radius-sm);
+    background: var(--lp-accent-soft);
+    color: var(--lp-accent);
+
+    & svg {
+        width: 1.15rem;
+        height: 1.15rem;
     }
 }
 
@@ -716,19 +719,19 @@ html:not(.js) .lp-reveal {
     background: var(--lp-bg-subtle);
     font-size: 0.8125rem;
 
-    &__grid {
+    .lp-footer__grid {
         display: grid;
         grid-template-columns: 1fr;
         gap: 2rem;
         margin-bottom: 2.5rem;
 
-        @media (width >= 64rem) {
+        @media (min-width: 64rem) {
             grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
             gap: 2.5rem;
         }
     }
 
-    &__brand {
+    .lp-footer__brand {
         a {
             display: inline-flex;
             text-decoration: none;
@@ -747,7 +750,7 @@ html:not(.js) .lp-reveal {
         }
     }
 
-    &__col {
+    .lp-footer__col {
         & h4 {
             margin: 0 0 0.875rem;
             font-size: 0.6875rem;
@@ -777,7 +780,7 @@ html:not(.js) .lp-reveal {
         }
     }
 
-    &__wordmark {
+    .lp-footer__wordmark {
         display: inline-block;
         margin-bottom: 0.6rem;
 
@@ -788,7 +791,7 @@ html:not(.js) .lp-reveal {
         }
     }
 
-    &__dev {
+    .lp-footer__dev {
         p {
             margin: 0 0 0.4rem;
             line-height: 1.6;
@@ -799,17 +802,17 @@ html:not(.js) .lp-reveal {
                 color: var(--lp-accent);
             }
         }
-    }
 
-    &__imprint {
-        font-size: 0.75rem;
+        .lp-footer__imprint {
+            font-size: 0.75rem;
 
-        a {
-            font-weight: 600;
+            a {
+                font-weight: 600;
+            }
         }
     }
 
-    &__bottom {
+    .lp-footer__bottom {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
@@ -823,7 +826,7 @@ html:not(.js) .lp-reveal {
             margin: 0;
         }
 
-        a {
+        & a {
             color: inherit;
             text-decoration: none;
 
@@ -832,7 +835,7 @@ html:not(.js) .lp-reveal {
             }
         }
 
-        @media (width >= 40rem) {
+        @media (min-width: 40rem) {
             flex-direction: row;
         }
     }

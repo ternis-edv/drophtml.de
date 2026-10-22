@@ -18,6 +18,12 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    css: {
+        // Flatten native CSS nesting (landing.css) in dev as well, so the dev
+        // server serves the same output as the production build instead of raw
+        // nested syntax that older browsers drop entirely.
+        transformer: 'lightningcss',
+    },
     server: {
         cors: true,
         watch: {
