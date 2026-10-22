@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="128" viewBox="0 0 390 128" role="img" aria-labelledby="title">
+  <title id="title">ternis.dev wordmark</title>
+  <path transform="translate(5 0)" fill="#171717" d="M30 24h13v19h19v12H43v20c0 7 4 10 10 10h7v12h-8c-15 0-22-8-22-22V55H16V43h14V24Z"/>
+  <text x="72" y="95" fill="#171717" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="600" letter-spacing="-3">ernis</text>
+  <text x="220" y="95" fill="#626262" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="500" letter-spacing="-2">.dev</text>
+</svg>
