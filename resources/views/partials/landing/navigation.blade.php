@@ -8,15 +8,7 @@
         <div class="flex justify-between items-center h-16 sm:h-20">
             <!-- Brand Logo -->
             <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                <div class="size-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-                    <flux:icon.rocket-launch class="size-5" />
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-lg sm:text-xl font-black tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400">
-                        DropHTML<span class="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 ml-0.5">.de</span>
-                    </span>
-                    <span class="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium">Static Edge Cloud</span>
-                </div>
+                <x-brand-lockup />
             </a>
             
             <!-- Desktop Nav Links -->
@@ -37,7 +29,7 @@
             </div>
 
             <!-- Right Actions -->
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-1 sm:gap-2.5">
                 <!-- Theme Switcher -->
                 <button 
                     @click="$flux.appearance = document.documentElement.classList.contains('dark') ? 'light' : 'dark'"
@@ -50,7 +42,7 @@
                 </button>
 
                 @auth
-                    <flux:button :href="route('dashboard')" variant="primary" size="sm" class="rounded-xl px-4 py-2 font-bold shadow-xs bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer">
+                    <flux:button :href="route('dashboard')" variant="primary" size="sm" class="rounded-xl px-3 sm:px-4 py-2 font-bold shadow-xs bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer">
                         <flux:icon.squares-2x2 class="size-3.5 mr-1" />
                         Dashboard
                     </flux:button>
@@ -58,7 +50,7 @@
                     <a href="{{ route('login') }}" class="text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white px-3 py-2 transition-colors hidden sm:inline-block">
                         Log in
                     </a>
-                    <flux:button :href="route('register')" variant="primary" size="sm" class="rounded-xl px-4 py-2 font-bold shadow-xs bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer">
+                    <flux:button :href="route('register')" variant="primary" size="sm" class="rounded-xl px-3 sm:px-4 py-2 font-bold shadow-xs bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer">
                         Deploy Free &rarr;
                     </flux:button>
                 @endauth

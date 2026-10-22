@@ -15,12 +15,7 @@
                 <!-- Top Brand -->
                 <div class="relative z-10">
                     <a href="{{ route('home') }}" class="inline-flex items-center gap-3 group" wire:navigate>
-                        <div class="size-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
-                            <flux:icon.rocket-launch class="size-5" />
-                        </div>
-                        <span class="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
-                            DropHTML<span class="text-xs font-mono font-medium text-indigo-400 ml-1">.de</span>
-                        </span>
+                        <x-brand-lockup inverse />
                     </a>
                 </div>
 
@@ -72,12 +67,7 @@
                 <!-- Mobile Top Bar with Logo & Theme Switcher -->
                 <div class="flex items-center justify-between mb-8">
                     <a href="{{ route('home') }}" class="lg:hidden inline-flex items-center gap-2.5 group" wire:navigate>
-                        <div class="size-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                            <flux:icon.rocket-launch class="size-4" />
-                        </div>
-                        <span class="text-lg font-black tracking-tight text-zinc-900 dark:text-white">
-                            DropHTML<span class="text-xs font-mono font-medium text-indigo-500 dark:text-indigo-400 ml-0.5">.de</span>
-                        </span>
+                        <x-brand-lockup />
                     </a>
 
                     <div class="hidden lg:block"></div>

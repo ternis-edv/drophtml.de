@@ -4,12 +4,7 @@
             <!-- Brand & Partners -->
             <div class="md:col-span-2 flex flex-col gap-3">
                 <a href="{{ route('home') }}" class="flex items-center gap-2 hover:opacity-85 transition-opacity">
-                    <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-sm">
-                        <flux:icon.rocket-launch class="w-4 h-4 text-white" />
-                    </div>
-                    <span class="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
-                        DropHTML<span class="text-xs font-mono text-zinc-400 dark:text-zinc-500">.de</span>
-                    </span>
+                    <x-brand-lockup />
                 </a>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-sm">
                     Instant static site hosting for developers, creators, and teams. Ship HTML in seconds with drag & drop, GitHub CI/CD, password protection, and custom domains with automatic SSL.

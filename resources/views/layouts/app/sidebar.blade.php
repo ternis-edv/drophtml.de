@@ -8,18 +8,7 @@
             <!-- Brand Header -->
             <flux:sidebar.header class="pt-3 pb-2">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 group" wire:navigate>
-                    <div class="size-8.5 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-                        <flux:icon.rocket-launch class="size-4.5" />
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-base font-black tracking-tight leading-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400">
-                                DropHTML<span class="text-[11px] font-mono font-semibold text-indigo-600 dark:text-indigo-400 ml-0.5">.de</span>
-                            </span>
-                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">v2.0</span>
-                        </div>
-                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Static Edge Cloud</span>
-                    </div>
+                    <x-brand-lockup />
                 </a>
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
