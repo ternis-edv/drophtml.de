@@ -99,6 +99,8 @@
     </div>
 </section>
 
+@include('partials.landing.makers')
+
 <section class="lp-section" aria-labelledby="cta-title">
     <div class="lp-container">
         <div class="lp-cta">

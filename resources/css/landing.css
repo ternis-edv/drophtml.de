@@ -626,6 +626,96 @@ html:not(.js) .lp-reveal {
 }
 
 /* ------------------------------------------------------------------ */
+/* Makers / ecosystem section                                          */
+/* ------------------------------------------------------------------ */
+
+.lp-makers__brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+
+    & a {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    & img {
+        height: 2.5rem;
+        width: auto;
+    }
+
+    /* Theme swap mirrors the footer wordmark pattern. */
+    .lp-wordmark--light { display: block; }
+    .lp-wordmark--dark { display: none; }
+
+    .dark & {
+        .lp-wordmark--light { display: none; }
+        .lp-wordmark--dark { display: block; }
+    }
+}
+
+.lp-makers__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    @media (min-width: 48rem) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.lp-makers__card {
+    display: block;
+    padding: 1.25rem;
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+
+    &:hover,
+    &:focus-visible {
+        border-color: var(--lp-border-strong);
+        box-shadow: var(--lp-shadow-md);
+        transform: translateY(-2px);
+    }
+
+    & .lp-makers__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    & h3 {
+        margin: 0;
+        font-size: 0.9375rem;
+        font-weight: 700;
+    }
+
+    & p {
+        margin: 0.625rem 0 0;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        color: var(--lp-text-muted);
+    }
+
+    & .lp-arrow {
+        color: var(--lp-text-faint);
+    }
+}
+
+/* The arrow nests inside the card head, so the generic `a:hover > .lp-arrow`
+   direct-child rule does not apply here. */
+.lp-makers__card:is(:hover, :focus-visible) .lp-arrow {
+    transform: translateX(3px) translateY(-3px);
+}
+@media (prefers-reduced-motion: reduce) {
+    .lp-makers__card:is(:hover, :focus-visible) .lp-arrow { transform: none; }
+}
+
+/* ------------------------------------------------------------------ */
 /* Footer                                                              */
 /* ------------------------------------------------------------------ */
 
