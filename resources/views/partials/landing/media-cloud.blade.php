@@ -1,4 +1,4 @@
-<section id="media-cloud" class="py-24 relative z-10 overflow-hidden">
+<section id="media-cloud" class="py-24 relative z-10 overflow-hidden reveal" x-intersect.once="$el.classList.add('is-shown')">
     <!-- Ambient glow behind media cloud -->
     <div class="absolute -top-40 right-1/4 w-[500px] h-[500px] bg-cyan-500/10 dark:bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none"></div>
     <div class="absolute -bottom-20 left-1/4 w-[400px] h-[400px] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-[100px] pointer-events-none"></div>

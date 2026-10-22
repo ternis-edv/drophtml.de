@@ -1,4 +1,4 @@
-<section id="pricing" class="py-24 relative z-10" x-data="{ annual: true }">
+<section id="pricing" class="py-24 relative z-10 reveal" x-data="{ annual: true }" x-intersect.once="$el.classList.add('is-shown')">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header -->

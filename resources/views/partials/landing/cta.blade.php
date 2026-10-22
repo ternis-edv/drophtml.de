@@ -1,4 +1,4 @@
-<section class="py-24 relative z-10">
+<section class="py-24 relative z-10 reveal" x-intersect.once="$el.classList.add('is-shown')">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="relative rounded-3xl p-8 sm:p-12 lg:p-16 text-center overflow-hidden border border-indigo-500/30 dark:border-indigo-500/20 bg-gradient-to-br from-indigo-900/90 via-zinc-900/95 to-purple-950/90 dark:from-[#0f0e26] dark:via-[#070709] dark:to-[#1a0a2a] shadow-2xl shadow-indigo-500/10">

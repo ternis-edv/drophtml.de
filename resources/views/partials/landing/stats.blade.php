@@ -1,4 +1,4 @@
-<section id="benchmarks" class="py-20 relative z-10 border-y border-zinc-200 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-[#070709]/60">
+<section id="benchmarks" class="py-20 relative z-10 border-y border-zinc-200 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-[#070709]/60 reveal" x-intersect.once="$el.classList.add('is-shown')">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">

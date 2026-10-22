@@ -1,4 +1,4 @@
-<section id="faq" class="py-24 relative z-10" x-data="{ openFaq: null }">
+<section id="faq" class="py-24 relative z-10 reveal" x-data="{ openFaq: null }" x-intersect.once="$el.classList.add('is-shown')">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header -->

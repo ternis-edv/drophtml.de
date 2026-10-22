@@ -7,6 +7,9 @@
 
     <meta name="description" content="Instant static site hosting and high-speed cloud static media hosting for developers. Drag & drop HTML or ZIP, GitHub CI/CD, password protection, and custom domains with free automatic SSL.">
 
+    {{-- Mark JS availability so scroll-reveal content stays visible when JS is disabled --}}
+    <script>document.documentElement.classList.add('js');</script>
+
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -70,6 +73,26 @@
         
         html { scroll-behavior: smooth; }
         body { overflow-x: hidden; }
+
+        /* Scroll reveal (Phase 5) — sections fade/slide in once on viewport entry */
+        .js .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+        .js .reveal.is-shown {
+            opacity: 1;
+            transform: translateY(0);
+            will-change: auto;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .js .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-indigo-500 selection:text-white bg-zinc-50 dark:bg-[#070709] text-zinc-900 dark:text-zinc-100 transition-colors duration-300">

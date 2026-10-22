@@ -1,4 +1,4 @@
-<section id="upload" class="py-20 relative z-10">
+<section id="upload" class="py-20 relative z-10 reveal" x-intersect.once="$el.classList.add('is-shown')">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-3 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
