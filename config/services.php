@@ -24,6 +24,25 @@ return [
         'redirect' => '/auth/github/callback',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ternis Auth & SSO Platform
+    |--------------------------------------------------------------------------
+    |
+    | OAuth 2.0 / OpenID Connect single sign-on against the Ternis Auth
+    | platform. When credentials are present the login screen offers
+    | "Continue with Ternis"; otherwise the button is hidden entirely.
+    |
+    */
+
+    'ternis' => [
+        'base_url' => rtrim(env('TERNIS_AUTH_URL', 'https://auth.ternis.net'), '/'),
+        'client_id' => env('TERNIS_CLIENT_ID'),
+        'client_secret' => env('TERNIS_CLIENT_SECRET'),
+        'redirect' => '/auth/ternis/callback',
+        'scopes' => env('TERNIS_SCOPES', 'openid profile email ternis:sso'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

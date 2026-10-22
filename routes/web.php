@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\Auth\TernisAuthController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\Webhooks\GithubWebhookController;
 use App\Models\Deployment;
@@ -46,6 +47,9 @@ Route::domain($appDomain)->group(function () {
 
     Route::get('/s/{slug}/{path?}', [SiteController::class, 'show'])->where('path', '.*');
     Route::post('/s/{slug}/_unlock', [SiteController::class, 'unlock'])->middleware('throttle:site-unlock')->name('site.unlock');
+
+    Route::get('/auth/ternis/redirect', [TernisAuthController::class, 'redirect'])->name('social.redirect.ternis');
+    Route::get('/auth/ternis/callback', [TernisAuthController::class, 'callback'])->name('social.callback.ternis');
 
     Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])->name('social.redirect');
     Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('social.callback');
