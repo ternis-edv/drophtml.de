@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'github_id', 'github_token', 'github_refresh_token', 'password_set_at', 'email_verified_at', 'storage_limit_bytes'])]
+#[Fillable(['name', 'email', 'password', 'github_id', 'github_token', 'github_refresh_token', 'ternis_id', 'ternis_token', 'ternis_refresh_token', 'password_set_at', 'email_verified_at', 'storage_limit_bytes'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {

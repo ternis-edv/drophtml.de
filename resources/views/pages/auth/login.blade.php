@@ -25,6 +25,21 @@
             </a>
         </div>
 
+        @if(config('services.ternis.client_id') && config('services.ternis.client_secret'))
+            <!-- Ternis SSO Login -->
+            <div>
+                <a
+                    href="{{ route('social.redirect.ternis') }}"
+                    class="w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all border border-indigo-500/80 shadow-xs hover:shadow-md cursor-pointer"
+                >
+                    <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 0 0 9-9 9 9 0 0 0-9-9 9 9 0 0 0-9 9 9 9 0 0 0 9 9Zm0 0c2.5 0 4.5-4.03 4.5-9S14.5 3 12 3 7.5 7.03 7.5 12s2 9 4.5 9ZM3.6 9h16.8M3.6 15h16.8" />
+                    </svg>
+                    <span>{{ __('Continue with Ternis') }}</span>
+                </a>
+            </div>
+        @endif
+
         <!-- Divider -->
         <div class="relative flex items-center justify-center">
             <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
