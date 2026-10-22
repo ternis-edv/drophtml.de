@@ -12,6 +12,17 @@
         <!-- Session Status -->
         <x-auth-session-status :status="session('status')" />
 
+        <!-- Email Sign-Up Maintenance Notice / Validation Errors -->
+        @if (! config('fortify.email_signups_enabled', true))
+            @if ($errors->any())
+                <flux:callout variant="danger" icon="x-circle" :heading="$errors->first()" />
+            @else
+                <flux:callout variant="info" icon="envelope" heading="{{ __('Email sign-ups are temporarily disabled') }}">
+                    {{ __('Our mail servers are currently under maintenance, so you cannot create an account with an email address right now. Please sign up with GitHub instead — it only takes a second.') }}
+                </flux:callout>
+            @endif
+        @endif
+
         <!-- Social GitHub Register -->
         <div>
             <a 
@@ -25,15 +36,16 @@
             </a>
         </div>
 
-        <!-- Divider -->
-        <div class="relative flex items-center justify-center">
-            <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
-            <span class="bg-white dark:bg-zinc-900 px-3 text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 shrink-0 font-medium">{{ __('Or with email') }}</span>
-            <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
-        </div>
+        @if (config('fortify.email_signups_enabled', true))
+            <!-- Divider -->
+            <div class="relative flex items-center justify-center">
+                <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
+                <span class="bg-white dark:bg-zinc-900 px-3 text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 shrink-0 font-medium">{{ __('Or with email') }}</span>
+                <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
+            </div>
 
-        <!-- Form -->
-        <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-4">
+            <!-- Form -->
+            <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-4">
             @csrf
 
             <!-- Name -->
@@ -98,6 +110,7 @@
                 <flux:icon.arrow-right class="size-4" />
             </button>
         </form>
+        @endif
 
         <!-- Terms Note -->
         <p class="text-[11px] text-zinc-600 dark:text-zinc-400 text-center leading-relaxed">

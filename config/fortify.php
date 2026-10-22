@@ -134,6 +134,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email Sign-Ups
+    |--------------------------------------------------------------------------
+    |
+    | Control whether new users can register with an email address and a
+    | password. Set EMAIL_SIGNUPS_ENABLED=false to hide the email form on
+    | the register page and reject POST /register (e.g. while the mail
+    | servers are under maintenance). OAuth sign-ups (GitHub, Ternis)
+    | are not affected by this flag.
+    |
+    */
+
+    'email_signups_enabled' => env('EMAIL_SIGNUPS_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Features
     |--------------------------------------------------------------------------
     |
