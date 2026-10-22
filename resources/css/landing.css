@@ -588,14 +588,20 @@ html:not(.js) .lp-reveal {
         transform: translateY(-2px);
     }
 
+    & .lp-features__head {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
     & h3 {
-        margin: 0.875rem 0 0.35rem;
+        margin: 0;
         font-size: 0.9375rem;
         font-weight: 700;
     }
 
     & p {
-        margin: 0;
+        margin: 0.625rem 0 0;
         font-size: 0.8125rem;
         line-height: 1.6;
         color: var(--lp-text-muted);
@@ -606,6 +612,7 @@ html:not(.js) .lp-reveal {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     width: 2.25rem;
     height: 2.25rem;
     border-radius: var(--lp-radius-sm);
@@ -770,7 +777,6 @@ html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
 .lp-skip-link { position: fixed; top: 0.75rem; left: 1rem; z-index: 100; padding: 0.75rem 1rem; border-radius: 8px; background: var(--lp-accent-solid); color: white; transform: translateY(-200%); }
 .lp-skip-link:focus { transform: none; }
 .lp-features__card { padding: 1.75rem 1.5rem; background: var(--lp-bg-subtle); }
-.lp-features__card h3 { margin-top: 1.5rem; }
 .lp-section-head h2 { letter-spacing: -0.04em; font-weight: 600; }
 .lp-faq__layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 5rem; }
 .lp-faq .lp-section-head { margin: 0; text-align: left; }
