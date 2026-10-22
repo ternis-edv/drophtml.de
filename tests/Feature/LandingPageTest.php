@@ -16,21 +16,16 @@ class LandingPageTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Ship HTML in seconds.');
-        $response->assertSee('Live Interactive Showcase');
-        $response->assertSee('New: Static Media Cloud Hosting');
-        $response->assertSee('Heavy Assets Don\'t Belong in Your Zip Bundles', false);
-        $response->assertSee('Engineered for Modern Web Workflows');
-        $response->assertSee('Simple, Honest Pricing');
-        $response->assertSee('Frequently Asked Questions');
-        $response->assertSee('Ready to Ship Your Next Static Site?');
+        $response->assertSee('Drop a site. Make it live.');
+        $response->assertSee('Everything you need to ship static');
+        $response->assertSee('Good to know');
+        $response->assertSee('Made something? Make it live.');
         $response->assertSee('Deploy Free');
+        $response->assertSee('Guest sites stay live for 24 hours.');
+        $response->assertSee('Choose an HTML or ZIP file to deploy');
+        $response->assertSee('Skip to content');
         $response->assertDontSee('@fluxStyles');
-        $response->assertDontSee('copySnippet() { navigator.clipboard.writeText');
-        $response->assertDontSee('S3');
-        $response->assertDontSee('R2');
-        $response->assertDontSee('Cloudflare');
-        $response->assertSee('Cloud Media Storage');
-        $response->assertSee('Cloud Asset Storage');
+
     }
 
     public function test_landing_page_shows_dashboard_link_when_authenticated(): void

@@ -1,6 +1,10 @@
 <nav
     class="lp-nav"
-    x-data="{ mobileMenuOpen: false, scrolled: false }"
+    x-data="{ mobileMenuOpen: false, scrolled: window.pageYOffset > 20 }"
+    aria-label="Main navigation"
+    @keydown.escape.window="if (mobileMenuOpen) { mobileMenuOpen = false; $refs.menuToggle.focus() }"
+    @click.outside="mobileMenuOpen = false"
+    @resize.window="if (window.innerWidth >= 1024) mobileMenuOpen = false"
     @scroll.window="scrolled = (window.pageYOffset > 20)"
     :class="{ 'is-scrolled': scrolled }"
 >
@@ -15,6 +19,7 @@
             <div class="lp-nav__links">
                 <a href="#upload">Upload</a>
                 <a href="#features">Features</a>
+                <a href="#faq">FAQs</a>
                 <a href="{{ url('/docs/api') }}">API Docs</a>
             </div>
 
@@ -53,7 +58,7 @@
                     <a href="{{ route('login') }}" class="lp-login">Log in</a>
                     <a href="{{ route('register') }}" class="lp-btn lp-btn--primary lp-btn--sm">
                         Deploy Free
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <svg class="lp-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                         </svg>
                     </a>
@@ -63,6 +68,8 @@
                 <button
                     type="button"
                     class="lp-icon-btn lp-nav__burger"
+                    x-ref="menuToggle"
+                    aria-controls="mobile-navigation"
                     @click="mobileMenuOpen = !mobileMenuOpen"
                     :aria-expanded="mobileMenuOpen"
                     aria-label="Toggle navigation"
@@ -81,6 +88,7 @@
     <!-- Mobile Navigation Drawer -->
     <div
         class="lp-nav__drawer"
+        id="mobile-navigation"
         x-show="mobileMenuOpen"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 -translate-y-2"
@@ -92,6 +100,7 @@
     >
         <a href="#upload" @click="mobileMenuOpen = false">Upload</a>
         <a href="#features" @click="mobileMenuOpen = false">Features</a>
+        <a href="#faq" @click="mobileMenuOpen = false">FAQs</a>
         <a href="{{ url('/docs/api') }}" @click="mobileMenuOpen = false">API Documentation</a>
 
         <div class="lp-drawer-actions">

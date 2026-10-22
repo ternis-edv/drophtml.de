@@ -161,7 +161,13 @@ new class extends Component
                 'border-zinc-300 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-900/60 hover:border-accent/60 dark:hover:border-accent/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40': !dragging 
             }"
             class="flex flex-col items-center justify-center w-full min-h-[260px] p-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200"
-            @click="$refs.fileInput.click()"
+            role="button"
+            tabindex="0"
+            aria-label="Choose an HTML or ZIP file to deploy"
+            :aria-busy="uploading"
+            @keydown.enter.prevent="if (!uploading) $refs.fileInput.click()"
+            @keydown.space.prevent="if (!uploading) $refs.fileInput.click()"
+            @click="if (!uploading) $refs.fileInput.click()"
         >
             <template x-if="!uploading">
                 <div class="flex flex-col items-center justify-center text-center">
@@ -169,10 +175,10 @@ new class extends Component
                         <flux:icon.cloud-arrow-up class="size-7" />
                     </div>
                     <div class="text-sm font-bold tracking-tight text-zinc-800 dark:text-zinc-200">
-                        Click or drag & drop files here to deploy
+                        Drop your HTML or ZIP here
                     </div>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs">
-                        Supports single <code class="font-mono text-accent dark:text-brand-300 font-semibold">.html</code> files or complete <code class="font-mono text-accent dark:text-brand-300 font-semibold">.zip</code> archives up to 50MB
+                        Or click to browse. Supports <code class="font-mono text-accent dark:text-brand-300 font-semibold">.html</code> files or complete <code class="font-mono text-accent dark:text-brand-300 font-semibold">.zip</code> archives up to 50MB
                     </p>
                     
                     <div class="flex items-center gap-2 mt-4 text-[11px] text-zinc-500 dark:text-zinc-400">

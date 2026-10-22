@@ -62,3 +62,40 @@
         </div>
     </div>
 </section>
+
+<section id="faq" class="lp-section lp-faq" aria-labelledby="faq-title">
+    <div class="lp-container lp-faq__layout">
+        <div class="lp-section-head">
+            <span class="lp-eyebrow">Good to know</span>
+            <h2 id="faq-title">A few things before<br />you drop.</h2>
+            <p>Less setup, fewer questions. Here are the essentials.</p>
+        </div>
+        <div class="lp-faq__list">
+            <details>
+                <summary>Do I need an account to deploy?</summary>
+                <p>No. Drop an HTML file or ZIP archive to publish as a guest. Guest sites expire after 24 hours. <a href="{{ route('register') }}">Create a free account</a> to manage your sites and choose permanent hosting.</p>
+            </details>
+            <details>
+                <summary>What can I upload?</summary>
+                <p>Upload a single .html or .htm file, or a .zip archive up to 50 MB. For a complete website, include your HTML, CSS, JavaScript, and assets in the ZIP, with an index.html as your entry page. Server-side code such as PHP is not supported.</p>
+            </details>
+            <details>
+                <summary>Can I use my own domain?</summary>
+                <p>Yes. With an account, connect your custom domain from the dashboard. You can also protect client previews with a password and deploy updates from GitHub.</p>
+            </details>
+            <details>
+                <summary>What about images, videos, and other media?</summary>
+                <p>Bundle assets with your website, or use dedicated cloud media storage to host images, videos, and PDFs separately. Keep your site uploads small while managing your media from the dashboard.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section" aria-labelledby="cta-title">
+    <div class="lp-container">
+        <div class="lp-cta">
+            <div><h2 id="cta-title">Made something? Make it live.</h2><p>Your prototype, portfolio, or next side project deserves a link.</p></div>
+            <a href="#upload" class="lp-btn lp-btn--primary">Drop your first site <svg class="lp-arrow lp-arrow--diagonal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg></a>
+        </div>
+    </div>
+</section>

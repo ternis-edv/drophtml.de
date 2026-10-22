@@ -23,10 +23,11 @@
     @fluxAppearance
 </head>
 <body class="lp-body">
+    <a href="#main-content" class="lp-skip-link">Skip to content</a>
     <div class="lp-page">
         @include('partials.landing.navigation')
 
-        <main class="lp-main">
+        <main id="main-content" class="lp-main" tabindex="-1">
             @yield('content')
         </main>
 
