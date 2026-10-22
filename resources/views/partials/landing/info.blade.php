@@ -20,7 +20,7 @@
                     </svg>
                 </span>
                 <h3>Instant deploys</h3>
-                <p>Upload HTML or ZIP archives up to 50MB and get a live URL in under two seconds — no build step, no CLI.</p>
+                <p>Upload HTML or ZIP archives up to 50MB and get a live URL right away — no build step, no CLI.</p>
             </div>
 
             <div class="lp-features__card">

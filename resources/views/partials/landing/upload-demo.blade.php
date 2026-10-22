@@ -40,7 +40,7 @@
                     <li class="lp-upload__step">
                         <span class="lp-upload__step-num">3</span>
                         <div>
-                            <strong>Live URL in &lt; 2s</strong>
+                            <strong>Instant live URL</strong>
                             <span>Share with clients, lock with password, or connect your domain.</span>
                         </div>
                     </li>
