@@ -1,24 +1,52 @@
 <?php
 
-use App\Models\MediaAsset;
-use App\Models\Site;
+use App\Models\Domain;
 use App\Services\ActivityLogService;
 use App\Services\SiteDeploymentService;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 new class extends Component
 {
+    use WithPagination;
+
     public $search = '';
     public $statusFilter = 'all'; // all, active, suspended, permanent, expiring
+    public $sortBy = 'created_at'; // created_at, original_name, views, expires_at
+    public $sortDir = 'desc';
+
+    private const SORTABLE_COLUMNS = ['created_at', 'original_name', 'views', 'expires_at'];
 
     #[On('site-published')]
     #[On('site-deleted')]
     public function refresh() {}
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
     public function setFilter($filter)
     {
         $this->statusFilter = in_array($filter, ['all', 'active', 'suspended', 'permanent', 'expiring'], true) ? $filter : 'all';
+        $this->resetPage();
+    }
+
+    public function sortBy($column)
+    {
+        if (! in_array($column, self::SORTABLE_COLUMNS, true)) {
+            return;
+        }
+
+        if ($this->sortBy === $column) {
+            $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDir = $column === 'original_name' ? 'asc' : 'desc';
+        }
+
+        $this->resetPage();
     }
 
     public function deleteSite($id, SiteDeploymentService $deploymentService)
@@ -80,9 +108,19 @@ new class extends Component
 
     public function render()
     {
-        $allSites = auth()->user()->sites()->with('domains')->latest()->get();
+        // KPI stats via SQL aggregates — no longer loads every site into memory.
+        $totalSites = auth()->user()->sites()->count();
+        $totalViews = (int) auth()->user()->sites()->sum('views');
+        $totalDomains = Domain::whereIn('site_id', auth()->user()->sites()->select('id'))->count();
+        $expiringCount = auth()->user()->sites()
+            ->where('is_permanent', false)
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '>=', now())
+            ->where('expires_at', '<=', now()->addDays(7))
+            ->count();
+        $storageStats = app(\App\Services\StorageUsageService::class)->getUserStorageStats(auth()->user());
 
-        $query = auth()->user()->sites()->with('domains')->latest();
+        $query = auth()->user()->sites()->with('domains');
 
         if (! empty($this->search)) {
             $s = '%'.trim($this->search).'%';
@@ -105,16 +143,15 @@ new class extends Component
                   ->where('expires_at', '<=', now()->addDays(7));
         }
 
-        $sites = $query->get();
+        $query->orderBy($this->sortBy, $this->sortDir);
 
-        $totalViews = $allSites->sum('views');
-        $totalSites = $allSites->count();
-        $totalDomains = $allSites->pluck('domains')->flatten()->count();
-        $expiringCount = $allSites->filter(fn ($s) => ! $s->is_permanent && $s->expires_at && $s->expires_at->diffInDays(now()) <= 7 && $s->expires_at->isFuture())->count();
-        $totalMediaAssets = auth()->user()->mediaAssets()->count();
-        $totalMediaBytes = (int) auth()->user()->mediaAssets()->sum('size');
-        $formattedMediaBytes = MediaAsset::formatBytes($totalMediaBytes);
-        $storageStats = app(\App\Services\StorageUsageService::class)->getUserStorageStats(auth()->user());
+        $sites = $query->paginate(12);
+
+        // If the current page is now empty (e.g. last item on the page was deleted), snap back to the last valid page.
+        if ($sites->isEmpty() && $sites->currentPage() > 1) {
+            $this->setPage($sites->lastPage());
+            $sites = $query->paginate(12);
+        }
 
         return view('components.dashboard.⚡sites-overview', [
             'sites' => $sites,
@@ -122,9 +159,6 @@ new class extends Component
             'totalViews' => $totalViews,
             'totalDomains' => $totalDomains,
             'expiringCount' => $expiringCount,
-            'totalMediaAssets' => $totalMediaAssets,
-            'totalMediaBytes' => $totalMediaBytes,
-            'formattedMediaBytes' => $formattedMediaBytes,
             'storageStats' => $storageStats,
         ]);
     }
@@ -133,10 +167,41 @@ new class extends Component
 <div
     x-data="{
         dragging: false,
+        copiedId: null,
+        confirmDeleteId: null,
+        confirmDeleteName: '',
         viewMode: localStorage.getItem('drophtml_view_mode') || 'grid',
         setViewMode(mode) {
             this.viewMode = mode;
             localStorage.setItem('drophtml_view_mode', mode);
+        },
+        askDelete(id, name) {
+            this.confirmDeleteId = id;
+            this.confirmDeleteName = name;
+            Flux.modal('confirm-site-deletion').show();
+        },
+        copyText(text, id) {
+            const fallback = () => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).catch(fallback);
+            } else {
+                fallback();
+            }
+
+            this.copiedId = id;
+            setTimeout(() => { if (this.copiedId === id) this.copiedId = null; }, 1600);
+            Flux.toast('URL copied to clipboard!');
         },
         handleGlobalDrop(e) {
             this.dragging = false;
@@ -302,10 +367,11 @@ new class extends Component
         <!-- Filter and Search Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <!-- Search & Filter Chips -->
-            <div class="flex flex-1 flex-wrap items-center gap-3">
+            <div class="flex flex-1 flex-wrap items-center gap-3 min-w-0">
                 <div class="relative w-full sm:w-80">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
-                        <flux:icon.magnifying-glass class="size-4" />
+                        <span wire:loading.remove wire:target="search"><flux:icon.magnifying-glass class="size-4" /></span>
+                        <span wire:loading wire:target="search"><flux:icon.arrow-path class="size-4 animate-spin" /></span>
                     </div>
                     <input 
                         wire:model.live.debounce.250ms="search" 
@@ -321,11 +387,11 @@ new class extends Component
                 </div>
 
                 <!-- Filter Pills -->
-                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs">
-                    <button wire:click="setFilter('all')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All ({{ $totalSites }})</button>
-                    <button wire:click="setFilter('active')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'active' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Active</button>
-                    <button wire:click="setFilter('permanent')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'permanent' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Permanent</button>
-                    <button wire:click="setFilter('expiring')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'expiring' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs max-w-full overflow-x-auto">
+                    <button wire:click="setFilter('all')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All ({{ $totalSites }})</button>
+                    <button wire:click="setFilter('active')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'active' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Active</button>
+                    <button wire:click="setFilter('permanent')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'permanent' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Permanent</button>
+                    <button wire:click="setFilter('expiring')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'expiring' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">
                         Expiring
                         @if($expiringCount > 0)
                             <span class="ml-1 px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[10px] font-bold">{{ $expiringCount }}</span>
@@ -336,6 +402,10 @@ new class extends Component
 
             <!-- View Switcher & Action Buttons -->
             <div class="flex items-center gap-2.5 shrink-0">
+                <span class="hidden sm:inline-flex items-center text-xs font-semibold text-zinc-400 tabular-nums">
+                    {{ $sites->total() }} {{ \Illuminate\Support\Str::plural('site', $sites->total()) }}
+                </span>
+
                 <!-- Grid / Table View Switcher -->
                 <div class="hidden sm:inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800">
                     <button type="button" @click="setViewMode('grid')" :class="viewMode === 'grid' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer" title="Grid View">
@@ -379,246 +449,336 @@ new class extends Component
             </div>
         </flux:modal>
 
+        <!-- Delete Confirmation Modal -->
+        <flux:modal name="confirm-site-deletion" class="md:w-[440px]">
+            <div class="space-y-6">
+                <div class="flex items-start gap-3">
+                    <span class="size-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center ring-1 ring-red-500/20 shrink-0">
+                        <flux:icon.exclamation-triangle class="size-4.5" />
+                    </span>
+                    <div>
+                        <flux:heading size="lg" class="tracking-tight">Delete this site?</flux:heading>
+                        <flux:subheading class="mt-1">
+                            <span class="font-semibold text-zinc-700 dark:text-zinc-300" x-text="confirmDeleteName"></span>
+                            and all of its files, custom domains, and analytics will be permanently removed. This action cannot be undone.
+                        </flux:subheading>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <flux:modal.close>
+                        <flux:button variant="outline">Cancel</flux:button>
+                    </flux:modal.close>
+
+                    <flux:button
+                        variant="danger"
+                        wire:loading.attr="disabled"
+                        @click="Flux.modal('confirm-site-deletion').close(); $wire.deleteSite(confirmDeleteId)"
+                    >
+                        Delete Site
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
+
         <!-- Empty State -->
         @if($sites->isEmpty())
             <div class="py-16 flex flex-col items-center justify-center text-center">
                 <div class="size-16 rounded-2xl bg-accent/[0.08] text-accent flex items-center justify-center mb-4 border border-accent/20 shadow-xs">
                     <flux:icon.cloud-arrow-up class="size-8" />
                 </div>
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                    {{ $search ? 'No matching sites found' : 'No static sites deployed yet' }}
-                </h3>
-                <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mt-1 mb-6 leading-relaxed">
-                    {{ $search ? "We couldn't find any sites matching '{$search}'. Check for typos or reset your filter." : 'Drag and drop an HTML or ZIP file anywhere on this screen, or launch an upload modal.' }}
-                </p>
-                <div class="flex items-center gap-3">
-                    @if($search)
-                        <flux:button wire:click="$set('search', '')" variant="outline" size="sm">Clear Search</flux:button>
-                    @endif
+                @if($search)
+                    <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">No matching sites found</h3>
+                    <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mt-1 mb-6 leading-relaxed">
+                        We couldn't find any sites matching '{{ $search }}'. Check for typos or reset your filter.
+                    </p>
+                    <flux:button wire:click="$set('search', '')" variant="outline" size="sm">Clear Search</flux:button>
+                @elseif($statusFilter !== 'all')
+                    <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">No sites in this view</h3>
+                    <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mt-1 mb-6 leading-relaxed">
+                        None of your sites currently match the selected filter. Try a different filter or deploy a new site.
+                    </p>
+                    <flux:button wire:click="setFilter('all')" variant="outline" size="sm">Show All Sites</flux:button>
+                @else
+                    <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">No static sites deployed yet</h3>
+                    <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mt-1 mb-6 leading-relaxed">
+                        Drag and drop an HTML or ZIP file anywhere on this screen, or launch an upload modal.
+                    </p>
                     <flux:modal.trigger name="upload-site-modal">
                         <flux:button variant="primary" size="sm" icon="plus">Deploy Your First Site</flux:button>
                     </flux:modal.trigger>
-                </div>
+                @endif
             </div>
         @else
-            <!-- 1. Card Grid View -->
-            <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                @foreach ($sites as $site)
-                    <div class="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-950/40 p-5 hover:border-accent/40 hover:shadow-md transition-all duration-150 flex flex-col justify-between relative overflow-hidden">
-                        <div>
-                            <!-- Header Row -->
-                            <div class="flex items-start justify-between gap-3 mb-3">
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <div class="size-8 rounded-xl bg-accent/10 text-accent border border-accent/20 flex items-center justify-center font-bold text-xs shrink-0">
-                                            {{ strtoupper(substr($site->original_name ?: $site->slug, 0, 1)) }}
+            <!-- Content: dimmed while any Livewire request is in flight -->
+            <div wire:loading.class="opacity-50 pointer-events-none" wire:loading.attr="aria-busy" class="transition-opacity duration-150">
+                <!-- 1. Card Grid View -->
+                <div
+                    x-show="viewMode === 'grid'"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+                >
+                    @foreach ($sites as $site)
+                        <div wire:key="site-card-{{ $site->id }}" class="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-950/40 p-5 hover:border-accent/40 hover:shadow-md transition-all duration-150 flex flex-col justify-between relative overflow-hidden">
+                            <div>
+                                <!-- Header Row -->
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <div class="size-8 rounded-xl bg-accent/10 text-accent border border-accent/20 flex items-center justify-center font-bold text-xs shrink-0">
+                                                {{ strtoupper(substr($site->original_name ?: $site->slug, 0, 1)) }}
+                                            </div>
+                                            <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate" title="{{ $site->original_name ?: $site->slug }}">
+                                                {{ $site->original_name ?: $site->slug }}
+                                            </h3>
+                                            @if($site->github_repo_full_name)
+                                                <flux:badge size="xs" color="zinc">GitHub</flux:badge>
+                                            @endif
                                         </div>
-                                        <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate" title="{{ $site->original_name ?: $site->slug }}">
-                                            {{ $site->original_name ?: $site->slug }}
-                                        </h3>
-                                        @if($site->github_repo_full_name)
-                                            <flux:badge size="xs" color="zinc">GitHub</flux:badge>
-                                        @endif
+
+                                        <div class="flex items-center gap-1.5 mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                            <a href="/s/{{ $site->slug }}" target="_blank" class="font-mono text-accent dark:text-accent-content hover:underline truncate max-w-[190px]">
+                                                /s/{{ $site->slug }}
+                                            </a>
+                                            <button 
+                                                type="button" 
+                                                @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))" 
+                                                class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-0.5 rounded transition-colors duration-150 cursor-pointer" 
+                                                title="Copy live URL"
+                                            >
+                                                <flux:icon.clipboard x-show="copiedId !== @js($site->id)" class="size-3.5" />
+                                                <flux:icon.check x-show="copiedId === @js($site->id)" x-cloak class="size-3.5 text-emerald-500" />
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div class="flex items-center gap-1.5 mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                        <a href="/s/{{ $site->slug }}" target="_blank" class="font-mono text-accent dark:text-accent-content hover:underline truncate max-w-[190px]">
-                                            /s/{{ $site->slug }}
-                                        </a>
-                                        <button 
-                                            type="button" 
-                                            @click="navigator.clipboard.writeText('{{ url('/s/' . $site->slug) }}'); Flux.toast('URL copied to clipboard!')" 
-                                            class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-0.5 rounded transition-colors duration-150 cursor-pointer" 
-                                            title="Copy live URL"
-                                        >
-                                            <flux:icon.clipboard class="size-3.5" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center gap-1 shrink-0">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $site->status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' }}">
-                                        <span class="size-1.5 rounded-full {{ $site->status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500' }}"></span>
-                                        {{ ucfirst($site->status) }}
-                                    </span>
-
-                                    <flux:dropdown>
-                                        <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" class="rounded-lg cursor-pointer" />
-                                        <flux:menu class="w-48">
-                                            <flux:menu.item icon="pencil-square" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Code Studio</flux:menu.item>
-                                            <flux:menu.item icon="photo" :href="route('dashboard.sites.media', $site->id)" wire:navigate>Media Assets</flux:menu.item>
-                                            <flux:menu.item icon="chart-bar" :href="route('dashboard.sites.stats', $site->id)" wire:navigate>Analytics</flux:menu.item>
-                                            <flux:menu.item icon="archive-box" :href="route('dashboard.sites.deployments', $site->id)" wire:navigate>Deployments</flux:menu.item>
-                                            <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Custom Domains</flux:menu.item>
-                                            <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>
-                                            <flux:menu.separator />
-                                            <flux:menu.item icon="arrow-down-tray" :href="route('dashboard.sites.download', $site->id)">Download ZIP</flux:menu.item>
-                                            <flux:menu.item icon="document-duplicate" wire:click="duplicateSite('{{ $site->id }}')">Duplicate Site</flux:menu.item>
-                                            <flux:menu.separator />
-                                            <flux:menu.submenu icon="clock">
-                                                <flux:menu.heading>Extend Lifetime</flux:menu.heading>
-                                                <flux:menu.item wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days</flux:menu.item>
-                                                <flux:menu.item wire:click="extendExpiry('{{ $site->id }}', 30)">+30 Days</flux:menu.item>
-                                                <flux:menu.item wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set 30d Expiry' : 'Make Permanent' }}</flux:menu.item>
-                                            </flux:menu.submenu>
-                                            <flux:menu.separator />
-                                            <flux:menu.item icon="trash" wire:click="deleteSite('{{ $site->id }}')" wire:confirm="Delete '{{ $site->original_name ?: $site->slug }}'? This action cannot be undone." class="text-red-600 dark:text-red-400">Delete Site</flux:menu.item>
-                                        </flux:menu>
-                                    </flux:dropdown>
-                                </div>
-                            </div>
-
-                            <!-- Custom Domain Tag (if present) -->
-                            @if($site->domains->count() > 0)
-                                <div class="mb-3 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 text-xs">
-                                    <flux:icon.globe-alt class="size-3.5 text-accent shrink-0" />
-                                    <a href="http://{{ $site->domains->first()->domain }}" target="_blank" class="truncate font-mono font-medium text-zinc-700 dark:text-zinc-300 hover:underline">
-                                        {{ $site->domains->first()->domain }}
-                                    </a>
-                                </div>
-                            @endif
-
-                            <!-- Meta Details Grid -->
-                            <div class="grid grid-cols-2 gap-2 py-2.5 my-2 border-y border-zinc-200/60 dark:border-zinc-800/60 text-xs">
-                                <div>
-                                    <span class="text-zinc-400">Total Views:</span>
-                                    <span class="font-bold text-zinc-800 dark:text-zinc-200 ml-1">{{ number_format($site->views) }}</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-zinc-400">Security:</span>
-                                    @if($site->is_password_protected)
-                                        <span class="font-semibold text-amber-600 dark:text-amber-400 ml-1 inline-flex items-center gap-1">
-                                            <flux:icon.lock-closed class="size-3" /> Password
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $site->status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' }}">
+                                            <span class="size-1.5 rounded-full {{ $site->status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500' }}"></span>
+                                            {{ ucfirst($site->status) }}
                                         </span>
-                                    @else
-                                        <span class="font-medium text-zinc-500 ml-1">Public</span>
-                                    @endif
-                                </div>
-                            </div>
 
-                            <!-- Expiry Status Indicator -->
-                            <div class="text-xs mb-3">
-                                @if($site->is_permanent)
-                                    <div class="flex items-center gap-1.5 text-accent dark:text-accent-content font-semibold">
-                                        <flux:icon.sparkles class="size-3.5" />
-                                        <span>Permanent (Never expires)</span>
-                                    </div>
-                                @elseif($site->expires_at)
-                                    <div class="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-                                        <span>Expires in:</span>
-                                        <span class="font-semibold {{ $site->expires_at->isPast() ? 'text-red-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-700 dark:text-zinc-300') }}">
-                                            {{ $site->expires_at->isPast() ? 'Expired' : $site->expires_at->diffForHumans(null, true) }}
-                                        </span>
-                                    </div>
-                                @else
-                                    <span class="text-zinc-400">—</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Card Action Buttons -->
-                        <div class="flex items-center justify-between gap-2 pt-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
-                            <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-colors duration-150 shadow-xs">
-                                <flux:icon.arrow-top-right-on-square class="size-3.5" />
-                                Preview
-                            </a>
-                            <div class="flex items-center gap-1">
-                                <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" class="rounded-lg" />
-                                <flux:button :href="route('dashboard.sites.media', $site->id)" wire:navigate variant="ghost" size="xs" icon="photo" title="Media Assets" class="rounded-lg" />
-                                <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" class="rounded-lg" />
-                                <flux:button :href="route('dashboard.sites.domains', $site->id)" wire:navigate variant="ghost" size="xs" icon="globe-alt" title="Domains" class="rounded-lg" />
-                                <flux:button :href="route('dashboard.sites.settings', $site->id)" wire:navigate variant="ghost" size="xs" icon="cog-6-tooth" title="Settings" class="rounded-lg" />
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <!-- 2. Dense Table View -->
-            <div x-show="viewMode === 'table'" class="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
-                <flux:table>
-                    <flux:table.columns>
-                        <flux:table.column>Name & Slug</flux:table.column>
-                        <flux:table.column>Views</flux:table.column>
-                        <flux:table.column>Expiry Status</flux:table.column>
-                        <flux:table.column>Security</flux:table.column>
-                        <flux:table.column>Status</flux:table.column>
-                        <flux:table.column class="text-right">Actions</flux:table.column>
-                    </flux:table.columns>
-
-                    <flux:table.rows>
-                        @foreach ($sites as $site)
-                            <flux:table.row class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors duration-150">
-                                <flux:table.cell>
-                                    <div class="font-semibold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                                        {{ $site->original_name ?: 'Unnamed Site' }}
-                                        @if($site->github_repo_full_name)
-                                            <flux:badge size="xs" color="zinc">GitHub</flux:badge>
-                                        @endif
-                                    </div>
-                                    <div class="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
-                                        <a href="/s/{{ $site->slug }}" target="_blank" class="hover:underline text-accent dark:text-accent-content font-mono">/s/{{ $site->slug }}</a>
-                                        @if($site->domains->count() > 0)
-                                            <span class="text-zinc-400">&bull;</span>
-                                            <span class="text-zinc-400 font-medium">{{ $site->domains->first()->domain }}</span>
-                                        @endif
-                                    </div>
-                                </flux:table.cell>
-                                <flux:table.cell class="font-bold text-zinc-800 dark:text-zinc-200">
-                                    {{ number_format($site->views) }}
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    @if($site->is_permanent)
-                                        <flux:badge size="sm" color="indigo">Permanent</flux:badge>
-                                    @elseif($site->expires_at)
-                                        <span class="text-xs font-semibold {{ $site->expires_at->isPast() ? 'text-red-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-600 dark:text-zinc-400') }}">
-                                            {{ $site->expires_at->diffForHumans(null, true) }}
-                                        </span>
-                                    @else
-                                        <span class="text-zinc-400">—</span>
-                                    @endif
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    @if($site->is_password_protected)
-                                        <flux:badge size="sm" color="amber" icon="lock-closed">Protected</flux:badge>
-                                    @else
-                                        <flux:badge size="sm" color="zinc">Public</flux:badge>
-                                    @endif
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $site->status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400' }}">
-                                        {{ ucfirst($site->status) }}
-                                    </span>
-                                </flux:table.cell>
-                                <flux:table.cell class="text-right">
-                                    <div class="flex items-center justify-end gap-1">
-                                        <flux:button variant="ghost" size="xs" icon="clipboard" @click="navigator.clipboard.writeText('{{ url('/s/' . $site->slug) }}'); Flux.toast('URL copied!')" title="Copy URL" />
-                                        <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" />
-                                        <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" />
                                         <flux:dropdown>
-                                            <flux:button variant="ghost" size="xs" icon="ellipsis-horizontal" />
-                                            <flux:menu>
-                                                <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank">View Live</flux:menu.item>
+                                            <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" class="rounded-lg cursor-pointer" />
+                                            <flux:menu class="w-48">
+                                                <flux:menu.item icon="pencil-square" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Code Studio</flux:menu.item>
                                                 <flux:menu.item icon="photo" :href="route('dashboard.sites.media', $site->id)" wire:navigate>Media Assets</flux:menu.item>
-                                                <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Domains</flux:menu.item>
+                                                <flux:menu.item icon="chart-bar" :href="route('dashboard.sites.stats', $site->id)" wire:navigate>Analytics</flux:menu.item>
+                                                <flux:menu.item icon="archive-box" :href="route('dashboard.sites.deployments', $site->id)" wire:navigate>Deployments</flux:menu.item>
+                                                <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Custom Domains</flux:menu.item>
                                                 <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>
                                                 <flux:menu.separator />
                                                 <flux:menu.item icon="arrow-down-tray" :href="route('dashboard.sites.download', $site->id)">Download ZIP</flux:menu.item>
                                                 <flux:menu.item icon="document-duplicate" wire:click="duplicateSite('{{ $site->id }}')">Duplicate Site</flux:menu.item>
                                                 <flux:menu.separator />
-                                                <flux:menu.item icon="clock" wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days Expiry</flux:menu.item>
-                                                <flux:menu.item icon="sparkles" wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set Expiry (30d)' : 'Make Permanent' }}</flux:menu.item>
+                                                <flux:menu.submenu icon="clock">
+                                                    <flux:menu.heading>Extend Lifetime</flux:menu.heading>
+                                                    <flux:menu.item wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days</flux:menu.item>
+                                                    <flux:menu.item wire:click="extendExpiry('{{ $site->id }}', 30)">+30 Days</flux:menu.item>
+                                                    <flux:menu.item wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set 30d Expiry' : 'Make Permanent' }}</flux:menu.item>
+                                                </flux:menu.submenu>
                                                 <flux:menu.separator />
-                                                <flux:menu.item icon="trash" wire:click="deleteSite('{{ $site->id }}')" wire:confirm="Are you sure you want to delete this site?" class="text-red-600 dark:text-red-400">Delete</flux:menu.item>
+                                                <flux:menu.item icon="trash" @click="askDelete(@js($site->id), @js($site->original_name ?: $site->slug))" class="text-red-600 dark:text-red-400">Delete Site</flux:menu.item>
                                             </flux:menu>
                                         </flux:dropdown>
                                     </div>
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @endforeach
-                    </flux:table.rows>
-                </flux:table>
+                                </div>
+
+                                <!-- Custom Domain Tag (if present) -->
+                                @if($site->domains->count() > 0)
+                                    <div class="mb-3 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 text-xs">
+                                        <flux:icon.globe-alt class="size-3.5 text-accent shrink-0" />
+                                        <a href="https://{{ $site->domains->first()->domain }}" target="_blank" class="truncate font-mono font-medium text-zinc-700 dark:text-zinc-300 hover:underline">
+                                            {{ $site->domains->first()->domain }}
+                                        </a>
+                                    </div>
+                                @endif
+
+                                <!-- Meta Details Grid -->
+                                <div class="grid grid-cols-2 gap-2 py-2.5 my-2 border-y border-zinc-200/60 dark:border-zinc-800/60 text-xs">
+                                    <div>
+                                        <span class="text-zinc-400">Total Views:</span>
+                                        <span class="font-bold text-zinc-800 dark:text-zinc-200 ml-1">{{ number_format($site->views) }}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-zinc-400">Security:</span>
+                                        @if($site->is_password_protected)
+                                            <span class="font-semibold text-amber-600 dark:text-amber-400 ml-1 inline-flex items-center gap-1">
+                                                <flux:icon.lock-closed class="size-3" /> Password
+                                            </span>
+                                        @else
+                                            <span class="font-medium text-zinc-500 ml-1">Public</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- Expiry Status Indicator -->
+                                <div class="text-xs mb-3">
+                                    @if($site->is_permanent)
+                                        <div class="flex items-center gap-1.5 text-accent dark:text-accent-content font-semibold">
+                                            <flux:icon.sparkles class="size-3.5" />
+                                            <span>Permanent (Never expires)</span>
+                                        </div>
+                                    @elseif($site->expires_at)
+                                        <div class="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
+                                            <span>Expires in:</span>
+                                            <span class="font-semibold {{ $site->expires_at->isPast() ? 'text-red-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-700 dark:text-zinc-300') }}">
+                                                {{ $site->expires_at->isPast() ? 'Expired' : $site->expires_at->diffForHumans(null, true) }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <span class="text-zinc-400">—</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Card Action Buttons -->
+                            <div class="flex items-center justify-between gap-2 pt-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                                <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-colors duration-150 shadow-xs">
+                                    <flux:icon.arrow-top-right-on-square class="size-3.5" />
+                                    Preview
+                                </a>
+                                <div class="flex items-center gap-1">
+                                    <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.media', $site->id)" wire:navigate variant="ghost" size="xs" icon="photo" title="Media Assets" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.domains', $site->id)" wire:navigate variant="ghost" size="xs" icon="globe-alt" title="Domains" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.settings', $site->id)" wire:navigate variant="ghost" size="xs" icon="cog-6-tooth" title="Settings" class="rounded-lg" />
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- 2. Dense Table View -->
+                <div
+                    x-show="viewMode === 'table'"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800"
+                >
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>
+                                <button type="button" wire:click="sortBy('original_name')" class="inline-flex items-center gap-1 font-semibold cursor-pointer hover:text-accent transition-colors duration-150">
+                                    Name &amp; Slug
+                                    @if($sortBy === 'original_name')
+                                        <flux:icon.chevron-up class="size-3 {{ $sortDir === 'asc' ? '' : 'rotate-180' }}" />
+                                    @endif
+                                </button>
+                            </flux:table.column>
+                            <flux:table.column>
+                                <button type="button" wire:click="sortBy('views')" class="inline-flex items-center gap-1 font-semibold cursor-pointer hover:text-accent transition-colors duration-150">
+                                    Views
+                                    @if($sortBy === 'views')
+                                        <flux:icon.chevron-up class="size-3 {{ $sortDir === 'asc' ? '' : 'rotate-180' }}" />
+                                    @endif
+                                </button>
+                            </flux:table.column>
+                            <flux:table.column>
+                                <button type="button" wire:click="sortBy('expires_at')" class="inline-flex items-center gap-1 font-semibold cursor-pointer hover:text-accent transition-colors duration-150">
+                                    Expiry Status
+                                    @if($sortBy === 'expires_at')
+                                        <flux:icon.chevron-up class="size-3 {{ $sortDir === 'asc' ? '' : 'rotate-180' }}" />
+                                    @endif
+                                </button>
+                            </flux:table.column>
+                            <flux:table.column>Security</flux:table.column>
+                            <flux:table.column>Status</flux:table.column>
+                            <flux:table.column class="text-right">Actions</flux:table.column>
+                        </flux:table.columns>
+
+                        <flux:table.rows>
+                            @foreach ($sites as $site)
+                                <flux:table.row wire:key="site-row-{{ $site->id }}" class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors duration-150">
+                                    <flux:table.cell>
+                                        <div class="font-semibold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                            {{ $site->original_name ?: 'Unnamed Site' }}
+                                            @if($site->github_repo_full_name)
+                                                <flux:badge size="xs" color="zinc">GitHub</flux:badge>
+                                            @endif
+                                        </div>
+                                        <div class="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
+                                            <a href="/s/{{ $site->slug }}" target="_blank" class="hover:underline text-accent dark:text-accent-content font-mono">/s/{{ $site->slug }}</a>
+                                            @if($site->domains->count() > 0)
+                                                <span class="text-zinc-400">&bull;</span>
+                                                <span class="text-zinc-400 font-medium">{{ $site->domains->first()->domain }}</span>
+                                            @endif
+                                        </div>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="font-bold text-zinc-800 dark:text-zinc-200">
+                                        {{ number_format($site->views) }}
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        @if($site->is_permanent)
+                                            <flux:badge size="sm" color="indigo">Permanent</flux:badge>
+                                        @elseif($site->expires_at)
+                                            <span class="text-xs font-semibold {{ $site->expires_at->isPast() ? 'text-red-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-600 dark:text-zinc-400') }}">
+                                                {{ $site->expires_at->diffForHumans(null, true) }}
+                                            </span>
+                                        @else
+                                            <span class="text-zinc-400">—</span>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        @if($site->is_password_protected)
+                                            <flux:badge size="sm" color="amber" icon="lock-closed">Protected</flux:badge>
+                                        @else
+                                            <flux:badge size="sm" color="zinc">Public</flux:badge>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $site->status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400' }}">
+                                            {{ ucfirst($site->status) }}
+                                        </span>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <flux:button variant="ghost" size="xs" icon="clipboard" @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))" title="Copy URL" />
+                                            <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" />
+                                            <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" />
+                                            <flux:dropdown>
+                                                <flux:button variant="ghost" size="xs" icon="ellipsis-horizontal" />
+                                                <flux:menu>
+                                                    <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank">View Live</flux:menu.item>
+                                                    <flux:menu.item icon="photo" :href="route('dashboard.sites.media', $site->id)" wire:navigate>Media Assets</flux:menu.item>
+                                                    <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Domains</flux:menu.item>
+                                                    <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>
+                                                    <flux:menu.separator />
+                                                    <flux:menu.item icon="arrow-down-tray" :href="route('dashboard.sites.download', $site->id)">Download ZIP</flux:menu.item>
+                                                    <flux:menu.item icon="document-duplicate" wire:click="duplicateSite('{{ $site->id }}')">Duplicate Site</flux:menu.item>
+                                                    <flux:menu.separator />
+                                                    <flux:menu.item icon="clock" wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days Expiry</flux:menu.item>
+                                                    <flux:menu.item icon="sparkles" wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set Expiry (30d)' : 'Make Permanent' }}</flux:menu.item>
+                                                    <flux:menu.separator />
+                                                    <flux:menu.item icon="trash" @click="askDelete(@js($site->id), @js($site->original_name ?: $site->slug))" class="text-red-600 dark:text-red-400">Delete</flux:menu.item>
+                                                </flux:menu>
+                                            </flux:dropdown>
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
             </div>
+
+            @if($sites->hasPages())
+                <div class="mt-6 pt-5 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                    {{ $sites->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </div>
