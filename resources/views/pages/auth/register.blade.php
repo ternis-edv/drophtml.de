@@ -2,7 +2,7 @@
     <div class="flex flex-col gap-6">
         <!-- Header -->
         <div class="text-center space-y-1.5">
-            <div class="inline-flex size-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-2">
+            <div class="inline-flex size-11 items-center justify-center rounded-xl bg-accent/10 text-accent dark:text-brand-300 border border-accent/20 mb-2">
                 <flux:icon.user-plus class="size-6" />
             </div>
             <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ __('Create an account') }}</h1>
@@ -92,7 +92,7 @@
             <button 
                 type="submit" 
                 data-test="register-user-button"
-                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-sm shadow-md shadow-accent/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
             >
                 <span>{{ __('Create account') }}</span>
                 <flux:icon.arrow-right class="size-4" />
@@ -110,7 +110,7 @@
         <!-- Login Switch Link -->
         <div class="text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
             <span>{{ __('Already have an account?') }}</span>
-            <a href="{{ route('login') }}" wire:navigate class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline ml-1">
+            <a href="{{ route('login') }}" wire:navigate class="text-accent dark:text-brand-300 font-semibold hover:underline ml-1">
                 {{ __('Log in') }}
             </a>
         </div>

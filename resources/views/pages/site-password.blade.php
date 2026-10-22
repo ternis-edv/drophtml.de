@@ -35,10 +35,10 @@
         .animate-float { animation: float 6s ease-in-out infinite; }
     </style>
 </head>
-<body class="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-4 selection:bg-indigo-500 selection:text-white relative overflow-hidden transition-colors duration-200">
+<body class="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-4 selection:bg-accent selection:text-white relative overflow-hidden transition-colors duration-200">
     <!-- Ambient Background Glow -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-indigo-400/20 dark:bg-indigo-600/20 blur-[120px] animate-float pointer-events-none"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-purple-400/20 dark:bg-purple-600/20 blur-[120px] animate-float pointer-events-none" style="animation-delay: -3s;"></div>
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-accent/15 dark:bg-accent/20 blur-[120px] animate-float pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-brand-400/15 dark:bg-brand-400/20 blur-[120px] animate-float pointer-events-none" style="animation-delay: -3s;"></div>
 
     <!-- Theme Toggle -->
     <div class="absolute top-4 right-4 z-20" x-data>
@@ -49,14 +49,14 @@
             title="Toggle Theme"
         >
             <flux:icon.sun class="size-4 hidden dark:block text-amber-400" />
-            <flux:icon.moon class="size-4 block dark:hidden text-indigo-600" />
+            <flux:icon.moon class="size-4 block dark:hidden text-accent" />
         </button>
     </div>
 
     <div class="w-full max-w-md relative z-10">
         <div class="glass-panel rounded-2xl p-8 shadow-2xl">
             <div class="flex flex-col items-center text-center mb-6">
-                <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center mb-4">
+                <div class="w-14 h-14 rounded-2xl bg-accent/10 text-accent dark:text-brand-300 border border-accent/20 flex items-center justify-center mb-4">
                     <flux:icon.lock-closed class="w-7 h-7" />
                 </div>
                 <h1 class="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">Protected Site</h1>
@@ -86,14 +86,14 @@
                             required 
                             autofocus 
                             placeholder="Enter password..."
-                            class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900/90 border border-zinc-300 dark:border-zinc-700/80 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-mono text-sm"
+                            class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900/90 border border-zinc-300 dark:border-zinc-700/80 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all font-mono text-sm"
                         >
                     </div>
                 </div>
 
                 <button 
                     type="submit" 
-                    class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    class="w-full py-2.5 px-4 bg-accent hover:bg-accent/90 active:bg-accent text-white font-medium text-sm rounded-lg shadow-lg shadow-accent/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                     <flux:icon.key class="w-4 h-4" />
                     <span>Unlock Site</span>

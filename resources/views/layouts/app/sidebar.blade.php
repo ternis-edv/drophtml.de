@@ -3,7 +3,7 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-[#08080b] dark:text-zinc-100 antialiased selection:bg-indigo-500 selection:text-white">
+    <body class="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-accent selection:text-white">
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200/80 bg-white/95 dark:border-zinc-800/80 dark:bg-zinc-900/95 backdrop-blur-xl">
             <!-- Brand Header -->
             <flux:sidebar.header class="pt-3 pb-2">
@@ -21,7 +21,7 @@
                     class="w-full flex items-center justify-between px-3 py-2 text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 bg-zinc-100/80 dark:bg-zinc-800/80 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl shadow-2xs transition-all group cursor-pointer"
                 >
                     <span class="flex items-center gap-2">
-                        <flux:icon.magnifying-glass class="size-3.5 text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                        <flux:icon.magnifying-glass class="size-3.5 text-zinc-400 group-hover:text-accent transition-colors" />
                         <span class="font-medium">Quick search...</span>
                     </span>
                     <kbd class="px-1.5 py-0.5 text-[10px] font-mono font-semibold text-zinc-400 dark:text-zinc-500 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-2xs">⌘K</kbd>
@@ -40,7 +40,7 @@
                     <flux:sidebar.item icon="photo" :href="route('dashboard.media')" :current="request()->routeIs('dashboard.media')" wire:navigate>
                         <span class="flex items-center justify-between w-full">
                             <span>{{ __('Cloud Media') }}</span>
-                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-cyan-50 dark:bg-cyan-950/80 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">NEW</span>
+                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-accent/10 text-accent dark:text-brand-300 border border-accent/20">New</span>
                         </span>
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="circle-stack" :href="route('settings.storage')" :current="request()->routeIs('settings.storage')" wire:navigate>
@@ -69,13 +69,13 @@
             <div class="px-2 py-1.5 mb-1 flex items-center justify-between text-xs text-zinc-500 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60" x-data>
                 <span class="font-medium text-[10px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Theme</span>
                 <div class="flex items-center gap-0.5">
-                    <button type="button" @click="$flux.appearance = 'light'" :class="$flux.appearance === 'light' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-all cursor-pointer" title="Light Mode">
+                    <button type="button" @click="$flux.appearance = 'light'" :class="$flux.appearance === 'light' ? 'bg-white text-accent shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-all cursor-pointer" title="Light Mode">
                         <flux:icon.sun class="size-3.5" />
                     </button>
-                    <button type="button" @click="$flux.appearance = 'dark'" :class="$flux.appearance === 'dark' ? 'bg-zinc-900 text-indigo-400 shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-all cursor-pointer" title="Dark Mode">
+                    <button type="button" @click="$flux.appearance = 'dark'" :class="$flux.appearance === 'dark' ? 'bg-zinc-900 text-accent dark:text-brand-300 shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-all cursor-pointer" title="Dark Mode">
                         <flux:icon.moon class="size-3.5" />
                     </button>
-                    <button type="button" @click="$flux.appearance = 'system'" :class="$flux.appearance === 'system' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-all cursor-pointer" title="System Preference">
+                    <button type="button" @click="$flux.appearance = 'system'" :class="$flux.appearance === 'system' ? 'bg-white dark:bg-zinc-700 text-accent dark:text-brand-300 shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-all cursor-pointer" title="System Preference">
                         <flux:icon.computer-desktop class="size-3.5" />
                     </button>
                 </div>
@@ -85,7 +85,7 @@
         </flux:sidebar>
 
         <!-- Mobile Header Bar -->
-        <flux:header class="lg:hidden border-b border-zinc-200/80 dark:border-zinc-800 bg-white/90 dark:bg-[#09090b]/90 backdrop-blur-md">
+        <flux:header class="lg:hidden border-b border-zinc-200/80 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <div class="flex items-center gap-1.5 ml-2" x-data>
@@ -103,8 +103,8 @@
                     class="p-1.5 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     title="Toggle Theme"
                 >
-                    <flux:icon.sun class="size-5 hidden dark:block text-amber-400" />
-                    <flux:icon.moon class="size-5 block dark:hidden text-indigo-600" />
+                    <flux:icon.sun class="size-5 hidden dark:block text-amber-500" />
+                    <flux:icon.moon class="size-5 block dark:hidden text-accent" />
                 </button>
             </div>
 
