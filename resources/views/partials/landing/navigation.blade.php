@@ -1,105 +1,103 @@
-<nav 
+<nav
+    class="lp-nav"
     x-data="{ mobileMenuOpen: false, scrolled: false }"
     @scroll.window="scrolled = (window.pageYOffset > 20)"
-    :class="scrolled ? 'bg-white/95 dark:bg-zinc-950/95 border-b border-zinc-200 dark:border-zinc-800' : 'bg-transparent border-b border-transparent'"
-    class="fixed top-0 w-full z-50 transition-all duration-300"
+    :class="{ 'is-scrolled': scrolled }"
 >
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16 sm:h-20">
+    <div class="lp-container">
+        <div class="lp-nav__inner">
             <!-- Brand Logo -->
-            <a href="{{ route('home') }}" class="flex items-center gap-3 group">
+            <a href="{{ route('home') }}" class="lp-nav__brand">
                 <x-brand-lockup />
             </a>
-            
+
             <!-- Desktop Nav Links -->
-            <div class="hidden lg:flex items-center gap-7">
-                @foreach ([
-                    '#features' => 'Features',
-                    '#demo' => 'Live Studio',
-                    '#media-cloud' => 'Media Cloud',
-                    '#benchmarks' => 'Benchmarks',
-                    '#pricing' => 'Pricing',
-                    '#faq' => 'FAQ',
-                ] as $href => $label)
-                    <a href="{{ $href }}" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-accent dark:hover:text-brand-300 transition-colors">{{ $label }}</a>
-                @endforeach
-                <a href="{{ url('/docs/api') }}" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-accent dark:hover:text-brand-300 transition-colors inline-flex items-center gap-1">
-                    <span>API</span>
-                    <flux:icon.arrow-top-right-on-square class="size-3 text-zinc-400" />
-                </a>
+            <div class="lp-nav__links">
+                <a href="#upload">Upload</a>
+                <a href="#features">Features</a>
+                <a href="{{ url('/docs/api') }}">API Docs</a>
             </div>
 
             <!-- Right Actions -->
-            <div class="flex items-center gap-1 sm:gap-2">
+            <div class="lp-nav__actions">
                 <!-- Theme Switcher -->
-                <button 
-                    @click="$flux.appearance = document.documentElement.classList.contains('dark') ? 'light' : 'dark'"
+                <button
                     type="button"
-                    class="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer"
-                    aria-label="Toggle Theme"
+                    class="lp-icon-btn"
+                    @click="$flux.appearance = document.documentElement.classList.contains('dark') ? 'light' : 'dark'"
+                    aria-label="Toggle theme"
                 >
-                    <flux:icon.sun class="size-4 text-amber-500 hidden dark:block" />
-                    <flux:icon.moon class="size-4 text-accent block dark:hidden" />
+                    <svg class="lp-theme-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M12 2v2" /><path d="M12 20v2" />
+                        <path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
+                        <path d="M2 12h2" /><path d="M20 12h2" />
+                        <path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+                    </svg>
+                    <svg class="lp-theme-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                    </svg>
                 </button>
 
                 @auth
-                    <flux:button :href="route('dashboard')" variant="primary" size="sm" class="rounded-xl px-3 sm:px-4 font-semibold">
-                        <flux:icon.squares-2x2 class="size-3.5 mr-1" />
+                    <a href="{{ route('dashboard') }}" class="lp-btn lp-btn--primary lp-btn--sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect width="7" height="9" x="3" y="3" rx="1" />
+                            <rect width="7" height="5" x="14" y="3" rx="1" />
+                            <rect width="7" height="9" x="14" y="12" rx="1" />
+                            <rect width="7" height="5" x="3" y="16" rx="1" />
+                        </svg>
                         Dashboard
-                    </flux:button>
-                @else
-                    <a href="{{ route('login') }}" class="text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white px-3 py-2 transition-colors hidden sm:inline-block">
-                        Log in
                     </a>
-                    <flux:button :href="route('register')" variant="primary" size="sm" class="rounded-xl px-3 sm:px-4 font-semibold">
+                @else
+                    <a href="{{ route('login') }}" class="lp-login">Log in</a>
+                    <a href="{{ route('register') }}" class="lp-btn lp-btn--primary lp-btn--sm">
                         Deploy Free
-                        <flux:icon.arrow-right class="size-3.5 ml-0.5" />
-                    </flux:button>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </a>
                 @endauth
 
                 <!-- Mobile Hamburger Toggle -->
-                <button 
-                    @click="mobileMenuOpen = !mobileMenuOpen" 
-                    type="button" 
-                    class="lg:hidden p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                <button
+                    type="button"
+                    class="lp-icon-btn lp-nav__burger"
+                    @click="mobileMenuOpen = !mobileMenuOpen"
                     :aria-expanded="mobileMenuOpen"
-                    aria-label="Toggle Navigation"
+                    aria-label="Toggle navigation"
                 >
-                    <flux:icon.bars-3 x-show="!mobileMenuOpen" class="size-5" />
-                    <flux:icon.x-mark x-show="mobileMenuOpen" class="size-5" style="display: none;" />
+                    <svg x-show="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem;" aria-hidden="true">
+                        <path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" />
+                    </svg>
+                    <svg x-show="mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem; display: none;" aria-hidden="true">
+                        <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+                    </svg>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <div 
-        x-show="mobileMenuOpen" 
+    <div
+        class="lp-nav__drawer"
+        x-show="mobileMenuOpen"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 -translate-y-2"
         x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2"
-        class="lg:hidden bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 px-5 pt-3 pb-6 space-y-1"
         style="display: none;"
     >
-        @foreach ([
-            '#features' => 'Features',
-            '#demo' => 'Live Studio',
-            '#media-cloud' => 'Media Cloud',
-            '#benchmarks' => 'Benchmarks',
-            '#pricing' => 'Pricing',
-            '#faq' => 'FAQ',
-            url('/docs/api') => 'API Documentation',
-        ] as $href => $label)
-            <a @click="mobileMenuOpen = false" href="{{ $href }}" class="block py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-accent dark:hover:text-brand-300 transition-colors">{{ $label }}</a>
-        @endforeach
+        <a href="#upload" @click="mobileMenuOpen = false">Upload</a>
+        <a href="#features" @click="mobileMenuOpen = false">Features</a>
+        <a href="{{ url('/docs/api') }}" @click="mobileMenuOpen = false">API Documentation</a>
 
-        <div class="pt-4 mt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-2">
+        <div class="lp-drawer-actions">
             @guest
-                <flux:button :href="route('login')" variant="outline" class="w-full justify-center">Log in</flux:button>
-                <flux:button :href="route('register')" variant="primary" class="w-full justify-center">Deploy Free</flux:button>
+                <a href="{{ route('login') }}" class="lp-btn lp-btn--ghost">Log in</a>
+                <a href="{{ route('register') }}" class="lp-btn lp-btn--primary">Deploy Free</a>
             @endguest
         </div>
     </div>

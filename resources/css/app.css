@@ -154,26 +154,6 @@ select:focus[data-flux-control] {
     }
 }
 
-/* Scroll reveal — sections fade/slide in once on viewport entry */
-.js .reveal {
-    opacity: 0;
-    transform: translateY(28px);
-    transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: opacity, transform;
-}
-.js .reveal.is-shown {
-    opacity: 1;
-    transform: translateY(0);
-    will-change: auto;
-}
-@media (prefers-reduced-motion: reduce) {
-    .js .reveal {
-        opacity: 1;
-        transform: none;
-        transition: none;
-    }
-}
-
 /* Custom subtle scrollbars */
 ::-webkit-scrollbar {
     width: 6px;

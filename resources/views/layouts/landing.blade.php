@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ filled($title ?? null) ? $title.' - '.config('app.name', 'DropHTML') : config('app.name', 'DropHTML').' - Instant Static Sites & Media Cloud' }}</title>
 
-    <meta name="description" content="Instant static site hosting and high-speed cloud static media hosting for developers. Drag & drop HTML or ZIP, GitHub CI/CD, password protection, and custom domains with free automatic SSL.">
+    <meta name="description" content="Instant static site hosting and high-speed cloud static media hosting. Drag & drop HTML or ZIP, GitHub CI/CD, password protection, and custom domains with free automatic SSL.">
 
     {{-- Mark JS availability so scroll-reveal content stays visible when JS is disabled --}}
     <script>document.documentElement.classList.add('js');</script>
@@ -17,24 +17,45 @@
     {{-- Self-hosted Instrument Sans (brand typeface) --}}
     @fonts
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- app.css (Tailwind + Flux) is required by the Livewire file-uploader;
+         landing.css contains the custom nested CSS for everything on this page. --}}
+    @vite(['resources/css/app.css', 'resources/css/landing.css', 'resources/js/app.js'])
     @fluxAppearance
-
-    <style>
-        html { scroll-behavior: smooth; }
-        body { overflow-x: hidden; }
-    </style>
 </head>
-<body class="antialiased selection:bg-accent selection:text-white bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300">
-    <div class="relative min-h-screen flex flex-col">
+<body class="lp-body">
+    <div class="lp-page">
         @include('partials.landing.navigation')
 
-        <main class="flex-grow relative z-10">
+        <main class="lp-main">
             @yield('content')
         </main>
 
         @include('partials.landing.footer')
     </div>
+
     @fluxScripts
+
+    {{-- Scroll reveal: fade sections in once on viewport entry --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const targets = document.querySelectorAll('.lp-reveal');
+
+            if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                targets.forEach((el) => el.classList.add('is-shown'));
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-shown');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12 });
+
+            targets.forEach((el) => observer.observe(el));
+        });
+    </script>
 </body>
 </html>
