@@ -5,6 +5,7 @@ use App\Models\Site;
 use App\Services\ActivityLogService;
 use App\Services\MediaStorageService;
 use App\Services\SiteDeploymentService;
+use App\Services\SiteServingService;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -105,6 +106,10 @@ new class extends Component
         $path = "{$this->site->path}/{$this->currentFile}";
         Storage::disk('public')->put($path, $this->fileContent);
 
+        if ($this->currentFile === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($this->currentFile), '.html'))) {
+            $this->site->update(['entry_path' => $this->currentFile]);
+        }
+
         $activityLogService->log(
             auth()->user(),
             $this->site,
@@ -154,6 +159,10 @@ new class extends Component
 
         Storage::disk('public')->put($path, $defaultContent);
 
+        if ($name === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($name), '.html'))) {
+            $this->site->update(['entry_path' => $name]);
+        }
+
         $activityLogService->log(
             auth()->user(),
             $this->site,
@@ -172,6 +181,10 @@ new class extends Component
     {
         $path = "{$this->site->path}/{$filename}";
         Storage::disk('public')->delete($path);
+
+        if ($this->site->entry_path === $filename) {
+            $this->site->update(['entry_path' => SiteServingService::detectEntryPath($this->site->path)]);
+        }
 
         $activityLogService->log(
             auth()->user(),
@@ -213,6 +226,10 @@ new class extends Component
 
         $path = "{$this->site->path}/{$filename}";
         $this->uploadFile->storeAs($this->site->path, $filename, 'public');
+
+        if ($filename === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($filename), '.html'))) {
+            $this->site->update(['entry_path' => $filename]);
+        }
 
         $activityLogService->log(
             auth()->user(),
@@ -268,6 +285,12 @@ new class extends Component
         }
 
         Storage::disk('public')->move($oldPath, $newPath);
+
+        if ($this->site->entry_path === $this->oldFileName) {
+            $this->site->update(['entry_path' => SiteServingService::detectEntryPath($this->site->path)]);
+        } elseif (empty($this->site->entry_path) && str_ends_with(strtolower($cleanNew), '.html')) {
+            $this->site->update(['entry_path' => $cleanNew]);
+        }
 
         $activityLogService->log(
             auth()->user(),

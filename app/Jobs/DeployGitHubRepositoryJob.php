@@ -6,6 +6,7 @@ use App\Models\Site;
 use App\Services\ActivityLogService;
 use App\Services\GitHubService;
 use App\Services\SiteDeploymentService;
+use App\Services\SiteServingService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -54,6 +55,8 @@ class DeployGitHubRepositoryJob implements ShouldQueue
 
             $destination = Storage::disk('public')->path($this->site->path);
             $deploymentService->extractZipSafely($tempPath, $destination);
+
+            $this->site->update(['entry_path' => SiteServingService::detectEntryPath($this->site->path)]);
 
             // 3. Record deployment
             $deployment = $this->site->deployments()->create([

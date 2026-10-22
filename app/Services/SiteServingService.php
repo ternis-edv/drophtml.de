@@ -305,25 +305,7 @@ class SiteServingService
         $cleanPath = $this->sanitizePath($path);
 
         if (empty($cleanPath)) {
-            if ($disk->exists("{$site->path}/index.html")) {
-                return 'index.html';
-            }
-
-            $allFiles = $disk->allFiles($site->path);
-            $htmlFiles = array_filter($allFiles, function ($f) {
-                $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
-
-                return in_array($ext, ['html', 'htm'], true);
-            });
-
-            if (! empty($htmlFiles)) {
-                $firstHtml = reset($htmlFiles);
-                $prefix = rtrim($site->path, '/').'/';
-
-                return str_starts_with($firstHtml, $prefix) ? substr($firstHtml, strlen($prefix)) : basename($firstHtml);
-            }
-
-            abort(404, 'No HTML file found in this site.');
+            return $this->resolveEntryPath($site);
         }
 
         // Direct file match
@@ -342,6 +324,56 @@ class SiteServingService
         }
 
         return null;
+    }
+
+    /**
+     * Resolve (and cache) the entry document served for the site root.
+     */
+    public function resolveEntryPath(Site $site): string
+    {
+        $disk = Storage::disk('public');
+
+        if (! empty($site->entry_path) && $disk->fileExists("{$site->path}/{$site->entry_path}")) {
+            return $site->entry_path;
+        }
+
+        $entryPath = self::detectEntryPath($site->path);
+
+        if ($entryPath === null) {
+            abort(404, 'No HTML file found in this site.');
+        }
+
+        $site->forceFill(['entry_path' => $entryPath])->saveQuietly();
+
+        return $entryPath;
+    }
+
+    /**
+     * Determine the entry document for a stored site directory.
+     */
+    public static function detectEntryPath(string $storagePath): ?string
+    {
+        $disk = Storage::disk('public');
+
+        if ($disk->fileExists("{$storagePath}/index.html")) {
+            return 'index.html';
+        }
+
+        $htmlFiles = array_values(array_filter($disk->allFiles($storagePath), function ($f) {
+            $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+
+            return in_array($ext, ['html', 'htm'], true);
+        }));
+
+        if (empty($htmlFiles)) {
+            return null;
+        }
+
+        $prefix = rtrim($storagePath, '/').'/';
+
+        return str_starts_with($htmlFiles[0], $prefix)
+            ? substr($htmlFiles[0], strlen($prefix))
+            : basename($htmlFiles[0]);
     }
 
     /**

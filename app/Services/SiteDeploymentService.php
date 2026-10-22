@@ -76,6 +76,7 @@ class SiteDeploymentService
             'slug' => $slug,
             'original_name' => $originalName,
             'path' => $storagePath,
+            'entry_path' => SiteServingService::detectEntryPath($storagePath),
             'user_id' => $user?->id,
             'status' => 'active',
             'is_permanent' => $isPermanent,
@@ -133,6 +134,7 @@ class SiteDeploymentService
             'slug' => $slug,
             'original_name' => $name,
             'path' => $storagePath,
+            'entry_path' => 'index.html',
             'user_id' => $user?->id,
             'status' => 'active',
             'is_permanent' => $isPermanent,
@@ -459,6 +461,7 @@ class SiteDeploymentService
             'slug' => $newSlug,
             'original_name' => ($site->original_name ?: $site->slug).' (Copy)',
             'path' => $newPath,
+            'entry_path' => $site->entry_path,
             'user_id' => $user->id,
             'status' => 'active',
             'is_permanent' => false,
@@ -619,6 +622,8 @@ class SiteDeploymentService
 
         $message = $commitMessage ?: 'Redeployed site files via '.$source;
 
+        $site->update(['entry_path' => SiteServingService::detectEntryPath($site->path)]);
+
         $deployment = $site->deployments()->create([
             'status' => 'success',
             'source' => $source,
@@ -679,6 +684,8 @@ class SiteDeploymentService
 
         $this->extractZipSafely($tempFile, $destinationPath);
         @unlink($tempFile);
+
+        $site->update(['entry_path' => SiteServingService::detectEntryPath($site->path)]);
 
         $shortId = substr($targetDeployment->id, 0, 8);
         $newDeployment = $site->deployments()->create([

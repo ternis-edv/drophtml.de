@@ -72,11 +72,13 @@ new class extends Component
             $extractPath = Storage::disk('public')->path($path);
             Storage::disk('public')->makeDirectory($path);
             $deploymentService->extractZipSafely($tempPath, $extractPath);
+            $entryPath = $deploymentService->detectEntryPath($path);
 
             $site = Site::create([
                 'slug' => $slug,
                 'original_name' => $repo['name'],
                 'path' => $path,
+                'entry_path' => $entryPath,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addDays(30),
                 'github_repo_full_name' => $fullName,
