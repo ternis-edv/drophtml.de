@@ -34,7 +34,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             
             <!-- Community Free Plan -->
-            <div class="glass-panel rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden flex flex-col justify-between group hover:border-accent/40 hover:shadow-lg transition-all duration-200">
+            <div class="rounded-2xl p-8 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden flex flex-col justify-between hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Community</h3>
@@ -63,15 +63,15 @@
                     </ul>
                 </div>
                 
-                <flux:button :href="route('register')" variant="secondary" class="w-full justify-center font-semibold">
+                <flux:button :href="route('register')" variant="outline" class="w-full justify-center font-semibold">
                     Start for Free
                 </flux:button>
             </div>
 
             <!-- Pro / Commercial Plan -->
-            <div class="glass-panel rounded-3xl p-8 border-2 border-accent/70 relative overflow-hidden flex flex-col justify-between shadow-xl shadow-accent/10">
+            <div class="rounded-2xl p-8 bg-white dark:bg-zinc-900/50 border-2 border-accent relative overflow-hidden flex flex-col justify-between">
                 <div class="absolute top-0 right-8 transform -translate-y-1/2">
-                    <span class="bg-accent text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
+                    <span class="bg-accent text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                         Most Popular
                     </span>
                 </div>
@@ -112,7 +112,7 @@
                     </ul>
                 </div>
                 
-                <flux:button :href="route('register')" variant="primary" class="w-full justify-center font-semibold shadow-md border-none">
+                <flux:button :href="route('register')" variant="primary" class="w-full justify-center font-semibold border-none">
                     Get Started with Pro
                 </flux:button>
             </div>

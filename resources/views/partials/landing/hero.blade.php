@@ -17,7 +17,7 @@
             <div class="flex flex-col items-center">
                 
                 <!-- Announcement Pill -->
-                <a href="#media-cloud" class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full glass-panel mb-8 border border-accent/25 text-accent dark:text-brand-300 text-xs font-semibold hover:bg-accent/10 transition-all shadow-xs group">
+                <a href="#media-cloud" class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-accent/25 bg-accent/5 text-accent dark:text-brand-300 text-xs font-semibold hover:bg-accent/10 transition-colors group">
                     <span class="flex size-2 relative">
                         <span class="animate-ping absolute inline-flex size-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full size-2 bg-emerald-500"></span>
@@ -31,7 +31,7 @@
                     Instant static site hosting<br class="hidden sm:inline" />
                     &amp; static media cloud.<br/>
                     <span 
-                        class="text-transparent bg-clip-text bg-gradient-to-r from-accent via-brand-500 to-brand-400 dark:from-brand-300 dark:via-brand-400 dark:to-accent transition-all duration-500 inline-block min-h-[1.2em]"
+                        class="text-accent dark:text-brand-300 transition-colors duration-500 inline-block min-h-[1.2em]"
                         x-text="headlines[currentHeadlineIndex]"
                     >Ship HTML in seconds.</span>
                 </h1>
@@ -46,7 +46,7 @@
                     <flux:button 
                         :href="route('register')" 
                         variant="primary" 
-                        class="rounded-2xl px-8 py-3.5 text-sm sm:text-base font-semibold shadow-lg shadow-accent/25 transition-all hover:scale-[1.03] border-none cursor-pointer"
+                        class="rounded-xl px-8 py-3.5 text-sm sm:text-base font-semibold border-none cursor-pointer"
                     >
                         <flux:icon.rocket-launch class="size-4 mr-2" /> Start Deploying for Free
                     </flux:button>
@@ -54,7 +54,7 @@
                     <flux:button 
                         href="#demo" 
                         variant="ghost" 
-                        class="rounded-2xl px-7 py-3.5 text-sm sm:text-base font-semibold border border-zinc-300 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 transition-all cursor-pointer"
+                        class="rounded-xl px-7 py-3.5 text-sm sm:text-base font-semibold border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
                     >
                         <flux:icon.play class="size-4 mr-2 text-accent" /> Explore Live Studio
                     </flux:button>
@@ -62,32 +62,31 @@
 
                 <!-- Trust Badges Row -->
                 <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-16">
-                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
                         <flux:icon.bolt class="size-3.5 text-amber-500" /> &lt;15ms Global Edge TTFB
                     </div>
-                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
                         <flux:icon.cloud-arrow-up class="size-3.5 text-accent" /> Global Edge Cloud Storage
                     </div>
-                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
                         <flux:icon.shield-check class="size-3.5 text-emerald-500" /> Free Auto Let's Encrypt SSL
                     </div>
-                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+                    <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
                         <flux:icon.lock-closed class="size-3.5 text-accent" /> Password Locked Previews
                     </div>
                 </div>
 
                 <!-- Hero Mockup Window -->
-                <div class="w-full max-w-5xl rounded-2xl p-2 sm:p-3 glass-panel border border-zinc-200/80 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
-                    <div class="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 overflow-hidden text-left">
+                <div class="w-full max-w-5xl rounded-xl border border-zinc-200 dark:border-zinc-800 relative overflow-hidden text-left">
                         <!-- Browser Bar -->
-                        <div class="px-4 py-3 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between gap-3">
+                        <div class="px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="size-3 rounded-full bg-rose-400 inline-block"></span>
                                 <span class="size-3 rounded-full bg-amber-400 inline-block"></span>
                                 <span class="size-3 rounded-full bg-emerald-400 inline-block"></span>
                             </div>
 
-                            <div class="flex-1 max-w-md mx-auto px-3 py-1 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-zinc-600 dark:text-zinc-400 flex items-center justify-between">
+                            <div class="flex-1 max-w-md mx-auto px-3 py-1 rounded-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-zinc-600 dark:text-zinc-400 flex items-center justify-between">
                                 <div class="flex items-center gap-1.5 truncate">
                                     <flux:icon.lock-closed class="size-3 text-emerald-500 shrink-0" />
                                     <span class="text-zinc-900 dark:text-zinc-100 font-semibold">https://drophtml.de/s/hyperdrive</span>
@@ -103,7 +102,7 @@
                         </div>
 
                         <!-- Mock Site Content Banner -->
-                        <div class="p-6 sm:p-8 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900/40 dark:to-zinc-950">
+                        <div class="p-6 sm:p-8 bg-white dark:bg-zinc-950">
                             <div class="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-zinc-100 dark:border-zinc-800/80 pb-6 mb-6">
                                 <div>
                                     <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-accent/10 text-accent dark:text-brand-300 text-xs font-mono font-semibold mb-2">
@@ -142,7 +141,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
 
             </div>

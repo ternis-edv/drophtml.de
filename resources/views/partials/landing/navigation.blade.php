@@ -1,7 +1,7 @@
 <nav 
     x-data="{ mobileMenuOpen: false, scrolled: false }"
     @scroll.window="scrolled = (window.pageYOffset > 20)"
-    :class="scrolled ? 'glass-panel shadow-md border-b border-zinc-200/60 dark:border-zinc-800/60' : 'bg-transparent border-b border-transparent'"
+    :class="scrolled ? 'bg-white/95 dark:bg-zinc-950/95 border-b border-zinc-200 dark:border-zinc-800' : 'bg-transparent border-b border-transparent'"
     class="fixed top-0 w-full z-50 transition-all duration-300"
 >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -81,7 +81,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2"
-        class="lg:hidden glass-panel border-b border-zinc-200 dark:border-zinc-800 px-5 pt-3 pb-6 space-y-1 shadow-xl"
+        class="lg:hidden bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 px-5 pt-3 pb-6 space-y-1"
         style="display: none;"
     >
         @foreach ([
@@ -98,7 +98,7 @@
 
         <div class="pt-4 mt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-2">
             @guest
-                <flux:button :href="route('login')" variant="secondary" class="w-full justify-center">Log in</flux:button>
+                <flux:button :href="route('login')" variant="outline" class="w-full justify-center">Log in</flux:button>
                 <flux:button :href="route('register')" variant="primary" class="w-full justify-center">Deploy Free</flux:button>
             @endguest
         </div>
