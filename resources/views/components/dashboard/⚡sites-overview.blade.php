@@ -167,8 +167,8 @@ new class extends Component
         class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-md pointer-events-none"
         style="display: none;"
     >
-        <div class="p-10 border-2 border-dashed border-indigo-500 rounded-3xl bg-zinc-900/90 text-white flex flex-col items-center gap-4 max-w-md text-center shadow-2xl">
-            <div class="size-16 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center animate-bounce">
+        <div class="p-10 border-2 border-dashed border-accent rounded-3xl bg-zinc-900/90 text-white flex flex-col items-center gap-4 max-w-md text-center shadow-xl">
+            <div class="size-16 rounded-2xl bg-accent/20 text-brand-300 flex items-center justify-center animate-bounce">
                 <flux:icon.cloud-arrow-up class="size-8" />
             </div>
             <div>
@@ -178,43 +178,42 @@ new class extends Component
         </div>
     </div>
 
-    <!-- Welcome Hero Banner -->
-    <div class="relative overflow-hidden rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 bg-gradient-to-br from-white via-zinc-50 to-indigo-50/40 dark:from-[#0d0d12] dark:via-[#09090c] dark:to-[#131124] p-6 sm:p-8 shadow-xs">
-        <div class="absolute -top-20 right-0 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-20 right-48 w-60 h-60 bg-cyan-500/10 dark:bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- Welcome Banner -->
+    <div class="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-8">
+        <div class="absolute -top-24 -right-16 w-72 h-72 bg-accent/[0.07] rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="space-y-2 max-w-2xl">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/[0.06] border border-accent/20 text-accent dark:text-accent-content text-xs font-semibold">
                     <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>Edge Cloud Operational</span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                     Welcome back, {{ auth()->user()->name }}
                 </h1>
-                <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
                     Deploy static sites with automated SSL, manage static media with zero-bloat cloud asset storage, and inspect real-time traffic across global Edge CDN nodes.
                 </p>
             </div>
 
-            <!-- Quick Action Buttons in Banner -->
+            <!-- Quick Actions -->
             <div class="flex flex-wrap items-center gap-2.5 shrink-0">
                 <flux:modal.trigger name="upload-site-modal">
-                    <flux:button variant="primary" size="base" icon="cloud-arrow-up" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-500/20 cursor-pointer">
+                    <flux:button variant="primary" size="base" icon="cloud-arrow-up" class="font-bold">
                         Deploy New Site
                     </flux:button>
                 </flux:modal.trigger>
 
                 @if(auth()->user()->github_id)
                     <flux:modal.trigger name="github-deploy-modal">
-                        <flux:button variant="ghost" size="base" class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 hover:bg-zinc-100 dark:hover:bg-zinc-700 font-semibold cursor-pointer">
+                        <flux:button variant="outline" size="base">
                             <svg class="size-4 mr-1.5 text-zinc-700 dark:text-zinc-300" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" /></svg>
                             GitHub Sync
                         </flux:button>
                     </flux:modal.trigger>
                 @endif
 
-                <a href="{{ route('dashboard.media') }}" wire:navigate class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-colors cursor-pointer">
+                <a href="{{ route('dashboard.media') }}" wire:navigate class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-colors duration-150 cursor-pointer">
                     <flux:icon.photo class="size-3.5" />
                     <span>Media Cloud</span>
                 </a>
@@ -225,14 +224,13 @@ new class extends Component
     <!-- 4 KPI Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Stat 1: Total Sites -->
-        <div class="glass-card rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 relative overflow-hidden group hover:border-indigo-500/40 transition-all">
-            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
             <div class="flex items-center justify-between">
                 <div>
                     <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total Sites</span>
-                    <div class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white mt-1">{{ number_format($totalSites) }}</div>
+                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">{{ number_format($totalSites) }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                <div class="p-3 rounded-xl bg-accent/[0.08] text-accent border border-accent/15">
                     <flux:icon.globe-alt class="size-5" />
                 </div>
             </div>
@@ -243,14 +241,13 @@ new class extends Component
         </div>
 
         <!-- Stat 2: Total Page Views -->
-        <div class="glass-card rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 relative overflow-hidden group hover:border-purple-500/40 transition-all">
-            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
             <div class="flex items-center justify-between">
                 <div>
                     <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total Page Views</span>
-                    <div class="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 mt-1">{{ number_format($totalViews) }}</div>
+                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">{{ number_format($totalViews) }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                <div class="p-3 rounded-xl bg-accent/[0.08] text-accent border border-accent/15">
                     <flux:icon.eye class="size-5" />
                 </div>
             </div>
@@ -261,14 +258,13 @@ new class extends Component
         </div>
 
         <!-- Stat 3: Connected Domains -->
-        <div class="glass-card rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 relative overflow-hidden group hover:border-emerald-500/40 transition-all">
-            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
             <div class="flex items-center justify-between">
                 <div>
                     <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Custom Domains</span>
-                    <div class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{{ number_format($totalDomains) }}</div>
+                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">{{ number_format($totalDomains) }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <div class="p-3 rounded-xl bg-accent/[0.08] text-accent border border-accent/15">
                     <flux:icon.link class="size-5" />
                 </div>
             </div>
@@ -279,14 +275,13 @@ new class extends Component
         </div>
 
         <!-- Stat 4: Storage & Quota -->
-        <a href="{{ route('settings.storage') }}" wire:navigate class="glass-card rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 relative overflow-hidden group hover:border-cyan-500/40 transition-all block cursor-pointer">
-            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 to-indigo-500"></div>
+        <a href="{{ route('settings.storage') }}" wire:navigate class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150 block cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Storage &amp; Quota</span>
-                    <div class="text-2xl sm:text-3xl font-black text-cyan-600 dark:text-cyan-400 mt-1 font-mono">{{ $storageStats['formatted']['total_used'] }}</div>
+                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1 font-mono">{{ $storageStats['formatted']['total_used'] }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 group-hover:scale-105 transition-transform">
+                <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 group-hover:scale-105 transition-transform duration-150">
                     <flux:icon.circle-stack class="size-5" />
                 </div>
             </div>
@@ -294,7 +289,7 @@ new class extends Component
                 <span class="flex items-center gap-1.5 truncate">
                     <span>of {{ $storageStats['formatted']['quota'] }} ({{ $storageStats['used_percentage'] }}%)</span>
                 </span>
-                <span class="text-indigo-600 dark:text-indigo-400 group-hover:underline font-semibold flex items-center gap-1">
+                <span class="text-accent dark:text-accent-content group-hover:underline font-semibold flex items-center gap-1">
                     <span>Manage</span>
                     <span>&rarr;</span>
                 </span>
@@ -303,7 +298,7 @@ new class extends Component
     </div>
 
     <!-- Main Container: Search, Filters & Content -->
-    <div class="glass-card rounded-3xl border border-zinc-200/80 dark:border-zinc-800 p-5 sm:p-7 shadow-xs">
+    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 sm:p-7">
         <!-- Filter and Search Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <!-- Search & Filter Chips -->
@@ -316,7 +311,7 @@ new class extends Component
                         wire:model.live.debounce.250ms="search" 
                         type="text" 
                         placeholder="Search sites, slugs, domains..." 
-                        class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl bg-zinc-50 dark:bg-zinc-800/70 border border-zinc-200/80 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl bg-zinc-50 dark:bg-zinc-800/70 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-150"
                     />
                     @if($search)
                         <button wire:click="$set('search', '')" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer">
@@ -326,11 +321,11 @@ new class extends Component
                 </div>
 
                 <!-- Filter Pills -->
-                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/70 border border-zinc-200/80 dark:border-zinc-700/80 text-xs">
-                    <button wire:click="setFilter('all')" class="px-3 py-1 font-semibold rounded-lg transition-all cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white' }}">All ({{ $totalSites }})</button>
-                    <button wire:click="setFilter('active')" class="px-3 py-1 font-semibold rounded-lg transition-all cursor-pointer {{ $statusFilter === 'active' ? 'bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white' }}">Active</button>
-                    <button wire:click="setFilter('permanent')" class="px-3 py-1 font-semibold rounded-lg transition-all cursor-pointer {{ $statusFilter === 'permanent' ? 'bg-white dark:bg-zinc-900 text-purple-600 dark:text-purple-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white' }}">Permanent</button>
-                    <button wire:click="setFilter('expiring')" class="px-3 py-1 font-semibold rounded-lg transition-all cursor-pointer {{ $statusFilter === 'expiring' ? 'bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white' }}">
+                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs">
+                    <button wire:click="setFilter('all')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All ({{ $totalSites }})</button>
+                    <button wire:click="setFilter('active')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'active' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Active</button>
+                    <button wire:click="setFilter('permanent')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'permanent' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Permanent</button>
+                    <button wire:click="setFilter('expiring')" class="px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'expiring' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">
                         Expiring
                         @if($expiringCount > 0)
                             <span class="ml-1 px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[10px] font-bold">{{ $expiringCount }}</span>
@@ -342,17 +337,17 @@ new class extends Component
             <!-- View Switcher & Action Buttons -->
             <div class="flex items-center gap-2.5 shrink-0">
                 <!-- Grid / Table View Switcher -->
-                <div class="hidden sm:inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/70 border border-zinc-200/80 dark:border-zinc-700/80">
-                    <button type="button" @click="setViewMode('grid')" :class="viewMode === 'grid' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors cursor-pointer" title="Grid View">
+                <div class="hidden sm:inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800">
+                    <button type="button" @click="setViewMode('grid')" :class="viewMode === 'grid' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer" title="Grid View">
                         <flux:icon.squares-2x2 class="size-4" />
                     </button>
-                    <button type="button" @click="setViewMode('table')" :class="viewMode === 'table' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors cursor-pointer" title="Dense Table View">
+                    <button type="button" @click="setViewMode('table')" :class="viewMode === 'table' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer" title="Dense Table View">
                         <flux:icon.bars-3-bottom-left class="size-4" />
                     </button>
                 </div>
 
                 <flux:modal.trigger name="upload-site-modal">
-                    <flux:button variant="primary" size="sm" icon="plus" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-xs cursor-pointer">
+                    <flux:button variant="primary" size="sm" icon="plus">
                         Deploy Site
                     </flux:button>
                 </flux:modal.trigger>
@@ -387,7 +382,7 @@ new class extends Component
         <!-- Empty State -->
         @if($sites->isEmpty())
             <div class="py-16 flex flex-col items-center justify-center text-center">
-                <div class="size-16 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 border border-indigo-500/20 shadow-sm">
+                <div class="size-16 rounded-2xl bg-accent/[0.08] text-accent flex items-center justify-center mb-4 border border-accent/20 shadow-xs">
                     <flux:icon.cloud-arrow-up class="size-8" />
                 </div>
                 <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">
@@ -398,10 +393,10 @@ new class extends Component
                 </p>
                 <div class="flex items-center gap-3">
                     @if($search)
-                        <flux:button wire:click="$set('search', '')" variant="ghost" size="sm" class="rounded-xl">Clear Search</flux:button>
+                        <flux:button wire:click="$set('search', '')" variant="outline" size="sm">Clear Search</flux:button>
                     @endif
                     <flux:modal.trigger name="upload-site-modal">
-                        <flux:button variant="primary" size="sm" icon="plus" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-sm">Deploy Your First Site</flux:button>
+                        <flux:button variant="primary" size="sm" icon="plus">Deploy Your First Site</flux:button>
                     </flux:modal.trigger>
                 </div>
             </div>
@@ -409,13 +404,13 @@ new class extends Component
             <!-- 1. Card Grid View -->
             <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 @foreach ($sites as $site)
-                    <div class="group rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/60 dark:bg-zinc-900/60 p-5 transition-all hover:shadow-xl hover:border-indigo-500/40 dark:hover:border-indigo-500/40 flex flex-col justify-between backdrop-blur-xs relative overflow-hidden">
+                    <div class="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-950/40 p-5 hover:border-accent/40 hover:shadow-md transition-all duration-150 flex flex-col justify-between relative overflow-hidden">
                         <div>
                             <!-- Header Row -->
                             <div class="flex items-start justify-between gap-3 mb-3">
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center gap-2">
-                                        <div class="size-8 rounded-xl bg-gradient-to-tr from-indigo-600/20 to-purple-600/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-xs shrink-0 border border-indigo-500/30">
+                                        <div class="size-8 rounded-xl bg-accent/10 text-accent border border-accent/20 flex items-center justify-center font-bold text-xs shrink-0">
                                             {{ strtoupper(substr($site->original_name ?: $site->slug, 0, 1)) }}
                                         </div>
                                         <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate" title="{{ $site->original_name ?: $site->slug }}">
@@ -427,13 +422,13 @@ new class extends Component
                                     </div>
 
                                     <div class="flex items-center gap-1.5 mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                        <a href="/s/{{ $site->slug }}" target="_blank" class="font-mono text-indigo-600 dark:text-indigo-400 hover:underline truncate max-w-[190px]">
+                                        <a href="/s/{{ $site->slug }}" target="_blank" class="font-mono text-accent dark:text-accent-content hover:underline truncate max-w-[190px]">
                                             /s/{{ $site->slug }}
                                         </a>
                                         <button 
                                             type="button" 
                                             @click="navigator.clipboard.writeText('{{ url('/s/' . $site->slug) }}'); Flux.toast('URL copied to clipboard!')" 
-                                            class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-0.5 rounded transition-colors cursor-pointer" 
+                                            class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-0.5 rounded transition-colors duration-150 cursor-pointer" 
                                             title="Copy live URL"
                                         >
                                             <flux:icon.clipboard class="size-3.5" />
@@ -467,7 +462,7 @@ new class extends Component
                                                 <flux:menu.item wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set 30d Expiry' : 'Make Permanent' }}</flux:menu.item>
                                             </flux:menu.submenu>
                                             <flux:menu.separator />
-                                            <flux:menu.item icon="trash" wire:click="deleteSite('{{ $site->id }}')" wire:confirm="Delete '{{ $site->original_name ?: $site->slug }}'? This action cannot be undone." class="text-rose-600">Delete Site</flux:menu.item>
+                                            <flux:menu.item icon="trash" wire:click="deleteSite('{{ $site->id }}')" wire:confirm="Delete '{{ $site->original_name ?: $site->slug }}'? This action cannot be undone." class="text-red-600 dark:text-red-400">Delete Site</flux:menu.item>
                                         </flux:menu>
                                     </flux:dropdown>
                                 </div>
@@ -476,7 +471,7 @@ new class extends Component
                             <!-- Custom Domain Tag (if present) -->
                             @if($site->domains->count() > 0)
                                 <div class="mb-3 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 text-xs">
-                                    <flux:icon.globe-alt class="size-3.5 text-indigo-500 shrink-0" />
+                                    <flux:icon.globe-alt class="size-3.5 text-accent shrink-0" />
                                     <a href="http://{{ $site->domains->first()->domain }}" target="_blank" class="truncate font-mono font-medium text-zinc-700 dark:text-zinc-300 hover:underline">
                                         {{ $site->domains->first()->domain }}
                                     </a>
@@ -504,7 +499,7 @@ new class extends Component
                             <!-- Expiry Status Indicator -->
                             <div class="text-xs mb-3">
                                 @if($site->is_permanent)
-                                    <div class="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 font-semibold">
+                                    <div class="flex items-center gap-1.5 text-accent dark:text-accent-content font-semibold">
                                         <flux:icon.sparkles class="size-3.5" />
                                         <span>Permanent (Never expires)</span>
                                     </div>
@@ -523,7 +518,7 @@ new class extends Component
 
                         <!-- Card Action Buttons -->
                         <div class="flex items-center justify-between gap-2 pt-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
-                            <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-700 transition-colors shadow-2xs">
+                            <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-colors duration-150 shadow-xs">
                                 <flux:icon.arrow-top-right-on-square class="size-3.5" />
                                 Preview
                             </a>
@@ -540,7 +535,7 @@ new class extends Component
             </div>
 
             <!-- 2. Dense Table View -->
-            <div x-show="viewMode === 'table'" class="overflow-x-auto rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+            <div x-show="viewMode === 'table'" class="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>Name & Slug</flux:table.column>
@@ -553,7 +548,7 @@ new class extends Component
 
                     <flux:table.rows>
                         @foreach ($sites as $site)
-                            <flux:table.row class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                            <flux:table.row class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors duration-150">
                                 <flux:table.cell>
                                     <div class="font-semibold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
                                         {{ $site->original_name ?: 'Unnamed Site' }}
@@ -562,7 +557,7 @@ new class extends Component
                                         @endif
                                     </div>
                                     <div class="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
-                                        <a href="/s/{{ $site->slug }}" target="_blank" class="hover:underline text-indigo-500 dark:text-indigo-400 font-mono">/s/{{ $site->slug }}</a>
+                                        <a href="/s/{{ $site->slug }}" target="_blank" class="hover:underline text-accent dark:text-accent-content font-mono">/s/{{ $site->slug }}</a>
                                         @if($site->domains->count() > 0)
                                             <span class="text-zinc-400">&bull;</span>
                                             <span class="text-zinc-400 font-medium">{{ $site->domains->first()->domain }}</span>
@@ -574,9 +569,9 @@ new class extends Component
                                 </flux:table.cell>
                                 <flux:table.cell>
                                     @if($site->is_permanent)
-                                        <flux:badge size="sm" color="purple">Permanent</flux:badge>
+                                        <flux:badge size="sm" color="indigo">Permanent</flux:badge>
                                     @elseif($site->expires_at)
-                                        <span class="text-xs font-semibold {{ $site->expires_at->isPast() ? 'text-rose-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-600 dark:text-zinc-400') }}">
+                                        <span class="text-xs font-semibold {{ $site->expires_at->isPast() ? 'text-red-500' : ($site->expires_at->diffInHours() < 24 ? 'text-amber-500' : 'text-zinc-600 dark:text-zinc-400') }}">
                                             {{ $site->expires_at->diffForHumans(null, true) }}
                                         </span>
                                     @else
@@ -614,7 +609,7 @@ new class extends Component
                                                 <flux:menu.item icon="clock" wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days Expiry</flux:menu.item>
                                                 <flux:menu.item icon="sparkles" wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set Expiry (30d)' : 'Make Permanent' }}</flux:menu.item>
                                                 <flux:menu.separator />
-                                                <flux:menu.item icon="trash" wire:click="deleteSite('{{ $site->id }}')" wire:confirm="Are you sure you want to delete this site?" class="text-rose-600">Delete</flux:menu.item>
+                                                <flux:menu.item icon="trash" wire:click="deleteSite('{{ $site->id }}')" wire:confirm="Are you sure you want to delete this site?" class="text-red-600 dark:text-red-400">Delete</flux:menu.item>
                                             </flux:menu>
                                         </flux:dropdown>
                                     </div>

@@ -46,14 +46,14 @@ new class extends Component {
 }; ?>
 
 <div
-    class="py-6 space-y-6 border shadow-sm rounded-xl border-zinc-200 dark:border-white/10"
+    class="py-6 space-y-6 border shadow-xs rounded-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60"
     wire:cloak
     x-data="{ showRecoveryCodes: false }"
 >
     <div class="px-6 space-y-2">
         <div class="flex items-center gap-2">
-            <flux:icon.lock-closed variant="outline" class="size-4"/>
-            <flux:heading size="lg" level="3">{{ __('2FA recovery codes') }}</flux:heading>
+            <flux:icon.lock-closed variant="outline" class="size-4 text-accent dark:text-accent-content"/>
+            <flux:heading size="lg" level="3" class="tracking-tight">{{ __('2FA recovery codes') }}</flux:heading>
         </div>
         <flux:text variant="subtle">
             {{ __('Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.') }}
@@ -112,7 +112,7 @@ new class extends Component {
 
                 @if (filled($recoveryCodes))
                     <div
-                        class="grid gap-1 p-4 font-mono text-sm rounded-lg bg-zinc-100 dark:bg-white/5"
+                        class="grid gap-1 p-4 font-mono text-sm rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800"
                         role="list"
                         aria-label="{{ __('Recovery codes') }}"
                     >

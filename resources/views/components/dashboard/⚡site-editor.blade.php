@@ -425,7 +425,7 @@ new class extends Component
         <div class="flex items-center gap-2.5">
             @if($currentFile)
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 text-xs font-mono">
-                    <flux:icon.document-text class="size-3.5 text-indigo-500" />
+                    <flux:icon.document-text class="size-3.5 text-accent" />
                     <span class="font-semibold text-zinc-900 dark:text-zinc-100">{{ $currentFile }}</span>
                     @if($isBinary)
                         <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 font-sans">Binary</span>
@@ -440,7 +440,7 @@ new class extends Component
             <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 text-xs font-medium">
                 <button 
                     wire:click="setPreviewMode('editor')" 
-                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'editor' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'editor' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
                 >
                     <span class="inline-flex items-center gap-1.5">
                         <flux:icon.code-bracket class="size-3.5" />
@@ -449,7 +449,7 @@ new class extends Component
                 </button>
                 <button 
                     wire:click="setPreviewMode('split')" 
-                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'split' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'split' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
                 >
                     <span class="inline-flex items-center gap-1.5">
                         <flux:icon.arrows-right-left class="size-3.5" />
@@ -458,7 +458,7 @@ new class extends Component
                 </button>
                 <button 
                     wire:click="setPreviewMode('preview')" 
-                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'preview' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'preview' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
                 >
                     <span class="inline-flex items-center gap-1.5">
                         <flux:icon.eye class="size-3.5" />
@@ -479,7 +479,7 @@ new class extends Component
                     <button 
                         type="button" 
                         wire:click="setExplorerTab('code')" 
-                        class="py-1 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 {{ $explorerTab === 'code' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' }}"
+                        class="py-1 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 {{ $explorerTab === 'code' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 shadow-xs' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' }}"
                     >
                         <flux:icon.code-bracket class="size-3.5" />
                         <span>Code ({{ count($files) }})</span>
@@ -487,7 +487,7 @@ new class extends Component
                     <button 
                         type="button" 
                         wire:click="setExplorerTab('assets')" 
-                        class="py-1 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 {{ $explorerTab === 'assets' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' }}"
+                        class="py-1 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 {{ $explorerTab === 'assets' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 shadow-xs' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' }}"
                     >
                         <flux:icon.cloud-arrow-up class="size-3.5" />
                         <span>Cloud Media ({{ $cloudAssets->count() }})</span>
@@ -498,7 +498,7 @@ new class extends Component
                     <!-- Explorer Toolbar -->
                     <div class="flex items-center justify-between pb-3 mb-2 border-b border-zinc-100 dark:border-zinc-800">
                         <div class="flex items-center gap-2">
-                            <flux:icon.folder class="size-4 text-indigo-500" />
+                            <flux:icon.folder class="size-4 text-accent" />
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Files</span>
                             <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold">{{ count($files) }}</span>
                         </div>
@@ -507,7 +507,7 @@ new class extends Component
                             <flux:modal.trigger name="create-file-modal">
                                 <button 
                                     type="button" 
-                                    class="p-1.5 rounded-lg text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer" 
+                                    class="p-1.5 rounded-lg text-zinc-500 hover:text-accent dark:hover:text-brand-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer" 
                                     title="New File"
                                 >
                                     <flux:icon.plus class="size-4" />
@@ -517,7 +517,7 @@ new class extends Component
                             <button 
                                 type="button" 
                                 @click="$refs.mgrUploadInput.click()" 
-                                class="p-1.5 rounded-lg text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer" 
+                                class="p-1.5 rounded-lg text-zinc-500 hover:text-accent dark:hover:text-brand-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer" 
                                 title="Upload File to Code"
                             >
                                 <flux:icon.arrow-up-tray class="size-4" />
@@ -533,7 +533,7 @@ new class extends Component
                             wire:model.live.debounce.150ms="fileFilter" 
                             type="text" 
                             placeholder="Filter files..." 
-                            class="w-full pl-8 pr-7 py-1.5 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+                            class="w-full pl-8 pr-7 py-1.5 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-accent/40 transition-colors"
                         />
                         @if($fileFilter)
                             <button 
@@ -553,7 +553,7 @@ new class extends Component
                                 $isSelected = ($currentFile === $file);
                                 $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                             @endphp
-                            <div class="group flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-all {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold ring-1 ring-indigo-500/20 shadow-xs' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/60' }}">
+                            <div class="group flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-colors {{ $isSelected ? 'bg-accent/[0.07] dark:bg-accent/15 text-accent dark:text-brand-300 font-semibold ring-1 ring-accent/25' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60' }}">
                                 <button 
                                     type="button"
                                     wire:click="selectFile('{{ $file }}')" 
@@ -561,17 +561,17 @@ new class extends Component
                                     title="{{ $file }}"
                                 >
                                     @if(in_array($ext, ['html', 'htm']))
-                                        <flux:icon.code-bracket class="size-4 text-indigo-500 shrink-0" />
+                                        <flux:icon.code-bracket class="size-4 text-accent shrink-0" />
                                     @elseif($ext === 'css')
-                                        <flux:icon.hashtag class="size-4 text-pink-500 shrink-0" />
+                                        <flux:icon.hashtag class="size-4 text-indigo-500/70 dark:text-indigo-400/80 shrink-0" />
                                     @elseif(in_array($ext, ['js', 'mjs', 'ts']))
-                                        <flux:icon.bolt class="size-4 text-amber-500 shrink-0" />
+                                        <flux:icon.bolt class="size-4 text-indigo-500/70 dark:text-indigo-400/80 shrink-0" />
                                     @elseif(in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']))
-                                        <flux:icon.photo class="size-4 text-emerald-500 shrink-0" />
+                                        <flux:icon.photo class="size-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
                                     @elseif(in_array($ext, ['json', 'xml', 'yaml', 'yml']))
-                                        <flux:icon.circle-stack class="size-4 text-cyan-500 shrink-0" />
+                                        <flux:icon.circle-stack class="size-4 text-zinc-400 shrink-0" />
                                     @elseif(in_array($ext, ['md', 'txt']))
-                                        <flux:icon.document-text class="size-4 text-violet-500 shrink-0" />
+                                        <flux:icon.document-text class="size-4 text-zinc-400 shrink-0" />
                                     @else
                                         <flux:icon.document class="size-4 text-zinc-400 shrink-0" />
                                     @endif
@@ -584,7 +584,7 @@ new class extends Component
                                     </button>
                                     <flux:menu>
                                         <flux:menu.item icon="pencil-square" wire:click="startRename('{{ $file }}')">Rename</flux:menu.item>
-                                        <flux:menu.item icon="trash" wire:click="deleteFile('{{ $file }}')" wire:confirm="Are you sure you want to delete '{{ $file }}'?" class="text-rose-600">Delete</flux:menu.item>
+                                        <flux:menu.item icon="trash" wire:click="deleteFile('{{ $file }}')" wire:confirm="Are you sure you want to delete '{{ $file }}'?" class="text-red-600 dark:text-red-400">Delete</flux:menu.item>
                                     </flux:menu>
                                 </flux:dropdown>
                             </div>
@@ -599,14 +599,14 @@ new class extends Component
                     <!-- Cloud Assets Panel -->
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100 dark:border-zinc-800">
                         <div class="flex items-center gap-1.5">
-                            <flux:icon.cloud class="size-4 text-emerald-500" />
+                            <flux:icon.cloud class="size-4 text-cyan-600 dark:text-cyan-400" />
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Cloud Assets</span>
                         </div>
 
                         <button 
                             type="button" 
                             @click="$refs.cloudUploadInput.click()" 
-                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs cursor-pointer" 
+                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent text-white hover:bg-accent/90 hover:shadow-md shadow-xs cursor-pointer transition-all duration-150" 
                             title="Upload to Cloud Asset Storage"
                         >
                             <flux:icon.plus class="size-3.5" />
@@ -617,15 +617,15 @@ new class extends Component
 
                     <div class="flex-1 overflow-y-auto max-h-[600px] space-y-2 pr-1 custom-scrollbar">
                         @forelse($cloudAssets as $cAsset)
-                            <div class="p-2.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 shadow-2xs space-y-2">
+                            <div class="p-2.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 shadow-xs space-y-2 transition-colors hover:border-zinc-300 dark:hover:border-zinc-700">
                                 <div class="flex items-center gap-2.5">
                                     <div class="size-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center shrink-0">
                                         @if($cAsset->isImage())
                                             <img src="{{ $cAsset->resolved_url }}" alt="" class="size-full object-cover" />
                                         @elseif($cAsset->isVideo())
-                                            <flux:icon.film class="size-4 text-indigo-500" />
+                                            <flux:icon.film class="size-4 text-cyan-600 dark:text-cyan-400" />
                                         @elseif($cAsset->isPdf())
-                                            <flux:icon.document-text class="size-4 text-rose-500" />
+                                            <flux:icon.document-text class="size-4 text-zinc-500 dark:text-zinc-400" />
                                         @else
                                             <flux:icon.document class="size-4 text-zinc-400" />
                                         @endif
@@ -642,7 +642,7 @@ new class extends Component
                                     <button 
                                         type="button" 
                                         wire:click="insertAssetSnippet(`{{ addslashes($cAsset->html_tag) }}`)" 
-                                        class="flex-1 py-1 px-2 text-[11px] font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors text-center cursor-pointer"
+                                        class="flex-1 py-1 px-2 text-[11px] font-semibold rounded-lg bg-accent/[0.07] dark:bg-accent/15 text-accent dark:text-brand-300 hover:bg-accent/[0.12] dark:hover:bg-accent/25 transition-colors text-center cursor-pointer"
                                         title="Insert HTML snippet into current editor file"
                                     >
                                         Insert Tag
@@ -656,7 +656,7 @@ new class extends Component
                                             copied = true;
                                             setTimeout(() => copied = false, 1500);
                                         "
-                                        class="p-1 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                        class="p-1 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                                         title="Copy CDN URL"
                                     >
                                         <flux:icon.link class="size-3.5" />
@@ -671,7 +671,7 @@ new class extends Component
                                 <button 
                                     type="button" 
                                     @click="$refs.cloudUploadInput.click()" 
-                                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs cursor-pointer"
+                                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-xl bg-accent text-white hover:bg-accent/90 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 cursor-pointer"
                                 >
                                     <flux:icon.plus class="size-3.5" />
                                     <span>Upload Media</span>
@@ -691,7 +691,7 @@ new class extends Component
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100 dark:border-zinc-800">
                         <div class="flex items-center gap-2 font-mono text-xs">
                             <span class="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                                <flux:icon.document-text class="size-4 text-indigo-500" />
+                                <flux:icon.document-text class="size-4 text-accent" />
                                 {{ $currentFile }}
                             </span>
                             @if($isBinary)
@@ -710,21 +710,21 @@ new class extends Component
                                 <div class="inline-flex rounded-xl p-0.5 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 text-xs">
                                     <button 
                                         wire:click="setViewportMode('desktop')" 
-                                        class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewportMode === 'desktop' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
+                                        class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewportMode === 'desktop' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
                                         title="Desktop Viewport"
                                     >
                                         <flux:icon.computer-desktop class="size-3.5" />
                                     </button>
                                     <button 
                                         wire:click="setViewportMode('tablet')" 
-                                        class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewportMode === 'tablet' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
+                                        class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewportMode === 'tablet' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
                                         title="Tablet (768px)"
                                     >
                                         <flux:icon.device-tablet class="size-3.5" />
                                     </button>
                                     <button 
                                         wire:click="setViewportMode('mobile')" 
-                                        class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewportMode === 'mobile' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
+                                        class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewportMode === 'mobile' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
                                         title="Mobile (375px)"
                                     >
                                         <flux:icon.device-phone-mobile class="size-3.5" />
@@ -737,7 +737,7 @@ new class extends Component
                                     wire:click="saveFile" 
                                     variant="primary" 
                                     size="sm" 
-                                    class="bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs rounded-xl"
+                                    class="rounded-xl"
                                 >
                                     <flux:icon.check class="size-3.5 mr-1" />
                                     Save
@@ -751,7 +751,7 @@ new class extends Component
                         <!-- Code Editor Pane -->
                         @if($previewMode !== 'preview')
                             <div 
-                                class="flex flex-col h-full relative border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-[#0c0c0e] shadow-inner"
+                                class="flex flex-col h-full relative border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-950 shadow-inner"
                                 x-data="{
                                     init() {
                                         window.addEventListener('keydown', (e) => {
@@ -775,19 +775,19 @@ new class extends Component
                                                 <flux:icon.document class="size-8" />
                                             </div>
                                             <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{{ $currentFile }}</p>
-                                            <p class="text-xs text-zinc-400 max-w-xs mt-1 mb-4">Binary file format cannot be directly edited as plain text.</p>
+                                            <p class="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mt-1 mb-4">Binary file format cannot be directly edited as plain text.</p>
                                         @endif
 
                                         <!-- Actions & Cloud Migration Banner -->
                                         <div class="flex flex-col items-center gap-3 mt-4 max-w-sm w-full">
-                                            <a href="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" download="{{ basename($currentFile) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-xs font-medium transition-colors">
+                                            <a href="{{ Storage::disk('public')->url("{$site->path}/{$currentFile}") }}" download="{{ basename($currentFile) }}" class="btn-secondary text-xs px-3 py-1.5">
                                                 <flux:icon.arrow-down-tray class="size-3.5" /> Download Asset
                                             </a>
 
-                                            <div class="w-full p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/50 text-left">
+                                            <div class="w-full p-3 rounded-xl bg-accent/[0.06] border border-accent/20 text-left">
                                                 <div class="flex items-center gap-2 mb-1">
-                                                    <flux:icon.sparkles class="size-4 text-indigo-600 dark:text-indigo-400" />
-                                                    <span class="text-xs font-bold text-indigo-900 dark:text-indigo-200">Optimize with Cloud Media</span>
+                                                    <flux:icon.sparkles class="size-4 text-accent dark:text-brand-300" />
+                                                    <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">Optimize with Cloud Media</span>
                                                 </div>
                                                 <p class="text-[11px] text-zinc-600 dark:text-zinc-400 mb-2.5">
                                                     Move this file to Cloud Asset Storage to reduce deployment bundle size and serve via global CDN.
@@ -810,7 +810,7 @@ new class extends Component
                                         wire:model="fileContent" 
                                         @input="updateStats($event)"
                                         @keydown="handleTab($event)"
-                                        class="w-full flex-1 p-4 font-mono text-xs md:text-sm bg-transparent text-zinc-900 dark:text-zinc-100 border-none outline-none resize-none leading-relaxed selection:bg-indigo-500 selection:text-white custom-scrollbar min-h-[550px]"
+                                        class="w-full flex-1 p-4 font-mono text-xs md:text-sm bg-transparent text-zinc-900 dark:text-zinc-100 border-none outline-none resize-none leading-relaxed selection:bg-accent selection:text-white min-h-[550px]"
                                         spellcheck="false"
                                         placeholder="Start typing your code..."
                                     ></textarea>
@@ -819,7 +819,7 @@ new class extends Component
                                     <div class="px-4 py-2 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950/80 flex items-center justify-between text-[11px] font-mono text-zinc-400">
                                         <div class="flex items-center gap-3">
                                             <span class="flex items-center gap-1">
-                                                <span class="size-1.5 rounded-full bg-indigo-500"></span>
+                                                <span class="size-1.5 rounded-full bg-accent"></span>
                                                 <span class="uppercase">{{ pathinfo($currentFile, PATHINFO_EXTENSION) ?: 'text' }}</span>
                                             </span>
                                             <span>UTF-8</span>
@@ -845,9 +845,9 @@ new class extends Component
                                     <!-- Browser Top Bar Mock -->
                                     <div class="px-3 py-2 bg-zinc-100 dark:bg-zinc-800/90 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between gap-2">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="size-2.5 rounded-full bg-rose-400/80 inline-block"></span>
-                                            <span class="size-2.5 rounded-full bg-amber-400/80 inline-block"></span>
-                                            <span class="size-2.5 rounded-full bg-emerald-400/80 inline-block"></span>
+                                            <span class="size-2.5 rounded-full bg-zinc-300 dark:bg-zinc-600 inline-block"></span>
+                                            <span class="size-2.5 rounded-full bg-zinc-300 dark:bg-zinc-600 inline-block"></span>
+                                            <span class="size-2.5 rounded-full bg-zinc-300 dark:bg-zinc-600 inline-block"></span>
                                         </div>
 
                                         <div class="flex-1 max-w-sm mx-auto px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-[11px] font-mono text-zinc-500 truncate text-center">
@@ -866,7 +866,7 @@ new class extends Component
                                             <a 
                                                 :href="`{{ url('/s/' . $site->slug . '/' . (str_ends_with(strtolower($currentFile), '.html') ? $currentFile : '')) }}`" 
                                                 target="_blank" 
-                                                class="p-1 rounded text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                class="p-1 rounded text-zinc-400 hover:text-accent dark:hover:text-brand-300 transition-colors"
                                                 title="Open in new tab"
                                             >
                                                 <flux:icon.arrow-top-right-on-square class="size-3.5" />
@@ -887,11 +887,11 @@ new class extends Component
                 </div>
             @else
                 <div class="glass-card rounded-2xl flex-1 flex flex-col items-center justify-center text-center py-28 px-4">
-                    <div class="size-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center mb-4 ring-1 ring-indigo-500/20">
+                    <div class="size-16 rounded-2xl bg-accent/[0.07] dark:bg-accent/15 text-accent dark:text-brand-300 flex items-center justify-center mb-4 ring-1 ring-accent/20">
                         <flux:icon.code-bracket-square class="size-8" />
                     </div>
-                    <h3 class="text-base font-bold text-zinc-800 dark:text-zinc-200">No File Selected</h3>
-                    <p class="text-xs text-zinc-400 max-w-xs mt-1.5 mb-5">Pick a file from the explorer on the left or create a new HTML/CSS file to begin editing.</p>
+                    <h3 class="text-base font-bold tracking-tight text-zinc-800 dark:text-zinc-200">No File Selected</h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mt-1.5 mb-5">Pick a file from the explorer on the left or create a new HTML/CSS file to begin editing.</p>
                     <flux:modal.trigger name="create-file-modal">
                         <flux:button variant="primary" size="sm" class="rounded-xl">
                             <flux:icon.plus class="size-4 mr-1" />

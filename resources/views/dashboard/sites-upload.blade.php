@@ -6,20 +6,20 @@
                 <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>Deploy Site</flux:breadcrumbs.item>
             </flux:breadcrumbs>
-            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">Deploy Static Site</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">Deploy Static Site</h1>
             <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Upload standalone HTML or complete ZIP archives with automated Let's Encrypt SSL and global Edge CDN distribution in seconds.</p>
         </div>
 
         <!-- Uploader Card -->
-        <div class="rounded-3xl glass-card border border-zinc-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs">
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-8">
             <livewire:file-uploader />
         </div>
 
         <!-- Deployment Guidance Feature Row -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="p-5 rounded-2xl glass-card border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-2">
-                <div class="flex items-center gap-2.5 text-indigo-600 dark:text-indigo-400 font-bold text-xs">
-                    <div class="size-7 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+            <div class="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs space-y-2">
+                <div class="flex items-center gap-2.5 text-zinc-900 dark:text-zinc-100 font-bold text-xs">
+                    <div class="size-7 rounded-xl bg-accent/[0.08] text-accent flex items-center justify-center border border-accent/15">
                         <flux:icon.document-text class="size-4" />
                     </div>
                     <span>Single HTML File</span>
@@ -27,9 +27,9 @@
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Drop a standalone <code class="font-mono text-zinc-800 dark:text-zinc-200">.html</code> file for instant portfolios, landing pages, or prototype review links.</p>
             </div>
 
-            <div class="p-5 rounded-2xl glass-card border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-2">
-                <div class="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                    <div class="size-7 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+            <div class="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs space-y-2">
+                <div class="flex items-center gap-2.5 text-zinc-900 dark:text-zinc-100 font-bold text-xs">
+                    <div class="size-7 rounded-xl bg-accent/[0.08] text-accent flex items-center justify-center border border-accent/15">
                         <flux:icon.archive-box class="size-4" />
                     </div>
                     <span>Full ZIP Archive</span>
@@ -37,12 +37,12 @@
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Package your static build folder (<code class="font-mono text-zinc-800 dark:text-zinc-200">dist/</code> or <code class="font-mono text-zinc-800 dark:text-zinc-200">out/</code>) with an <code class="font-mono text-zinc-800 dark:text-zinc-200">index.html</code> at root.</p>
             </div>
 
-            <div class="p-5 rounded-2xl glass-card border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-2">
-                <div class="flex items-center gap-2.5 text-purple-600 dark:text-purple-400 font-bold text-xs">
-                    <div class="size-7 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+            <div class="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs space-y-2">
+                <div class="flex items-center gap-2.5 text-zinc-900 dark:text-zinc-100 font-bold text-xs">
+                    <div class="size-7 rounded-xl bg-accent/[0.08] text-accent flex items-center justify-center border border-accent/15">
                         <flux:icon.shield-check class="size-4" />
                     </div>
-                    <span>Automated SSL & CDN</span>
+                    <span>Automated SSL &amp; CDN</span>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Every site is automatically provisioned with auto-renewing TLS certificates across 300+ Edge nodes.</p>
             </div>
@@ -79,10 +79,10 @@ jobs:
         @endphp
 
         <!-- Developer CLI & CI/CD Hub -->
-        <div class="rounded-3xl glass-card border border-zinc-200/80 dark:border-zinc-800 p-6 sm:p-7 space-y-5 shadow-xs" x-data="{ tab: 'curl', copied: false, copyText(text) { navigator.clipboard.writeText(text); this.copied = true; setTimeout(() => this.copied = false, 2000); } }">
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-7 space-y-5" x-data="{ tab: 'curl', copied: false, copyText(text) { navigator.clipboard.writeText(text); this.copied = true; setTimeout(() => this.copied = false, 2000); } }">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="size-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                    <div class="size-9 rounded-xl bg-accent/[0.08] text-accent flex items-center justify-center border border-accent/15">
                         <flux:icon.command-line class="size-5" />
                     </div>
                     <div>
@@ -92,10 +92,10 @@ jobs:
                 </div>
 
                 <!-- Tabs -->
-                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/80 text-xs">
-                    <button type="button" @click="tab = 'curl'" :class="tab === 'curl' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium'" class="px-3 py-1 rounded-lg transition-all cursor-pointer">cURL Deploy</button>
-                    <button type="button" @click="tab = 'redeploy'" :class="tab === 'redeploy' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium'" class="px-3 py-1 rounded-lg transition-all cursor-pointer">Redeploy Existing</button>
-                    <button type="button" @click="tab = 'github'" :class="tab === 'github' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium'" class="px-3 py-1 rounded-lg transition-all cursor-pointer">GitHub Actions</button>
+                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs">
+                    <button type="button" @click="tab = 'curl'" :class="tab === 'curl' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium'" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer">cURL Deploy</button>
+                    <button type="button" @click="tab = 'redeploy'" :class="tab === 'redeploy' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium'" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer">Redeploy Existing</button>
+                    <button type="button" @click="tab = 'github'" :class="tab === 'github' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium'" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer">GitHub Actions</button>
                 </div>
             </div>
 
@@ -114,7 +114,7 @@ jobs:
                     </button>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                    Need an API token? Generate personal access tokens in <a href="{{ route('api-tokens.edit') }}" wire:navigate class="text-indigo-600 dark:text-indigo-400 underline font-semibold">API Tokens</a>.
+                    Need an API token? Generate personal access tokens in <a href="{{ route('api-tokens.edit') }}" wire:navigate class="text-accent underline underline-offset-2 font-semibold hover:opacity-80 transition-opacity duration-150">API Tokens</a>.
                 </p>
             </div>
 

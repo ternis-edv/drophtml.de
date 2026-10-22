@@ -1,6 +1,6 @@
-<div class="flex items-start max-md:flex-col gap-8">
+<div class="flex items-start max-md:flex-col gap-6 md:gap-8">
     <div class="w-full md:w-56 shrink-0">
-        <div class="glass-card rounded-2xl p-2.5">
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-2.5">
             <flux:navlist aria-label="{{ __('Settings') }}">
                 <flux:navlist.item icon="user" :href="route('profile.edit')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
                 <flux:navlist.item icon="shield-check" :href="route('security.edit')" wire:navigate>{{ __('Security') }}</flux:navlist.item>
@@ -12,8 +12,8 @@
     </div>
 
     <div class="flex-1 self-stretch min-w-0">
-        <div class="glass-card rounded-2xl p-6 sm:p-8 {{ $maxWidth ?? 'max-w-2xl' }}">
-            <flux:heading size="lg">{{ $heading ?? '' }}</flux:heading>
+        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-8 {{ $maxWidth ?? 'max-w-2xl' }}">
+            <flux:heading size="lg" class="tracking-tight">{{ $heading ?? '' }}</flux:heading>
             <flux:subheading class="mt-1">{{ $subheading ?? '' }}</flux:subheading>
 
             <div class="mt-6 w-full">

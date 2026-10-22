@@ -3,13 +3,13 @@
         
         <!-- Section Header -->
         <div class="text-center mb-12">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-4 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-                <flux:icon.bolt class="w-3.5 h-3.5 text-indigo-500" /> Live Interactive Showcase
-            </div>
-            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">
+            <span class="eyebrow mb-4">
+                <flux:icon.bolt class="w-3.5 h-3.5" /> Live Interactive Showcase
+            </span>
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4">
                 Experience the Speed Before You Sign Up
             </h2>
-            <p class="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto text-base md:text-lg">
+            <p class="text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto text-base">
                 No mockups, no video recordings. Interact directly with our deploy simulator, real-time code editor, and developer terminal.
             </p>
         </div>
@@ -223,15 +223,15 @@
                     setTimeout(() => this.termCopied = false, 2000);
                 }
             }"
-            class="glass-panel rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden"
+            class="rounded-2xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 overflow-hidden"
         >
             <!-- Top Segment Tabs Bar -->
             <div class="px-6 py-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-2">
                     <div class="flex gap-2 mr-2">
-                        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-rose-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
                     </div>
                     <span class="text-xs font-mono text-zinc-500 dark:text-zinc-400 hidden sm:inline">preview.drophtml.de/interactive</span>
                 </div>
@@ -240,26 +240,26 @@
                 <div class="flex bg-zinc-200 dark:bg-zinc-800/80 p-1 rounded-xl gap-1 text-xs font-semibold">
                     <button 
                         @click="activeTab = 'simulator'"
-                        :class="activeTab === 'simulator' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
+                        :class="activeTab === 'simulator' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
                         class="px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                        <flux:icon.rocket-launch class="w-3.5 h-3.5 text-indigo-500" />
+                        <flux:icon.rocket-launch class="w-3.5 h-3.5" />
                         <span>Deploy Simulator</span>
                     </button>
                     <button 
                         @click="activeTab = 'editor'"
-                        :class="activeTab === 'editor' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
+                        :class="activeTab === 'editor' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
                         class="px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                        <flux:icon.code-bracket class="w-3.5 h-3.5 text-pink-500" />
+                        <flux:icon.code-bracket class="w-3.5 h-3.5" />
                         <span>Live Code Editor</span>
                     </button>
                     <button 
                         @click="activeTab = 'terminal'"
-                        :class="activeTab === 'terminal' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
+                        :class="activeTab === 'terminal' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
                         class="px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                        <flux:icon.command-line class="w-3.5 h-3.5 text-emerald-500" />
+                        <flux:icon.command-line class="w-3.5 h-3.5" />
                         <span>REST API & CLI</span>
                     </button>
                 </div>
@@ -270,7 +270,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     <!-- Left: Control & Trigger Box -->
                     <div class="space-y-6">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 dark:bg-accent/15 text-accent dark:text-accent-content text-xs font-semibold">
                             <span>Step-by-step pipeline simulation</span>
                         </div>
                         <h3 class="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white leading-tight">
@@ -284,14 +284,14 @@
                         <div 
                             @click="if (simState === 'idle') startSimulation()"
                             :class="{
-                                'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 cursor-default': simState !== 'idle',
-                                'border-zinc-300 dark:border-zinc-700 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 cursor-pointer': simState === 'idle'
+                                'border-accent bg-accent/5 dark:bg-accent/10 cursor-default': simState !== 'idle',
+                                'border-zinc-300 dark:border-zinc-700 hover:border-accent dark:hover:border-accent/70 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 cursor-pointer': simState === 'idle'
                             }"
                             class="border-2 border-dashed rounded-2xl p-8 text-center transition-all group relative overflow-hidden"
                         >
                             <template x-if="simState === 'idle'">
                                 <div>
-                                    <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-accent/10 dark:bg-accent/15 text-accent dark:text-accent-content flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <flux:icon.cloud-arrow-up class="w-7 h-7" />
                                     </div>
                                     <div class="font-bold text-zinc-900 dark:text-white text-base mb-1">Click to Simulate Instant Upload</div>
@@ -301,12 +301,12 @@
 
                             <template x-if="simState === 'uploading' || simState === 'building'">
                                 <div>
-                                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center animate-spin">
+                                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-accent/10 dark:bg-accent/15 text-accent dark:text-accent-content flex items-center justify-center animate-spin">
                                         <flux:icon.arrow-path class="w-6 h-6" />
                                     </div>
                                     <div class="font-bold text-zinc-900 dark:text-white text-sm mb-2" x-text="simState === 'uploading' ? 'Uploading & validating archive...' : 'Extracting & deploying to Edge...'"></div>
                                     <div class="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2.5 overflow-hidden max-w-xs mx-auto">
-                                        <div class="bg-indigo-600 h-2.5 transition-all duration-150 ease-out" :style="`width: ${simProgress}%`"></div>
+                                        <div class="bg-accent h-2.5 transition-all duration-150 ease-out" :style="`width: ${simProgress}%`"></div>
                                     </div>
                                     <div class="text-xs text-zinc-500 mt-2 font-mono" x-text="`${simProgress}% complete`"></div>
                                 </div>
@@ -314,10 +314,10 @@
 
                             <template x-if="simState === 'success'">
                                 <div class="space-y-3">
-                                    <div class="w-12 h-12 mx-auto rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 flex items-center justify-center">
+                                    <div class="w-12 h-12 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                                         <flux:icon.check-circle class="w-7 h-7" />
                                     </div>
-                                    <div class="font-bold text-green-600 dark:text-green-400 text-sm">Deployment Completed in 840ms!</div>
+                                    <div class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">Deployment Completed in 840ms!</div>
                                     <div class="flex items-center justify-center gap-2">
                                         <button @click.stop="resetSimulation()" class="px-4 py-1.5 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-lg text-xs font-semibold transition-colors">
                                             Run Another Simulation
@@ -329,13 +329,13 @@
                     </div>
 
                     <!-- Right: Mock Terminal & Live Result View -->
-                    <div class="bg-zinc-900 dark:bg-[#070709] rounded-2xl p-6 border border-zinc-800 shadow-xl flex flex-col h-[380px] justify-between font-mono text-xs">
+                    <div class="bg-zinc-900 dark:bg-zinc-950 rounded-2xl p-6 border border-zinc-800 flex flex-col h-[380px] justify-between font-mono text-xs">
                         <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
                             <span class="text-zinc-400 text-xs flex items-center gap-2">
                                 <flux:icon.command-line class="w-3.5 h-3.5 text-indigo-400" />
                                 build-pipeline-worker-04
                             </span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold" :class="simState === 'success' ? 'bg-green-900/60 text-green-300' : (simState === 'idle' ? 'bg-zinc-800 text-zinc-400' : 'bg-indigo-900/60 text-indigo-300')">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold" :class="simState === 'success' ? 'bg-emerald-950/70 text-emerald-300' : (simState === 'idle' ? 'bg-zinc-800 text-zinc-400' : 'bg-accent/20 text-accent-content')">
                                 <span x-text="simState.toUpperCase()"></span>
                             </span>
                         </div>
@@ -351,7 +351,7 @@
                             <template x-for="(log, idx) in simLogs" :key="idx">
                                 <div class="flex items-start gap-2">
                                     <span class="text-indigo-400 select-none">&rarr;</span>
-                                    <span x-text="log" :class="idx === simLogs.length - 1 && simState === 'success' ? 'text-green-400 font-bold' : 'text-zinc-300'"></span>
+                                    <span x-text="log" :class="idx === simLogs.length - 1 && simState === 'success' ? 'text-emerald-400 font-bold' : 'text-zinc-300'"></span>
                                 </div>
                             </template>
                         </div>
@@ -364,7 +364,7 @@
                             <button 
                                 x-show="simState === 'success'"
                                 @click="navigator.clipboard.writeText('https://stellar-portfolio.drophtml.de'); Flux.toast('Demo URL copied!')"
-                                class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[11px] font-sans font-medium transition-colors"
+                                class="px-2.5 py-1 bg-accent hover:bg-accent/90 text-white rounded text-[11px] font-sans font-semibold transition-colors"
                             >
                                 Copy URL
                             </button>
@@ -380,7 +380,7 @@
                         <label class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Template:</label>
                         <select 
                             x-model="editorTemplate" 
-                            class="bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs rounded-lg px-3 py-1.5 outline-none font-medium"
+                            class="bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-xs rounded-lg px-3 py-1.5 font-medium shadow-xs focus:border-accent focus:ring-2 focus:ring-accent/20 outline-hidden transition-colors"
                         >
                             <option value="saas">SaaS Hero Section</option>
                             <option value="portfolio">Developer Portfolio</option>
@@ -392,14 +392,14 @@
                     <div class="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
                         <button 
                             @click="deviceMode = 'desktop'" 
-                            :class="deviceMode === 'desktop' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'" 
+                            :class="deviceMode === 'desktop' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'" 
                             class="px-2.5 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
                         >
                             <flux:icon.computer-desktop class="w-3.5 h-3.5" /> Desktop
                         </button>
                         <button 
                             @click="deviceMode = 'mobile'" 
-                            :class="deviceMode === 'mobile' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'" 
+                            :class="deviceMode === 'mobile' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'" 
                             class="px-2.5 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
                         >
                             <flux:icon.device-phone-mobile class="w-3.5 h-3.5" /> Mobile
@@ -410,7 +410,7 @@
                 <!-- Split Pane -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[460px]">
                     <!-- Left: Code Area -->
-                    <div class="flex flex-col bg-zinc-900 dark:bg-[#070709] rounded-2xl border border-zinc-800 overflow-hidden shadow-lg">
+                    <div class="flex flex-col bg-zinc-900 dark:bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden">
                         <div class="bg-zinc-800/80 px-4 py-2 border-b border-zinc-800 flex justify-between items-center text-xs text-zinc-400 font-mono">
                             <span class="flex items-center gap-1.5">
                                 <flux:icon.document-text class="w-3.5 h-3.5 text-indigo-400" /> index.html
@@ -425,17 +425,17 @@
                     </div>
 
                     <!-- Right: Live Preview Frame -->
-                    <div class="flex flex-col bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-lg">
+                    <div class="flex flex-col bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div class="bg-zinc-200/80 dark:bg-zinc-800/80 px-4 py-2 border-b border-zinc-300 dark:border-zinc-700/60 flex items-center justify-between text-xs text-zinc-500">
                             <div class="flex items-center gap-2">
                                 <flux:icon.eye class="w-3.5 h-3.5 text-indigo-500" />
                                 <span class="font-mono">Live Rendering</span>
                             </div>
-                            <span class="text-[11px] font-sans text-green-600 dark:text-green-400 font-medium">&bull; Instant reactive update</span>
+                            <span class="text-[11px] font-sans text-emerald-600 dark:text-emerald-400 font-medium">&bull; Instant reactive update</span>
                         </div>
                         <div class="flex-1 p-6 flex items-center justify-center overflow-auto">
                             <div 
-                                :class="deviceMode === 'mobile' ? 'w-[320px] shadow-2xl rounded-2xl border-4 border-zinc-800 p-2 bg-white dark:bg-black' : 'w-full max-w-md'"
+                                :class="deviceMode === 'mobile' ? 'w-[320px] rounded-2xl border-4 border-zinc-800 p-2 bg-white dark:bg-black' : 'w-full max-w-md'"
                                 class="transition-all duration-300"
                             >
                                 <div x-html="editorCode"></div>
@@ -449,7 +449,7 @@
             <div x-show="activeTab === 'terminal'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="p-6 md:p-10">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     <div class="lg:col-span-1 space-y-4">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 dark:bg-accent/15 text-accent dark:text-accent-content text-xs font-semibold">
                             <span>Developer First</span>
                         </div>
                         <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Full Automation with REST & CLI</h3>
@@ -460,7 +460,7 @@
                         <div class="space-y-2 pt-2">
                             <button 
                                 @click="termTab = 'curl'"
-                                :class="termTab === 'curl' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 font-bold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'"
+                                :class="termTab === 'curl' ? 'border-accent bg-accent/5 dark:bg-accent/10 text-accent dark:text-accent-content font-semibold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-200'"
                                 class="w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-colors"
                             >
                                 <span>cURL Deploy Request</span>
@@ -468,7 +468,7 @@
                             </button>
                             <button 
                                 @click="termTab = 'github'"
-                                :class="termTab === 'github' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 font-bold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'"
+                                :class="termTab === 'github' ? 'border-accent bg-accent/5 dark:bg-accent/10 text-accent dark:text-accent-content font-semibold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-200'"
                                 class="w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-colors"
                             >
                                 <span>GitHub Actions CI/CD</span>
@@ -476,7 +476,7 @@
                             </button>
                             <button 
                                 @click="termTab = 'domains'"
-                                :class="termTab === 'domains' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 font-bold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'"
+                                :class="termTab === 'domains' ? 'border-accent bg-accent/5 dark:bg-accent/10 text-accent dark:text-accent-content font-semibold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-200'"
                                 class="w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-colors"
                             >
                                 <span>Custom Domain API</span>
@@ -484,12 +484,12 @@
                             </button>
                             <button 
                                 @click="termTab = 'media'"
-                                :class="termTab === 'media' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 font-bold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'"
+                                :class="termTab === 'media' ? 'border-accent bg-accent/5 dark:bg-accent/10 text-accent dark:text-accent-content font-semibold' : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-200'"
                                 class="w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-colors"
                             >
                                 <span class="flex items-center gap-1.5">
                                     <span>Cloud Media API</span>
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold">NEW</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-accent/10 dark:bg-accent/15 text-accent dark:text-accent-content font-semibold">NEW</span>
                                 </span>
                                 <flux:icon.arrow-right class="w-3.5 h-3.5" />
                             </button>
@@ -497,7 +497,7 @@
                     </div>
 
                     <!-- Right: Terminal Snippet -->
-                    <div class="lg:col-span-2 bg-zinc-950 rounded-2xl border border-zinc-800 p-6 font-mono text-xs text-zinc-300 relative shadow-xl overflow-hidden">
+                    <div class="lg:col-span-2 bg-zinc-950 rounded-2xl border border-zinc-800 p-6 font-mono text-xs text-zinc-300 relative overflow-hidden">
                         <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
                             <span class="text-zinc-500 text-xs font-sans font-medium">Interactive Terminal Output</span>
                             <button 
@@ -516,7 +516,7 @@
                             <!-- cURL -->
                             <template x-if="termTab === 'curl'">
                                 <pre class="leading-relaxed"><code><span class="text-zinc-500"># 1. Deploy a static HTML site or ZIP archive via API</span>
-<span class="text-emerald-400">curl</span> -X POST https://drophtml.de/api/sites \
+<span class="text-indigo-300">curl</span> -X POST https://drophtml.de/api/sites \
   -H <span class="text-yellow-300">"Authorization: Bearer dhtml_pat_98fbc102..."</span> \
   -H <span class="text-yellow-300">"Accept: application/json"</span> \
   -F <span class="text-yellow-300">"original_name=landing-production.zip"</span> \
@@ -536,15 +536,15 @@
                             <!-- GitHub Actions -->
                             <template x-if="termTab === 'github'">
                                 <pre class="leading-relaxed"><code><span class="text-zinc-500"># .github/workflows/deploy.yml</span>
-<span class="text-pink-400">name</span>: Deploy Static Site
-<span class="text-pink-400">on</span>:
-  <span class="text-pink-400">push</span>:
-    <span class="text-pink-400">branches</span>: [ main ]
+<span class="text-indigo-300">name</span>: Deploy Static Site
+<span class="text-indigo-300">on</span>:
+  <span class="text-indigo-300">push</span>:
+    <span class="text-indigo-300">branches</span>: [ main ]
 
-<span class="text-pink-400">jobs</span>:
-  <span class="text-pink-400">deploy</span>:
-    <span class="text-pink-400">runs-on</span>: ubuntu-latest
-    <span class="text-pink-400">steps</span>:
+<span class="text-indigo-300">jobs</span>:
+  <span class="text-indigo-300">deploy</span>:
+    <span class="text-indigo-300">runs-on</span>: ubuntu-latest
+    <span class="text-indigo-300">steps</span>:
       - <span class="text-indigo-400">uses</span>: actions/checkout@v4
       - <span class="text-indigo-400">name</span>: Zip static files
         <span class="text-indigo-400">run</span>: zip -r site.zip ./dist
@@ -559,7 +559,7 @@
                             <!-- Custom Domain -->
                             <template x-if="termTab === 'domains'">
                                 <pre class="leading-relaxed"><code><span class="text-zinc-500"># Link a verified custom domain programmatically</span>
-<span class="text-emerald-400">curl</span> -X POST https://drophtml.de/api/sites/{site_id}/domains \
+<span class="text-indigo-300">curl</span> -X POST https://drophtml.de/api/sites/{site_id}/domains \
   -H <span class="text-yellow-300">"Authorization: Bearer $TOKEN"</span> \
   -H <span class="text-yellow-300">"Content-Type: application/json"</span> \
   -d <span class="text-yellow-300">'{"domain": "docs.mycompany.com"}'</span>
@@ -576,7 +576,7 @@
                             <!-- Cloud Media API -->
                             <template x-if="termTab === 'media'">
                                 <pre class="leading-relaxed"><code><span class="text-zinc-500"># Direct upload static media to high-speed cloud asset storage</span>
-<span class="text-emerald-400">curl</span> -X POST https://drophtml.de/api/media \
+<span class="text-indigo-300">curl</span> -X POST https://drophtml.de/api/media \
   -H <span class="text-yellow-300">"Authorization: Bearer $TOKEN"</span> \
   -H <span class="text-yellow-300">"Accept: application/json"</span> \
   -F <span class="text-yellow-300">"file=@hero-video-4k.mp4"</span> \

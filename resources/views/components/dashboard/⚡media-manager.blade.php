@@ -211,12 +211,12 @@ new class extends Component
                     <flux:breadcrumbs.item>Static Media Hosting</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
                 <div class="flex items-center gap-3 mt-1.5 flex-wrap">
-                    <h1 class="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
-                        <flux:icon.photo class="size-6 text-indigo-500" />
+                    <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+                        <flux:icon.photo class="size-6 text-accent" />
                         <span>Static Media Hosting</span>
                     </h1>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                        <span class="size-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-accent/[0.07] text-accent dark:text-brand-300 border border-accent/20">
+                        <span class="size-1.5 rounded-full bg-accent animate-pulse"></span>
                         {{ $stats['provider'] }}
                     </span>
                 </div>
@@ -237,21 +237,21 @@ new class extends Component
 
     <!-- Storage Metric Cards -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div class="glass-card rounded-2xl p-4 border border-zinc-200/70 dark:border-zinc-800 flex items-center gap-3.5">
-            <div class="size-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+        <div class="glass-card rounded-2xl p-4 flex items-center gap-3.5">
+            <div class="size-10 rounded-xl bg-accent/[0.08] dark:bg-accent/15 text-accent dark:text-brand-300 flex items-center justify-center shrink-0">
                 <flux:icon.folder class="size-5" />
             </div>
             <div>
                 <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Hosted</p>
                 <div class="flex items-baseline gap-1.5">
-                    <span class="text-lg font-bold text-zinc-900 dark:text-zinc-100">{{ $stats['total_count'] }}</span>
+                    <span class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{{ $stats['total_count'] }}</span>
                     <span class="text-xs font-mono text-zinc-400">files</span>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card rounded-2xl p-4 border border-zinc-200/70 dark:border-zinc-800 flex items-center gap-3.5">
-            <div class="size-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+        <div class="glass-card rounded-2xl p-4 flex items-center gap-3.5">
+            <div class="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center shrink-0">
                 <flux:icon.cloud-arrow-up class="size-5" />
             </div>
             <div>
@@ -261,32 +261,32 @@ new class extends Component
                         $bytes = $stats['total_bytes'];
                         $formatted = $bytes >= 1073741824 ? number_format($bytes / 1073741824, 2).' GB' : ($bytes >= 1048576 ? number_format($bytes / 1048576, 1).' MB' : number_format($bytes / 1024, 0).' KB');
                     @endphp
-                    <span class="text-lg font-bold text-zinc-900 dark:text-zinc-100">{{ $formatted }}</span>
+                    <span class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{{ $formatted }}</span>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card rounded-2xl p-4 border border-zinc-200/70 dark:border-zinc-800 flex items-center gap-3.5">
-            <div class="size-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <div class="glass-card rounded-2xl p-4 flex items-center gap-3.5">
+            <div class="size-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
                 <flux:icon.sparkles class="size-5" />
             </div>
             <div>
                 <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Cloud Asset Storage</p>
                 <div class="flex items-baseline gap-1.5">
-                    <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400">{{ $stats['cloud_count'] }}</span>
+                    <span class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{{ $stats['cloud_count'] }}</span>
                     <span class="text-xs text-zinc-400 font-mono">in cloud</span>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card rounded-2xl p-4 border border-zinc-200/70 dark:border-zinc-800 flex items-center gap-3.5">
-            <div class="size-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+        <div class="glass-card rounded-2xl p-4 flex items-center gap-3.5">
+            <div class="size-10 rounded-xl bg-zinc-800 dark:bg-zinc-700 text-white flex items-center justify-center shrink-0">
                 <flux:icon.code-bracket class="size-5" />
             </div>
             <div>
                 <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">In Code</p>
                 <div class="flex items-baseline gap-1.5">
-                    <span class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ $stats['code_count'] }}</span>
+                    <span class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{{ $stats['code_count'] }}</span>
                     <span class="text-xs text-zinc-400 font-mono">in bundles</span>
                 </div>
             </div>
@@ -300,14 +300,14 @@ new class extends Component
             <button 
                 type="button" 
                 wire:click="setTypeFilter('all')" 
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all {{ $typeFilter === 'all' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all {{ $typeFilter === 'all' ? 'bg-accent text-white shadow-xs dark:bg-indigo-500' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
             >
                 All ({{ $stats['total_count'] }})
             </button>
             <button 
                 type="button" 
                 wire:click="setTypeFilter('image')" 
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'image' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'image' ? 'bg-accent text-white shadow-xs dark:bg-indigo-500' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
             >
                 <flux:icon.photo class="size-3.5" />
                 Images ({{ $stats['images_count'] }})
@@ -315,7 +315,7 @@ new class extends Component
             <button 
                 type="button" 
                 wire:click="setTypeFilter('video')" 
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'video' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'video' ? 'bg-accent text-white shadow-xs dark:bg-indigo-500' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
             >
                 <flux:icon.film class="size-3.5" />
                 Videos ({{ $stats['videos_count'] }})
@@ -323,7 +323,7 @@ new class extends Component
             <button 
                 type="button" 
                 wire:click="setTypeFilter('document')" 
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'document' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'document' ? 'bg-accent text-white shadow-xs dark:bg-indigo-500' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
             >
                 <flux:icon.document-text class="size-3.5" />
                 PDFs & Docs ({{ $stats['docs_count'] }})
@@ -331,7 +331,7 @@ new class extends Component
             <button 
                 type="button" 
                 wire:click="setTypeFilter('audio')" 
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'audio' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1.5 {{ $typeFilter === 'audio' ? 'bg-accent text-white shadow-xs dark:bg-indigo-500' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
             >
                 <flux:icon.musical-note class="size-3.5" />
                 Audio ({{ $stats['audio_count'] }})
@@ -347,14 +347,14 @@ new class extends Component
                     type="text" 
                     wire:model.live.debounce.150ms="search" 
                     placeholder="Search media..." 
-                    class="w-full pl-8 pr-7 py-1.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    class="w-full pl-8 pr-7 py-1.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-accent/40 transition-colors"
                 />
             </div>
 
             <!-- Storage Driver Selector Filter -->
             <select 
                 wire:model.live="driverFilter" 
-                class="py-1.5 px-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                class="py-1.5 px-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-accent/40"
             >
                 <option value="all">All Storage</option>
                 <option value="asset_storage">Cloud Asset Storage</option>
@@ -365,14 +365,14 @@ new class extends Component
             <div class="inline-flex rounded-xl p-0.5 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 text-xs">
                 <button 
                     wire:click="setViewMode('grid')" 
-                    class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
+                    class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewMode === 'grid' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
                     title="Grid View"
                 >
                     <flux:icon.squares-2x2 class="size-3.5" />
                 </button>
                 <button 
                     wire:click="setViewMode('list')" 
-                    class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewMode === 'list' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
+                    class="p-1.5 rounded-lg transition-colors cursor-pointer {{ $viewMode === 'list' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 shadow-xs' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300' }}" 
                     title="List View"
                 >
                     <flux:icon.bars-3 class="size-3.5" />
@@ -383,11 +383,11 @@ new class extends Component
 
     <!-- Media Assets Content -->
     @if($assets->isEmpty())
-        <div class="glass-card rounded-2xl p-16 text-center border border-zinc-200/70 dark:border-zinc-800 flex flex-col items-center justify-center">
-            <div class="size-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center mb-4 ring-1 ring-indigo-500/20">
+        <div class="glass-card rounded-2xl p-16 text-center flex flex-col items-center justify-center">
+            <div class="size-16 rounded-2xl bg-accent/[0.07] dark:bg-accent/15 text-accent dark:text-brand-300 flex items-center justify-center mb-4 ring-1 ring-accent/20">
                 <flux:icon.photo class="size-8" />
             </div>
-            <h3 class="text-base font-bold text-zinc-800 dark:text-zinc-200">No media assets found</h3>
+            <h3 class="text-base font-bold tracking-tight text-zinc-800 dark:text-zinc-200">No media assets found</h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mt-1.5 mb-5">
                 Upload your images, videos, audio, or PDFs to fast Cloud Asset Storage or bundle them directly in your site's code.
             </p>
@@ -401,25 +401,25 @@ new class extends Component
         <!-- Grid View -->
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach($assets as $asset)
-                <div class="group relative rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 shadow-2xs hover:shadow-md transition-all flex flex-col">
+                <div class="group relative rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col">
                     <!-- Thumbnail / Preview Area -->
                     <div 
                         wire:click="showPreview('{{ $asset->id }}')" 
                         class="aspect-video w-full bg-zinc-100 dark:bg-zinc-800/60 relative overflow-hidden flex items-center justify-center cursor-pointer select-none"
                     >
                         @if($asset->isImage())
-                            <img src="{{ $asset->resolved_url }}" alt="{{ $asset->original_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                            <img src="{{ $asset->resolved_url }}" alt="{{ $asset->original_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
                         @elseif($asset->isVideo())
                             <div class="size-10 rounded-full bg-black/50 text-white flex items-center justify-center backdrop-blur-xs">
                                 <flux:icon.play class="size-5 ml-0.5" />
                             </div>
                         @elseif($asset->isPdf())
-                            <div class="flex flex-col items-center gap-1 text-rose-500">
+                            <div class="flex flex-col items-center gap-1 text-zinc-500 dark:text-zinc-400">
                                 <flux:icon.document-text class="size-8" />
                                 <span class="text-[9px] font-bold uppercase tracking-wider">PDF</span>
                             </div>
                         @elseif($asset->isAudio())
-                            <div class="flex flex-col items-center gap-1 text-amber-500">
+                            <div class="flex flex-col items-center gap-1 text-zinc-500 dark:text-zinc-400">
                                 <flux:icon.musical-note class="size-8" />
                                 <span class="text-[9px] font-bold uppercase tracking-wider">Audio</span>
                             </div>
@@ -430,11 +430,11 @@ new class extends Component
                         <!-- Storage Type Badge -->
                         <div class="absolute top-2 left-2">
                             @if($asset->storage_driver === 'asset_storage')
-                                <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase bg-emerald-500/90 text-white shadow-xs">
+                                <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase bg-accent text-white shadow-xs">
                                     Cloud Asset
                                 </span>
                             @else
-                                <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase bg-purple-500/90 text-white shadow-xs">
+                                <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase bg-zinc-800/90 dark:bg-zinc-700/90 text-white shadow-xs">
                                     In Code
                                 </span>
                             @endif
@@ -474,7 +474,7 @@ new class extends Component
                                     copied = true;
                                     setTimeout(() => copied = false, 1500);
                                 "
-                                class="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                                class="inline-flex items-center gap-1 text-[11px] font-medium text-accent dark:text-brand-300 hover:underline cursor-pointer"
                             >
                                 <flux:icon.link class="size-3" />
                                 <span x-text="copied ? 'Copied!' : 'Copy URL'"></span>
@@ -535,7 +535,7 @@ new class extends Component
                                         icon="trash" 
                                         wire:click="deleteAsset('{{ $asset->id }}')" 
                                         wire:confirm="Are you sure you want to delete '{{ $asset->original_name }}'? This cannot be undone." 
-                                        class="text-rose-600"
+                                        class="text-red-600 dark:text-red-400"
                                     >
                                         Delete Asset
                                     </flux:menu.item>
@@ -548,7 +548,7 @@ new class extends Component
         </div>
     @else
         <!-- List / Table View -->
-        <div class="glass-card rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-zinc-800">
+        <div class="glass-card rounded-2xl overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs text-zinc-600 dark:text-zinc-400">
                     <thead class="bg-zinc-50 dark:bg-zinc-900/80 text-[11px] uppercase tracking-wider font-semibold text-zinc-500 border-b border-zinc-200/80 dark:border-zinc-800">
@@ -570,15 +570,15 @@ new class extends Component
                                             @if($asset->isImage())
                                                 <img src="{{ $asset->resolved_url }}" alt="" class="size-full object-cover" />
                                             @elseif($asset->isVideo())
-                                                <flux:icon.film class="size-4 text-indigo-500" />
+                                                <flux:icon.film class="size-4 text-cyan-600 dark:text-cyan-400" />
                                             @elseif($asset->isPdf())
-                                                <flux:icon.document-text class="size-4 text-rose-500" />
+                                                <flux:icon.document-text class="size-4 text-zinc-500 dark:text-zinc-400" />
                                             @else
                                                 <flux:icon.document class="size-4 text-zinc-400" />
                                             @endif
                                         </div>
                                         <div class="min-w-0">
-                                            <p class="font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-xs cursor-pointer hover:text-indigo-600" wire:click="showPreview('{{ $asset->id }}')">
+                                            <p class="font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-xs cursor-pointer hover:text-accent transition-colors" wire:click="showPreview('{{ $asset->id }}')">
                                                 {{ $asset->original_name }}
                                             </p>
                                             <p class="text-[10px] text-zinc-400 font-mono">{{ $asset->mime_type }}</p>
@@ -587,12 +587,12 @@ new class extends Component
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($asset->storage_driver === 'asset_storage')
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-500/20">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent/[0.07] text-accent dark:text-brand-300 border border-accent/20">
                                             <flux:icon.cloud-arrow-up class="size-3" />
                                             Cloud Asset
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-500/20">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                                             <flux:icon.code-bracket class="size-3" />
                                             In Code
                                         </span>
@@ -621,7 +621,7 @@ new class extends Component
                                                 copied = true;
                                                 setTimeout(() => copied = false, 1500);
                                             "
-                                            class="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                            class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                                             title="Copy URL"
                                         >
                                             <flux:icon.link class="size-3.5" />
@@ -640,7 +640,7 @@ new class extends Component
                                             type="button" 
                                             wire:click="deleteAsset('{{ $asset->id }}')" 
                                             wire:confirm="Delete '{{ $asset->original_name }}'?" 
-                                            class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                                            class="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                                             title="Delete"
                                         >
                                             <flux:icon.trash class="size-3.5" />
@@ -672,26 +672,26 @@ new class extends Component
             <div class="space-y-2">
                 <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Choose Storage Destination</label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-all {{ $storageDestination === 'asset_storage' ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 ring-1 ring-indigo-500' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
+                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-colors {{ $storageDestination === 'asset_storage' ? 'border-accent bg-accent/[0.04] dark:bg-accent/10 ring-1 ring-accent' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                                <flux:icon.cloud-arrow-up class="size-4 text-emerald-500" />
+                                <flux:icon.cloud-arrow-up class="size-4 text-cyan-600 dark:text-cyan-400" />
                                 <span>Cloud Asset Storage</span>
                             </span>
-                            <input type="radio" wire:model.live="storageDestination" value="asset_storage" class="text-indigo-600" />
+                            <input type="radio" wire:model.live="storageDestination" value="asset_storage" class="text-accent" />
                         </div>
-                        <p class="text-[11px] text-zinc-500">Zero bundle bloat, global CDN, optimized for video streaming & high-res images.</p>
+                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Zero bundle bloat, global CDN, optimized for video streaming & high-res images.</p>
                     </label>
 
-                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-all {{ $storageDestination === 'code' ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 ring-1 ring-indigo-500' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
+                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-colors {{ $storageDestination === 'code' ? 'border-accent bg-accent/[0.04] dark:bg-accent/10 ring-1 ring-accent' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                                <flux:icon.code-bracket class="size-4 text-purple-500" />
+                                <flux:icon.code-bracket class="size-4 text-zinc-500 dark:text-zinc-400" />
                                 <span>Site Code Bundle</span>
                             </span>
-                            <input type="radio" wire:model.live="storageDestination" value="code" class="text-indigo-600" />
+                            <input type="radio" wire:model.live="storageDestination" value="code" class="text-accent" />
                         </div>
-                        <p class="text-[11px] text-zinc-500">Stored directly in site files repository, included in ZIP backups and rollback snapshots.</p>
+                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Stored directly in site files repository, included in ZIP backups and rollback snapshots.</p>
                     </label>
                 </div>
             </div>
@@ -704,7 +704,7 @@ new class extends Component
                     </label>
                     <select 
                         wire:model="selectedSiteId" 
-                        class="w-full text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 py-2 px-3 text-zinc-800 dark:text-zinc-200 focus:ring-1 focus:ring-indigo-500"
+                        class="w-full text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 py-2 px-3 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-accent/40"
                         {{ $storageDestination === 'code' ? 'required' : '' }}
                     >
                         <option value="">-- No specific site (Global Asset) --</option>
@@ -724,7 +724,7 @@ new class extends Component
                     @dragleave.prevent="isDropping = false"
                     @drop.prevent="isDropping = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
                     class="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors"
-                    :class="isDropping ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20' : 'border-zinc-300 dark:border-zinc-700 hover:border-indigo-400'"
+                    :class="isDropping ? 'border-accent bg-accent/[0.05] dark:bg-accent/10' : 'border-zinc-300 dark:border-zinc-700 hover:border-accent/60 dark:hover:border-accent/50'"
                     @click="$refs.fileInput.click()"
                 >
                     <input type="file" x-ref="fileInput" wire:model="uploadFiles" multiple class="hidden" />
@@ -785,16 +785,16 @@ new class extends Component
                         </video>
                     @elseif($previewAsset->isAudio())
                         <div class="p-6 w-full text-center">
-                            <flux:icon.musical-note class="size-12 text-amber-400 mx-auto mb-3" />
+                            <flux:icon.musical-note class="size-12 text-zinc-400 mx-auto mb-3" />
                             <audio controls class="w-full">
                                 <source src="{{ $previewAsset->resolved_url }}" type="{{ $previewAsset->mime_type }}">
                             </audio>
                         </div>
                     @elseif($previewAsset->isPdf())
                         <div class="p-8 text-center">
-                            <flux:icon.document-text class="size-16 text-rose-400 mx-auto mb-3" />
+                            <flux:icon.document-text class="size-16 text-zinc-400 mx-auto mb-3" />
                             <p class="text-sm text-zinc-300 font-semibold">{{ $previewAsset->original_name }}</p>
-                            <a href="{{ $previewAsset->resolved_url }}" target="_blank" class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold">
+                            <a href="{{ $previewAsset->resolved_url }}" target="_blank" class="btn-primary text-xs px-4 py-2 mt-4">
                                 <flux:icon.arrow-top-right-on-square class="size-3.5" />
                                 Open PDF in new tab
                             </a>

@@ -132,7 +132,7 @@ new class extends Component
 
 <div class="space-y-4">
     @if ($error)
-        <div class="p-4 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800 text-sm">
+        <div class="p-4 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 rounded-xl border border-red-200/80 dark:border-red-900/60 text-sm shadow-xs">
             {{ $error }}
         </div>
     @endif
@@ -148,11 +148,11 @@ new class extends Component
     <div class="max-h-[400px] overflow-y-auto space-y-2 pr-1">
         @if ($loading)
             <div class="flex items-center justify-center py-12">
-                <flux:icon.arrow-path class="w-8 h-8 animate-spin text-indigo-500" />
+                <flux:icon.arrow-path class="w-8 h-8 animate-spin text-accent" />
             </div>
         @else
             @forelse($filteredRepos as $repo)
-                <div class="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                <div class="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:border-accent/30 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors duration-150">
                     <div class="flex items-center gap-3 truncate mr-4">
                         <flux:icon.folder class="w-5 h-5 text-zinc-400 shrink-0" />
                         <div class="truncate">
@@ -179,8 +179,8 @@ new class extends Component
     </div>
 
     @if ($deploying)
-        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-4 text-white">
-            <flux:icon.arrow-path class="w-12 h-12 animate-spin text-indigo-400" />
+        <div class="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-4 text-white">
+            <flux:icon.arrow-path class="w-12 h-12 animate-spin text-brand-300" />
             <p class="font-bold text-lg">Deploying repository...</p>
             <p class="text-sm text-zinc-400">Downloading archive, extracting files, and configuring site</p>
         </div>
