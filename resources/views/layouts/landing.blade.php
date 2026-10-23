@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ filled($title ?? null) ? $title.' - '.config('app.name', 'DropHTML') : config('app.name', 'DropHTML').' - Instant Static Sites & Media Cloud' }}</title>
 
-    <meta name="description" content="Instant static site hosting and high-speed cloud static media hosting. Drag & drop HTML or ZIP, GitHub CI/CD, password protection, and custom domains with free automatic SSL.">
+    @include('partials.seo')
 
     {{-- Mark JS availability so scroll-reveal content stays visible when JS is disabled --}}
     <script>document.documentElement.classList.add('js');</script>

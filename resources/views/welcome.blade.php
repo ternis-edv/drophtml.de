@@ -3,4 +3,5 @@
 @section('content')
     @include('partials.landing.hero')
     @include('partials.landing.info')
+    @include('partials.landing.structured-data')
 @endsection

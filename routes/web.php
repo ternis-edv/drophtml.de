@@ -45,6 +45,20 @@ Route::domain($appDomain)->group(function () {
         return view('pages.legal.show', ['page' => $page]);
     })->name('legal.show');
 
+    Route::get('/sitemap.xml', function () {
+        $pages = [
+            ['loc' => route('home'), 'priority' => '1.0'],
+            ['loc' => url('/docs/api'), 'priority' => '0.5'],
+            ['loc' => route('legal.show', ['page' => 'privacy']), 'priority' => '0.3'],
+            ['loc' => route('legal.show', ['page' => 'terms']), 'priority' => '0.3'],
+            ['loc' => route('legal.show', ['page' => 'imprint']), 'priority' => '0.3'],
+        ];
+
+        return response()
+            ->view('pages.sitemap', ['pages' => $pages])
+            ->header('Content-Type', 'application/xml; charset=UTF-8');
+    })->name('sitemap');
+
     Route::get('/s/{slug}/{path?}', [SiteController::class, 'show'])->where('path', '.*');
     Route::post('/s/{slug}/_unlock', [SiteController::class, 'unlock'])->middleware('throttle:site-unlock')->name('site.unlock');
 
