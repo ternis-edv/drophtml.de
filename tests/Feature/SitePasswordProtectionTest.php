@@ -85,3 +85,79 @@ test('a user can unlock with correct password and view site', function () {
     $siteResponse->assertOk();
     $siteResponse->assertSee('Secret Content');
 });
+
+test('unlock ignores redirect targets on foreign hosts', function () {
+    Storage::fake('public');
+
+    $slug = 'secret-site';
+    $path = "sites/{$slug}";
+
+    Storage::disk('public')->put("{$path}/index.html", '<h1>Secret Content</h1>');
+
+    $site = Site::create([
+        'slug' => $slug,
+        'path' => $path,
+        'original_name' => 'secret.html',
+        'is_password_protected' => true,
+        'site_password' => Hash::make('secret123'),
+        'status' => 'active',
+    ]);
+
+    $response = $this->post("/s/{$slug}/_unlock", [
+        'password' => 'secret123',
+        'redirect_to' => 'https://evil.example.com/steal-session',
+    ]);
+
+    $response->assertRedirect(url("/s/{$slug}"));
+    expect(session("site_unlocked_{$site->id}"))->toBeTrue();
+});
+
+test('unlock ignores protocol-relative redirect targets', function () {
+    Storage::fake('public');
+
+    $slug = 'secret-site';
+    $path = "sites/{$slug}";
+
+    Storage::disk('public')->put("{$path}/index.html", '<h1>Secret Content</h1>');
+
+    Site::create([
+        'slug' => $slug,
+        'path' => $path,
+        'original_name' => 'secret.html',
+        'is_password_protected' => true,
+        'site_password' => Hash::make('secret123'),
+        'status' => 'active',
+    ]);
+
+    $response = $this->post("/s/{$slug}/_unlock", [
+        'password' => 'secret123',
+        'redirect_to' => '//evil.example.com/steal-session',
+    ]);
+
+    $response->assertRedirect(url("/s/{$slug}"));
+});
+
+test('unlock keeps a local relative redirect target', function () {
+    Storage::fake('public');
+
+    $slug = 'secret-site';
+    $path = "sites/{$slug}";
+
+    Storage::disk('public')->put("{$path}/index.html", '<h1>Secret Content</h1>');
+
+    Site::create([
+        'slug' => $slug,
+        'path' => $path,
+        'original_name' => 'secret.html',
+        'is_password_protected' => true,
+        'site_password' => Hash::make('secret123'),
+        'status' => 'active',
+    ]);
+
+    $response = $this->post("/s/{$slug}/_unlock", [
+        'password' => 'secret123',
+        'redirect_to' => '/s/'.$slug.'/about.html',
+    ]);
+
+    $response->assertRedirect('/s/'.$slug.'/about.html');
+});

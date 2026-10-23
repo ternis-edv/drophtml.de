@@ -21,11 +21,11 @@ new class extends Component
 
         if ($this->actionFilter !== 'all') {
             if ($this->actionFilter === 'deploys') {
-                $query->whereIn('action', ['site_created', 'site_deployed', 'deployment_created']);
+                $query->whereIn('action', ['site_uploaded', 'site_redeployed', 'site_rollback', 'site_duplicated', 'github_deployed', 'github_auto_deployed']);
             } elseif ($this->actionFilter === 'files') {
                 $query->whereIn('action', ['file_created', 'file_edited', 'file_deleted', 'file_renamed', 'file_uploaded_to_manager']);
             } elseif ($this->actionFilter === 'domains') {
-                $query->whereIn('action', ['domain_created', 'domain_deleted', 'domain_verified']);
+                $query->whereIn('action', ['domain_added', 'domain_removed']);
             } elseif ($this->actionFilter === 'lifecycle') {
                 $query->whereIn('action', ['expiry_extended', 'site_updated', 'site_settings_updated']);
             }

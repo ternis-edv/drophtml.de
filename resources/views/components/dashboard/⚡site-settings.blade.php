@@ -106,6 +106,12 @@ new class extends Component
 
     public function extendExpiry($days, ActivityLogService $activityLogService)
     {
+        $days = (int) $days;
+
+        if ( ! in_array($days, [7, 30], true)) {
+            $days = 7;
+        }
+
         $this->site->expires_at = ($this->site->expires_at && $this->site->expires_at->isFuture())
             ? $this->site->expires_at->addDays($days)
             : now()->addDays($days);

@@ -62,6 +62,33 @@ new class extends Component
         $this->viewportMode = in_array($viewport, ['desktop', 'tablet', 'mobile'], true) ? $viewport : 'desktop';
     }
 
+    /**
+     * Normalize a client-supplied relative file path; reject anything that
+     * escapes the site directory (traversal segments, protocol-relative or
+     * leading-slash tricks).
+     */
+    private function safeRelativePath(?string $filename): ?string
+    {
+        if ($filename === null || $filename === '') {
+            return null;
+        }
+
+        $segments = [];
+        foreach (explode('/', str_replace('\\', '/', $filename)) as $segment) {
+            if ($segment === '' || $segment === '.') {
+                continue;
+            }
+
+            if ($segment === '..') {
+                return null;
+            }
+
+            $segments[] = $segment;
+        }
+
+        return $segments === [] ? null : implode('/', $segments);
+    }
+
     public function loadFiles()
     {
         if (Storage::disk('public')->exists($this->site->path)) {
@@ -80,6 +107,12 @@ new class extends Component
 
     public function selectFile($filename)
     {
+        $filename = $this->safeRelativePath($filename);
+
+        if ($filename === null) {
+            return;
+        }
+
         $this->currentFile = $filename;
         $path = "{$this->site->path}/{$filename}";
 
@@ -99,22 +132,25 @@ new class extends Component
 
     public function saveFile(ActivityLogService $activityLogService)
     {
-        if (! $this->currentFile || $this->isBinary) {
+        $currentFile = $this->safeRelativePath($this->currentFile ?? '');
+
+        if ($currentFile === null || $this->isBinary) {
             return;
         }
 
-        $path = "{$this->site->path}/{$this->currentFile}";
+        $this->currentFile = $currentFile;
+        $path = "{$this->site->path}/{$currentFile}";
         Storage::disk('public')->put($path, $this->fileContent);
 
-        if ($this->currentFile === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($this->currentFile), '.html'))) {
-            $this->site->update(['entry_path' => $this->currentFile]);
+        if ($currentFile === 'index.html' || (empty($this->site->entry_path) && str_ends_with(strtolower($currentFile), '.html'))) {
+            $this->site->update(['entry_path' => $currentFile]);
         }
 
         $activityLogService->log(
             auth()->user(),
             $this->site,
             'file_edited',
-            "Edited file: {$this->currentFile} on {$this->site->slug}"
+            "Edited file: {$currentFile} on {$this->site->slug}"
         );
 
         $this->dispatch('file-saved');
@@ -127,7 +163,13 @@ new class extends Component
             'newFileName' => 'required|string|max:255',
         ]);
 
-        $name = ltrim(str_replace(['../', '..\\'], '', trim($this->newFileName)), '/');
+        $name = $this->safeRelativePath($this->newFileName);
+
+        if ($name === null) {
+            Flux::toast(variant: 'danger', text: 'This file name is not permitted.');
+
+            return;
+        }
 
         if (! str_contains(basename($name), '.')) {
             $name .= '.html';
@@ -179,6 +221,14 @@ new class extends Component
 
     public function deleteFile($filename, ActivityLogService $activityLogService)
     {
+        $filename = $this->safeRelativePath($filename);
+
+        if ($filename === null) {
+            Flux::toast(variant: 'danger', text: 'This file name is not permitted.');
+
+            return;
+        }
+
         $path = "{$this->site->path}/{$filename}";
         Storage::disk('public')->delete($path);
 
@@ -214,7 +264,14 @@ new class extends Component
             return;
         }
 
-        $filename = $deploymentService->sanitizeFileName($this->uploadFile->getClientOriginalName());
+        $filename = $this->safeRelativePath($deploymentService->sanitizeFileName($this->uploadFile->getClientOriginalName()));
+
+        if ($filename === null) {
+            Flux::toast(variant: 'danger', text: 'This file name is not permitted.');
+            $this->uploadFile = null;
+
+            return;
+        }
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
         if ($deploymentService->isDangerousExtension($ext)) {
@@ -255,9 +312,24 @@ new class extends Component
     {
         $this->validate(['newRenameName' => 'required|string|max:255']);
 
-        $cleanNew = ltrim(str_replace(['../', '..\\'], '', trim($this->newRenameName)), '/');
+        $originalFileName = $this->oldFileName;
+        $this->oldFileName = $this->safeRelativePath($this->oldFileName);
 
-        if ($this->oldFileName === $cleanNew) {
+        if ($this->oldFileName === null) {
+            Flux::toast(variant: 'danger', text: 'This file name is not permitted.');
+
+            return;
+        }
+
+        $cleanNew = $this->safeRelativePath($this->newRenameName);
+
+        if ($cleanNew === null) {
+            Flux::toast(variant: 'danger', text: 'This file name is not permitted.');
+
+            return;
+        }
+
+        if ($originalFileName === $cleanNew) {
             Flux::modal('rename-file-modal')->close();
 
             return;

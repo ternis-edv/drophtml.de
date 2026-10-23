@@ -4,6 +4,7 @@ use App\Models\Site;
 use App\Services\ActivityLogService;
 use App\Services\GitHubService;
 use App\Services\SiteDeploymentService;
+use App\Services\SiteServingService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -72,7 +73,7 @@ new class extends Component
             $extractPath = Storage::disk('public')->path($path);
             Storage::disk('public')->makeDirectory($path);
             $deploymentService->extractZipSafely($tempPath, $extractPath);
-            $entryPath = $deploymentService->detectEntryPath($path);
+            $entryPath = SiteServingService::detectEntryPath($path);
 
             $site = Site::create([
                 'slug' => $slug,

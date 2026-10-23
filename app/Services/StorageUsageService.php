@@ -234,20 +234,6 @@ class StorageUsageService
     }
 
     /**
-     * Check whether an incoming file or action would exceed the user's storage quota.
-     */
-    public function checkQuota(?User $user, int $additionalBytes = 0): bool
-    {
-        if (! $user) {
-            return true;
-        }
-
-        $stats = $this->getUserStorageStats($user);
-
-        return ($stats['total_used_bytes'] + $additionalBytes) <= $stats['quota_bytes'];
-    }
-
-    /**
      * Enforce storage quota. Throws ValidationException if quota would be exceeded.
      */
     public function enforceQuota(?User $user, int $additionalBytes = 0): void
