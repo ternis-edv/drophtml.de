@@ -6,6 +6,7 @@
                 <flux:navlist.item icon="shield-check" :href="route('security.edit')" wire:navigate>{{ __('Security') }}</flux:navlist.item>
                 <flux:navlist.item icon="circle-stack" :href="route('settings.storage')" :current="request()->routeIs('settings.storage')" wire:navigate>{{ __('Storage & Usage') }}</flux:navlist.item>
                 <flux:navlist.item icon="key" :href="route('api-tokens.edit')" wire:navigate>{{ __('API Tokens') }}</flux:navlist.item>
+                <flux:navlist.item icon="document-arrow-down" :href="route('settings.data-export')" :current="request()->routeIs('settings.data-export')" wire:navigate>{{ __('Data export') }}</flux:navlist.item>
                 <flux:navlist.item icon="paint-brush" :href="route('appearance.edit')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
             </flux:navlist>
         </div>
