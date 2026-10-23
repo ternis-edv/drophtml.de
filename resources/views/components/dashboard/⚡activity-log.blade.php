@@ -48,26 +48,29 @@ new class extends Component
                 <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>Activity Log</flux:breadcrumbs.item>
             </flux:breadcrumbs>
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1.5 flex items-center gap-3">
-                <div class="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center border border-accent/20 shadow-xs">
+            <h1 class="page-title mt-1.5 flex items-center gap-3">
+                <span class="icon-tile" aria-hidden="true">
                     <flux:icon.clipboard-document-list class="size-4.5" />
-                </div>
+                </span>
                 <span>Audit &amp; Activity Log</span>
             </h1>
         </div>
 
         <!-- Filter Pills -->
-        <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold shrink-0">
-            <button wire:click="setFilter('all')" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer {{ $actionFilter === 'all' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All</button>
-            <button wire:click="setFilter('deploys')" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer {{ $actionFilter === 'deploys' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Deploys</button>
-            <button wire:click="setFilter('files')" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer {{ $actionFilter === 'files' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Files</button>
-            <button wire:click="setFilter('domains')" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer {{ $actionFilter === 'domains' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Domains</button>
-            <button wire:click="setFilter('lifecycle')" class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer {{ $actionFilter === 'lifecycle' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Lifecycle</button>
+        <div class="pill-group shrink-0" role="group" aria-label="Filter activity by type">
+            @foreach (['all' => 'All', 'deploys' => 'Deploys', 'files' => 'Files', 'domains' => 'Domains', 'lifecycle' => 'Lifecycle'] as $filterKey => $filterLabel)
+                <button
+                    type="button"
+                    wire:click="setFilter('{{ $filterKey }}')"
+                    aria-pressed="{{ $actionFilter === $filterKey ? 'true' : 'false' }}"
+                    @class(['pill', 'is-active' => $actionFilter === $filterKey])
+                >{{ $filterLabel }}</button>
+            @endforeach
         </div>
     </div>
 
     <!-- Activity Log List Card -->
-    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6">
+    <div class="panel p-6 rise-in" style="--i: 1">
         <div class="overflow-x-auto">
             <flux:table>
                 <flux:table.columns>

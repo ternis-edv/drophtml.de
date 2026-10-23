@@ -178,12 +178,12 @@ new class extends Component
 
     <div class="max-w-3xl space-y-6">
         <!-- Main Settings Form -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-8">
+        <div class="panel p-6 sm:p-8 rise-in" style="--i: 0">
             <form wire:submit="save" class="space-y-8">
                 <!-- General & Status -->
                 <div>
                     <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                        <span class="size-7 rounded-lg bg-accent/10 text-accent dark:text-accent-content flex items-center justify-center shrink-0">
+                        <span class="icon-tile" aria-hidden="true">
                             <flux:icon.adjustments-horizontal class="size-4" />
                         </span>
                         <h3 class="font-bold text-sm sm:text-base tracking-tight text-zinc-900 dark:text-zinc-100">General &amp; Availability</h3>
@@ -206,7 +206,7 @@ new class extends Component
                 <!-- Lifecycle & Expiry -->
                 <div>
                     <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                        <span class="size-7 rounded-lg bg-accent/10 text-accent dark:text-accent-content flex items-center justify-center shrink-0">
+                        <span class="icon-tile" aria-hidden="true">
                             <flux:icon.clock class="size-4" />
                         </span>
                         <h3 class="font-bold text-sm sm:text-base tracking-tight text-zinc-900 dark:text-zinc-100">Site Lifecycle &amp; Expiry</h3>
@@ -255,7 +255,7 @@ new class extends Component
                 <!-- Security & Password Protection -->
                 <div>
                     <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                        <span class="size-7 rounded-lg bg-accent/10 text-accent dark:text-accent-content flex items-center justify-center shrink-0">
+                        <span class="icon-tile" aria-hidden="true">
                             <flux:icon.lock-closed class="size-4" />
                         </span>
                         <h3 class="font-bold text-sm sm:text-base tracking-tight text-zinc-900 dark:text-zinc-100">Access &amp; Security</h3>
@@ -294,7 +294,7 @@ new class extends Component
                 @if($site->github_repo_full_name)
                     <div>
                         <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                            <span class="size-7 rounded-lg bg-accent/10 text-accent dark:text-accent-content flex items-center justify-center shrink-0">
+                            <span class="icon-tile" aria-hidden="true">
                                 <flux:icon.folder-git-2 class="size-4" />
                             </span>
                             <h3 class="font-bold text-sm sm:text-base tracking-tight text-zinc-900 dark:text-zinc-100">GitHub Continuous Deployment</h3>
@@ -321,7 +321,7 @@ new class extends Component
                 <!-- Routing & Framework Support -->
                 <div>
                     <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                        <span class="size-7 rounded-lg bg-accent/10 text-accent dark:text-accent-content flex items-center justify-center shrink-0">
+                        <span class="icon-tile" aria-hidden="true">
                             <flux:icon.arrows-right-left class="size-4" />
                         </span>
                         <h3 class="font-bold text-sm sm:text-base tracking-tight text-zinc-900 dark:text-zinc-100">Routing &amp; Frameworks</h3>
@@ -355,7 +355,7 @@ new class extends Component
                 <!-- Outgoing Deployment Webhooks -->
                 <div>
                     <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                        <span class="size-7 rounded-lg bg-accent/10 text-accent dark:text-accent-content flex items-center justify-center shrink-0">
+                        <span class="icon-tile" aria-hidden="true">
                             <flux:icon.signal class="size-4" />
                         </span>
                         <h3 class="font-bold text-sm sm:text-base tracking-tight text-zinc-900 dark:text-zinc-100">Outgoing Webhooks</h3>
@@ -414,7 +414,7 @@ new class extends Component
         </div>
 
         <!-- Universal Backup & Export Card -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-7">
+        <div class="panel p-6 sm:p-7 rise-in" style="--i: 1">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h3 class="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -445,7 +445,7 @@ new class extends Component
         </div>
 
         <!-- Duplicate Site Card -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-7">
+        <div class="panel p-6 sm:p-7 rise-in" style="--i: 2">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h3 class="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -469,7 +469,7 @@ new class extends Component
         </div>
 
         <!-- Danger Zone Card -->
-        <div class="rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/20 shadow-xs p-6 sm:p-7">
+        <div class="panel border-red-200/80 dark:border-red-900/50 bg-red-50/40 dark:bg-red-950/20 p-6 sm:p-7 rise-in" style="--i: 3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h3 class="font-bold text-sm text-red-700 dark:text-red-400 flex items-center gap-2 tracking-tight">

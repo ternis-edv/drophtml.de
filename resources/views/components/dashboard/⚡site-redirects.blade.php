@@ -273,9 +273,9 @@ new class extends Component
     <x-site-subnav :site="$site" current="redirects" />
 
     <!-- Top KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total Rules -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+        <div class="panel panel-interactive p-5 rise-in" style="--i: 0">
             <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
                 <span>Configured Rules</span>
                 <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
@@ -292,7 +292,7 @@ new class extends Component
         </div>
 
         <!-- Lifetime Redirect Hits -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+        <div class="panel panel-interactive p-5 rise-in" style="--i: 1">
             <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
                 <span>Total Redirect Hits</span>
                 <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
@@ -309,7 +309,7 @@ new class extends Component
         </div>
 
         <!-- Most Active Rule -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+        <div class="panel panel-interactive p-5 rise-in" style="--i: 2">
             <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
                 <span>Top Performing Rule</span>
                 <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
@@ -331,7 +331,7 @@ new class extends Component
         </div>
 
         <!-- Direct Serving Status -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+        <div class="panel panel-interactive p-5 rise-in" style="--i: 3">
             <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
                 <span>Engine Integration</span>
                 <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
@@ -349,7 +349,7 @@ new class extends Component
     </div>
 
     <!-- Actions & Filter Controls Bar -->
-    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+    <div class="panel p-4 rise-in flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4" style="--i: 4">
         <!-- Left: Search and Filters -->
         <div class="flex flex-wrap items-center gap-3 flex-1">
             <div class="relative w-full sm:w-64">
@@ -362,27 +362,15 @@ new class extends Component
                 />
             </div>
 
-            <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs">
-                <button
-                    wire:click="$set('statusFilter', 'all')"
-                    class="px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-zinc-900 text-accent dark:text-accent-content shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
-                >All</button>
-                <button
-                    wire:click="$set('statusFilter', 'active')"
-                    class="px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer {{ $statusFilter === 'active' ? 'bg-white dark:bg-zinc-900 text-accent dark:text-accent-content shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
-                >Active</button>
-                <button
-                    wire:click="$set('statusFilter', '301')"
-                    class="px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer {{ $statusFilter === '301' ? 'bg-white dark:bg-zinc-900 text-accent dark:text-accent-content shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
-                >301</button>
-                <button
-                    wire:click="$set('statusFilter', '302')"
-                    class="px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer {{ $statusFilter === '302' ? 'bg-white dark:bg-zinc-900 text-accent dark:text-accent-content shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
-                >302</button>
-                <button
-                    wire:click="$set('statusFilter', '200')"
-                    class="px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer {{ $statusFilter === '200' ? 'bg-white dark:bg-zinc-900 text-accent dark:text-accent-content shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
-                >200 Rewrite</button>
+            <div class="pill-group" role="group" aria-label="Filter redirects by status">
+                @foreach (['all' => 'All', 'active' => 'Active', '301' => '301', '302' => '302', '200' => '200 Rewrite'] as $fKey => $fLabel)
+                    <button
+                        type="button"
+                        wire:click="$set('statusFilter', '{{ $fKey }}')"
+                        aria-pressed="{{ $statusFilter === $fKey ? 'true' : 'false' }}"
+                        @class(['pill', 'is-active' => $statusFilter === $fKey])
+                    >{{ $fLabel }}</button>
+                @endforeach
             </div>
         </div>
 
@@ -419,7 +407,7 @@ new class extends Component
     </div>
 
     <!-- Redirects Table -->
-    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs overflow-hidden">
+    <div class="panel rise-in overflow-hidden" style="--i: 5">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead>

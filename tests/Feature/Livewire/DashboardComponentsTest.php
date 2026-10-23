@@ -333,3 +333,18 @@ test('site deployments livewire component mounts and can trigger manual snapshot
     $deployment = $site->deployments()->first();
     expect($deployment->source)->toBe('manual');
 });
+
+test('sites overview setSort applies deterministic column and direction', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    Livewire::test('dashboard.sites-overview')
+        ->call('setSort', 'original_name', 'desc')
+        ->assertSet('sortBy', 'original_name')
+        ->assertSet('sortDir', 'desc')
+        ->call('setSort', 'views')
+        ->assertSet('sortBy', 'views')
+        ->assertSet('sortDir', 'desc')
+        ->call('setSort', 'invalid_column')
+        ->assertSet('sortBy', 'views');
+});

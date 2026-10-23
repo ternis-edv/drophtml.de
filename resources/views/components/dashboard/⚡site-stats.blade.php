@@ -325,12 +325,15 @@ new class extends Component
 
         <div class="flex flex-wrap items-center gap-2.5">
             <!-- Period Filters -->
-            <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800">
-                <button wire:click="setPeriod(1)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $period === 1 ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">24h</button>
-                <button wire:click="setPeriod(7)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $period === 7 ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">7d</button>
-                <button wire:click="setPeriod(14)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $period === 14 ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">14d</button>
-                <button wire:click="setPeriod(30)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $period === 30 ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">30d</button>
-                <button wire:click="setPeriod(90)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $period === 90 ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">90d</button>
+            <div class="pill-group" role="group" aria-label="Time period">
+                @foreach ([1 => '24h', 7 => '7d', 14 => '14d', 30 => '30d', 90 => '90d'] as $days => $label)
+                    <button
+                        type="button"
+                        wire:click="setPeriod({{ $days }})"
+                        aria-pressed="{{ $period === $days ? 'true' : 'false' }}"
+                        @class(['pill', 'is-active' => $period === $days])
+                    >{{ $label }}</button>
+                @endforeach
             </div>
 
             <!-- Bot Filter Toggle -->
@@ -360,7 +363,7 @@ new class extends Component
     <!-- Quick Stats Metric Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <!-- Total Page Views -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 0">
             <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
                 <span class="uppercase tracking-wider">Total Page Views</span>
                 <span class="inline-flex items-center gap-0.5 text-xs font-semibold normal-case tracking-normal {{ $overview['views_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
@@ -377,7 +380,7 @@ new class extends Component
         </div>
 
         <!-- Unique Visitors -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 1">
             <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
                 <span class="uppercase tracking-wider">Unique Visitors</span>
                 <span class="inline-flex items-center gap-0.5 text-xs font-semibold normal-case tracking-normal {{ $overview['visitors_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
@@ -394,7 +397,7 @@ new class extends Component
         </div>
 
         <!-- Views Per Visitor -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 2">
             <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
                 <span class="uppercase tracking-wider">Views / Visitor</span>
                 <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">Depth</span>
@@ -408,7 +411,7 @@ new class extends Component
         </div>
 
         <!-- Redirect Hits & Conversion -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 3">
             <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
                 <span class="uppercase tracking-wider">Redirect Hits</span>
                 <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">Routing</span>
@@ -423,58 +426,76 @@ new class extends Component
     </div>
 
     <!-- Tabbed Navigation -->
-    <div class="flex items-center space-x-1 sm:space-x-2 border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-6 overflow-x-auto">
+    <div class="pill-group mb-6" role="tablist" aria-label="Analytics views">
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('traffic')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'traffic' ? 'bg-accent/[0.08] text-accent border border-accent/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'traffic' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'traffic'])
         >
-            <flux:icon.chart-bar class="size-4" />
-            <span>Traffic & Trends</span>
+            <flux:icon.chart-bar class="size-3.5" />
+            <span>Traffic &amp; Trends</span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('pages')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'pages' ? 'bg-accent/[0.08] text-accent border border-accent/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'pages' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'pages'])
         >
-            <flux:icon.document-text class="size-4" />
-            <span>Pages & Broken Links</span>
+            <flux:icon.document-text class="size-3.5" />
+            <span>Pages &amp; Broken Links</span>
             @if(($overview['not_found_hits'] ?? 0) > 0)
-                <span class="size-2 rounded-full bg-red-500"></span>
+                <span class="size-1.5 rounded-full bg-red-500" aria-label="Broken links detected"></span>
             @endif
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('sources')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'sources' ? 'bg-accent/[0.08] text-accent border border-accent/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'sources' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'sources'])
         >
-            <flux:icon.arrow-path-rounded-square class="size-4" />
-            <span>Sources & Campaigns</span>
+            <flux:icon.arrow-path-rounded-square class="size-3.5" />
+            <span>Sources &amp; Campaigns</span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('locations')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'locations' ? 'bg-accent/[0.08] text-accent border border-accent/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'locations' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'locations'])
         >
-            <flux:icon.globe-alt class="size-4" />
-            <span>Locations & Tech</span>
+            <flux:icon.globe-alt class="size-3.5" />
+            <span>Locations &amp; Tech</span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('redirects')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'redirects' ? 'bg-accent/[0.08] text-accent border border-accent/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'redirects' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'redirects'])
         >
-            <flux:icon.arrows-right-left class="size-4" />
+            <flux:icon.arrows-right-left class="size-3.5" />
             <span>Redirects Telemetry</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-200">
                 {{ $overview['redirect_hits'] ?? 0 }}
             </span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('activity')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'activity' ? 'bg-accent/[0.08] text-accent border border-accent/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'activity' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'activity'])
         >
-            <flux:icon.bolt class="size-4" />
+            <flux:icon.bolt class="size-3.5" />
             <span>Live Stream</span>
         </button>
     </div>
@@ -484,7 +505,7 @@ new class extends Component
         <div class="space-y-6">
             <!-- Line & Doughnut Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 lg:col-span-2">
+                <div class="panel p-5 rise-in lg:col-span-2" style="--i: 4">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -499,7 +520,7 @@ new class extends Component
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+                <div class="panel p-5 rise-in">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -516,7 +537,7 @@ new class extends Component
             </div>
 
             <!-- Peak Activity Hours Bar Chart -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -537,7 +558,7 @@ new class extends Component
     @if($activeTab === 'pages')
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Top Visited Pages -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -590,7 +611,7 @@ new class extends Component
             </div>
 
             <!-- Broken Links / 404 Requests with 1-Click Redirect -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -658,7 +679,7 @@ new class extends Component
     @if($activeTab === 'sources')
         <div class="space-y-6">
             <!-- Top Referrers -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -712,7 +733,7 @@ new class extends Component
 
             <!-- UTM Campaigns -->
             @if($campaigns->isNotEmpty())
-                <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+                <div class="panel p-5 rise-in">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -759,7 +780,7 @@ new class extends Component
     @if($activeTab === 'locations')
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Countries Breakdown -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -794,7 +815,7 @@ new class extends Component
             </div>
 
             <!-- Software Platforms & Browsers -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+            <div class="panel p-5 rise-in">
                 <div class="mb-4">
                     <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                         <flux:icon.window class="size-4 text-accent" />
@@ -850,7 +871,7 @@ new class extends Component
 
     <!-- TAB 5: REDIRECTS TELEMETRY -->
     @if($activeTab === 'redirects')
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+        <div class="panel p-5 rise-in">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -923,7 +944,7 @@ new class extends Component
 
     <!-- TAB 6: LIVE REQUEST STREAM -->
     @if($activeTab === 'activity')
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5">
+        <div class="panel p-5 rise-in">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">

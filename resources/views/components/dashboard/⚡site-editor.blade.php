@@ -509,33 +509,33 @@ new class extends Component
         </div>
 
         <div class="flex items-center gap-2 self-end sm:self-auto">
-            <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 text-xs font-medium">
+            <div class="pill-group" role="group" aria-label="Editor preview modes">
                 <button 
+                    type="button"
                     wire:click="setPreviewMode('editor')" 
-                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'editor' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                    aria-pressed="{{ $previewMode === 'editor' ? 'true' : 'false' }}"
+                    @class(['pill inline-flex items-center gap-1.5', 'is-active' => $previewMode === 'editor'])
                 >
-                    <span class="inline-flex items-center gap-1.5">
-                        <flux:icon.code-bracket class="size-3.5" />
-                        <span>Code Only</span>
-                    </span>
+                    <flux:icon.code-bracket class="size-3.5" />
+                    <span>Code Only</span>
                 </button>
                 <button 
+                    type="button"
                     wire:click="setPreviewMode('split')" 
-                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'split' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                    aria-pressed="{{ $previewMode === 'split' ? 'true' : 'false' }}"
+                    @class(['pill inline-flex items-center gap-1.5', 'is-active' => $previewMode === 'split'])
                 >
-                    <span class="inline-flex items-center gap-1.5">
-                        <flux:icon.arrows-right-left class="size-3.5" />
-                        <span>Split View</span>
-                    </span>
+                    <flux:icon.arrows-right-left class="size-3.5" />
+                    <span>Split View</span>
                 </button>
                 <button 
+                    type="button"
                     wire:click="setPreviewMode('preview')" 
-                    class="px-3 py-1 rounded-lg transition-all cursor-pointer {{ $previewMode === 'preview' ? 'bg-white dark:bg-zinc-800 text-accent dark:text-brand-300 font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}"
+                    aria-pressed="{{ $previewMode === 'preview' ? 'true' : 'false' }}"
+                    @class(['pill inline-flex items-center gap-1.5', 'is-active' => $previewMode === 'preview'])
                 >
-                    <span class="inline-flex items-center gap-1.5">
-                        <flux:icon.eye class="size-3.5" />
-                        <span>Live Preview</span>
-                    </span>
+                    <flux:icon.eye class="size-3.5" />
+                    <span>Live Preview</span>
                 </button>
             </div>
         </div>
@@ -545,7 +545,7 @@ new class extends Component
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[720px]">
         <!-- File Explorer Sidebar (3 Cols) -->
         <div class="lg:col-span-3 flex flex-col space-y-3">
-            <div class="glass-card rounded-2xl p-3.5 flex flex-col h-full">
+            <div class="panel p-3.5 flex flex-col h-full rise-in" style="--i: 0">
                 <!-- Explorer Tab Switcher (Code vs Cloud Assets) -->
                 <div class="grid grid-cols-2 gap-1 p-1 mb-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-[11px] font-semibold">
                     <button 
@@ -758,7 +758,7 @@ new class extends Component
         <!-- Main Workspace (Editor + Live Preview) (9 Cols) -->
         <div class="lg:col-span-9 flex flex-col space-y-3">
             @if($currentFile)
-                <div class="glass-card rounded-2xl flex-1 flex flex-col p-4">
+                <div class="panel flex-1 flex flex-col p-4 rise-in" style="--i: 1">
                     <!-- Editor / Preview Toolbar -->
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100 dark:border-zinc-800">
                         <div class="flex items-center gap-2 font-mono text-xs">
@@ -958,7 +958,7 @@ new class extends Component
                     </div>
                 </div>
             @else
-                <div class="glass-card rounded-2xl flex-1 flex flex-col items-center justify-center text-center py-28 px-4">
+                <div class="panel flex-1 flex flex-col items-center justify-center text-center py-28 px-4 rise-in" style="--i: 1">
                     <div class="size-16 rounded-2xl bg-accent/[0.07] dark:bg-accent/15 text-accent dark:text-brand-300 flex items-center justify-center mb-4 ring-1 ring-accent/20">
                         <flux:icon.code-bracket-square class="size-8" />
                     </div>

@@ -105,18 +105,23 @@ new class extends Component
                     x-ref="commandInput"
                     wire:model.live.debounce.150ms="search"
                     placeholder="Type a command or search sites..."
+                    aria-label="{{ __('Search sites and commands') }}"
+                    role="combobox"
+                    aria-expanded="true"
+                    aria-controls="command-palette-results"
                     class="h-11 w-full border-0 bg-transparent pl-3.5 pr-10 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-hidden focus:ring-0"
                 />
                 <button 
                     type="button" 
                     @click="close()"
+                    aria-label="{{ __('Close command palette') }}"
                     class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-md cursor-pointer"
                 >
                     <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">ESC</kbd>
                 </button>
             </div>
 
-            <div class="max-h-96 scroll-py-2 overflow-y-auto p-3 text-sm text-zinc-700 dark:text-zinc-300 divide-y divide-zinc-100 dark:divide-zinc-800/60 custom-scrollbar">
+            <div id="command-palette-results" class="max-h-96 scroll-py-2 overflow-y-auto p-3 text-sm text-zinc-700 dark:text-zinc-300 divide-y divide-zinc-100 dark:divide-zinc-800/60 custom-scrollbar">
                 <!-- Matching Sites Section -->
                 @if($matchedSites->isNotEmpty())
                     <div class="py-2">
@@ -135,7 +140,7 @@ new class extends Component
                                     </a>
 
                                     <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
-                                        <a href="{{ url('/s/' . $site->slug) }}" target="_blank" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Live Site">
+                                        <a href="{{ url('/s/' . $site->slug) }}" target="_blank" rel="noopener" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Live Site" aria-label="{{ __('Open live site') }}">
                                             <flux:icon.arrow-top-right-on-square class="size-3.5" />
                                         </a>
                                         <a href="{{ route('dashboard.sites.edit', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Code Editor">

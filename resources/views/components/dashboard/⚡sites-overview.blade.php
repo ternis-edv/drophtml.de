@@ -49,6 +49,24 @@ new class extends Component
         $this->resetPage();
     }
 
+    /**
+     * Deterministic sort used by the "Sort by" menu (no direction toggling),
+     * so a menu label always matches the resulting order.
+     */
+    public function setSort($column, $dir = null)
+    {
+        if (! in_array($column, self::SORTABLE_COLUMNS, true)) {
+            return;
+        }
+
+        $this->sortBy = $column;
+        $this->sortDir = in_array($dir, ['asc', 'desc'], true)
+            ? $dir
+            : ($column === 'original_name' ? 'asc' : 'desc');
+
+        $this->resetPage();
+    }
+
     public function deleteSite($id, SiteDeploymentService $deploymentService)
     {
         $site = auth()->user()->sites()->findOrFail($id);
@@ -250,19 +268,32 @@ new class extends Component
     </div>
 
     <!-- Welcome Banner -->
-    <div class="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-8">
+    @php
+        $greeting = match (true) {
+            now()->hour < 5 => 'Burning the midnight oil',
+            now()->hour < 12 => 'Good morning',
+            now()->hour < 18 => 'Good afternoon',
+            default => 'Good evening',
+        };
+    @endphp
+    <div class="rise-in panel relative overflow-hidden p-6 sm:p-8">
         <div class="absolute -top-24 -right-16 w-72 h-72 bg-accent/[0.07] rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div class="space-y-2 max-w-2xl">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/[0.06] border border-accent/20 text-accent dark:text-accent-content text-xs font-semibold">
-                    <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Edge Cloud Operational</span>
+            <div class="space-y-2.5 max-w-2xl">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/[0.06] border border-accent/20 text-accent dark:text-accent-content text-xs font-semibold">
+                        <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
+                        <span>Edge Cloud Operational</span>
+                    </span>
+                    <span class="text-xs font-medium text-zinc-400 dark:text-zinc-500" title="{{ now()->toDayDateTimeString() }}">
+                        {{ now()->isoFormat('dddd, D MMMM YYYY') }}
+                    </span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                    Welcome back, {{ auth()->user()->name }}
+                <h1 class="page-title">
+                    {{ $greeting }}, {{ auth()->user()->name }}
                 </h1>
-                <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                <p class="page-lede">
                     Deploy static sites with automated SSL, manage static media with zero-bloat cloud asset storage, and inspect real-time traffic across global Edge CDN nodes.
                 </p>
             </div>
@@ -278,14 +309,14 @@ new class extends Component
                 @if(auth()->user()->github_id)
                     <flux:modal.trigger name="github-deploy-modal">
                         <flux:button variant="outline" size="base">
-                            <svg class="size-4 mr-1.5 text-zinc-700 dark:text-zinc-300" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" /></svg>
+                            <svg class="size-4 mr-1.5 text-zinc-700 dark:text-zinc-300" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" /></svg>
                             GitHub Sync
                         </flux:button>
                     </flux:modal.trigger>
                 @endif
 
-                <a href="{{ route('dashboard.media') }}" wire:navigate class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-colors duration-150 cursor-pointer">
-                    <flux:icon.photo class="size-3.5" />
+                <a href="{{ route('dashboard.media') }}" wire:navigate class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md cursor-pointer focus-visible:outline-cyan-600">
+                    <flux:icon.photo class="size-3.5" aria-hidden="true" />
                     <span>Media Cloud</span>
                 </a>
             </div>
@@ -295,75 +326,83 @@ new class extends Component
     <!-- 4 KPI Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Stat 1: Total Sites -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
+        <div class="panel panel-interactive p-5 relative overflow-hidden group" style="--i: 0">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total Sites</span>
-                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">{{ number_format($totalSites) }}</div>
+                    <span class="stat-label">Total Sites</span>
+                    <div class="stat-value">{{ number_format($totalSites) }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-accent/[0.08] text-accent border border-accent/15">
-                    <flux:icon.globe-alt class="size-5" />
+                <div class="icon-tile">
+                    <flux:icon.globe-alt class="size-5" aria-hidden="true" />
                 </div>
             </div>
             <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="size-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
                 <span>Active Edge Deployments</span>
             </div>
         </div>
 
         <!-- Stat 2: Total Page Views -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
+        <div class="panel panel-interactive p-5 relative overflow-hidden group" style="--i: 1">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total Page Views</span>
-                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">{{ number_format($totalViews) }}</div>
+                    <span class="stat-label">Total Page Views</span>
+                    <div class="stat-value">{{ number_format($totalViews) }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-accent/[0.08] text-accent border border-accent/15">
-                    <flux:icon.eye class="size-5" />
+                <div class="icon-tile">
+                    <flux:icon.eye class="size-5" aria-hidden="true" />
                 </div>
             </div>
             <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                <flux:icon.chart-bar class="size-3.5 text-zinc-400" />
+                <flux:icon.chart-bar class="size-3.5 text-zinc-400" aria-hidden="true" />
                 <span>Across all deployed sites</span>
             </div>
         </div>
 
         <!-- Stat 3: Connected Domains -->
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150">
+        <div class="panel panel-interactive p-5 relative overflow-hidden group" style="--i: 2">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Custom Domains</span>
-                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">{{ number_format($totalDomains) }}</div>
+                    <span class="stat-label">Custom Domains</span>
+                    <div class="stat-value">{{ number_format($totalDomains) }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-accent/[0.08] text-accent border border-accent/15">
-                    <flux:icon.link class="size-5" />
+                <div class="icon-tile">
+                    <flux:icon.link class="size-5" aria-hidden="true" />
                 </div>
             </div>
             <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                <flux:icon.shield-check class="size-3.5 text-emerald-500" />
+                <flux:icon.shield-check class="size-3.5 text-emerald-500" aria-hidden="true" />
                 <span>Automatic SSL provisioned</span>
             </div>
         </div>
 
         <!-- Stat 4: Storage & Quota -->
-        <a href="{{ route('settings.storage') }}" wire:navigate class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 relative overflow-hidden group hover:border-accent/30 transition-colors duration-150 block cursor-pointer">
+        @php
+            $storagePct = min(100, max(0, (int) $storageStats['used_percentage']));
+        @endphp
+        <a href="{{ route('settings.storage') }}" wire:navigate class="panel panel-interactive p-5 relative overflow-hidden group block" style="--i: 3" aria-label="{{ __('Storage and quota') }}">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Storage &amp; Quota</span>
-                    <div class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1 font-mono">{{ $storageStats['formatted']['total_used'] }}</div>
+                    <span class="stat-label">Storage &amp; Quota</span>
+                    <div class="stat-value font-mono">{{ $storageStats['formatted']['total_used'] }}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 group-hover:scale-105 transition-transform duration-150">
-                    <flux:icon.circle-stack class="size-5" />
+                <div class="icon-tile border-cyan-500/20 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 group-hover:scale-105 transition-transform duration-200">
+                    <flux:icon.circle-stack class="size-5" aria-hidden="true" />
                 </div>
             </div>
-            <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
-                <span class="flex items-center gap-1.5 truncate">
-                    <span>of {{ $storageStats['formatted']['quota'] }} ({{ $storageStats['used_percentage'] }}%)</span>
+            <div class="mt-3 space-y-2">
+                <span class="meter meter-lg block">
+                    <span class="meter-fill block {{ $storagePct >= 90 ? 'is-danger' : ($storagePct >= 75 ? 'is-warn' : '') }}" style="width: {{ $storagePct }}%"></span>
                 </span>
-                <span class="text-accent dark:text-accent-content group-hover:underline font-semibold flex items-center gap-1">
-                    <span>Manage</span>
-                    <span>&rarr;</span>
-                </span>
+                <div class="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                    <span class="tabular-nums truncate">
+                        {{ $storagePct }}% of {{ $storageStats['formatted']['quota'] }} used
+                    </span>
+                    <span class="text-accent dark:text-accent-content group-hover:underline font-semibold inline-flex items-center gap-1">
+                        <span>Manage</span>
+                        <span aria-hidden="true">&rarr;</span>
+                    </span>
+                </div>
             </div>
         </a>
     </div>
@@ -381,26 +420,33 @@ new class extends Component
                     </div>
                     <input 
                         wire:model.live.debounce.250ms="search" 
-                        type="text" 
+                        type="search"
+                        aria-label="{{ __('Search sites by name, slug or domain') }}"
                         placeholder="Search sites, slugs, domains..." 
-                        class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl bg-zinc-50 dark:bg-zinc-800/70 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-150"
+                        class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl bg-zinc-50 dark:bg-zinc-800/70 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-150 [&::-webkit-search-cancel-button]:appearance-none"
                     />
                     @if($search)
-                        <button wire:click="$set('search', '')" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer">
+                        <button wire:click="$set('search', '')" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer" aria-label="{{ __('Clear search') }}">
                             <flux:icon.x-mark class="size-4" />
                         </button>
                     @endif
                 </div>
 
                 <!-- Filter Pills -->
-                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs max-w-full overflow-x-auto">
-                    <button wire:click="setFilter('all')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All ({{ $totalSites }})</button>
-                    <button wire:click="setFilter('active')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'active' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Active</button>
-                    <button wire:click="setFilter('permanent')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'permanent' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Permanent</button>
-                    <button wire:click="setFilter('expiring')" class="shrink-0 px-3 py-1 font-semibold rounded-lg transition-colors duration-150 cursor-pointer {{ $statusFilter === 'expiring' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">
+                <div class="pill-group" role="group" aria-label="{{ __('Filter sites by status') }}">
+                    <button type="button" wire:click="setFilter('all')" aria-pressed="{{ $statusFilter === 'all' ? 'true' : 'false' }}" class="pill">
+                        All <span class="opacity-60 tabular-nums">({{ $totalSites }})</span>
+                    </button>
+                    <button type="button" wire:click="setFilter('active')" aria-pressed="{{ $statusFilter === 'active' ? 'true' : 'false' }}" class="pill">
+                        Active
+                    </button>
+                    <button type="button" wire:click="setFilter('permanent')" aria-pressed="{{ $statusFilter === 'permanent' ? 'true' : 'false' }}" class="pill">
+                        Permanent
+                    </button>
+                    <button type="button" wire:click="setFilter('expiring')" aria-pressed="{{ $statusFilter === 'expiring' ? 'true' : 'false' }}" class="pill">
                         Expiring
                         @if($expiringCount > 0)
-                            <span class="ml-1 px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[10px] font-bold">{{ $expiringCount }}</span>
+                            <span class="count-badge {{ $statusFilter === 'expiring' ? 'bg-accent' : 'bg-amber-500' }}">{{ $expiringCount }}</span>
                         @endif
                     </button>
                 </div>
@@ -408,16 +454,47 @@ new class extends Component
 
             <!-- View Switcher & Action Buttons -->
             <div class="flex items-center gap-2.5 shrink-0">
-                <span class="hidden sm:inline-flex items-center text-xs font-semibold text-zinc-400 tabular-nums">
+                <span class="hidden sm:inline-flex items-center text-xs font-semibold text-zinc-400 tabular-nums" aria-live="polite" role="status">
                     {{ $sites->total() }} {{ \Illuminate\Support\Str::plural('site', $sites->total()) }}
                 </span>
 
+                <!-- Sort menu (works in both grid and table view) -->
+                @php
+                    $sortOptions = [
+                        ['created_at', 'desc', 'Newest first'],
+                        ['created_at', 'asc', 'Oldest first'],
+                        ['original_name', 'asc', 'Name A–Z'],
+                        ['original_name', 'desc', 'Name Z–A'],
+                        ['views', 'desc', 'Most viewed'],
+                        ['views', 'asc', 'Least viewed'],
+                        ['expires_at', 'asc', 'Expiring soonest'],
+                        ['expires_at', 'desc', 'Expiring latest'],
+                    ];
+                @endphp
+                <flux:dropdown position="bottom" align="end">
+                    <flux:button variant="ghost" size="sm" icon="bars-arrow-down" title="{{ __('Sort sites') }}">
+                        <span class="hidden sm:inline">Sort</span>
+                    </flux:button>
+                    <flux:menu>
+                        <flux:menu.heading>Sort sites by</flux:menu.heading>
+                        @foreach($sortOptions as [$col, $dir, $label])
+                            <flux:menu.item
+                                icon="{{ $sortBy === $col && $sortDir === $dir ? 'check' : 'minus' }}"
+                                wire:click="setSort('{{ $col }}', '{{ $dir }}')"
+                                @class(['font-semibold text-accent dark:text-brand-300' => $sortBy === $col && $sortDir === $dir])
+                            >
+                                {{ $label }}
+                            </flux:menu.item>
+                        @endforeach
+                    </flux:menu>
+                </flux:dropdown>
+
                 <!-- Grid / Table View Switcher -->
-                <div class="hidden sm:inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800">
-                    <button type="button" @click="setViewMode('grid')" :class="viewMode === 'grid' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer" title="Grid View">
+                <div class="hidden sm:inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800" role="group" aria-label="{{ __('Change result layout') }}">
+                    <button type="button" @click="setViewMode('grid')" :aria-pressed="viewMode === 'grid'" :class="viewMode === 'grid' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer" title="Grid View" aria-label="{{ __('Grid view') }}">
                         <flux:icon.squares-2x2 class="size-4" />
                     </button>
-                    <button type="button" @click="setViewMode('table')" :class="viewMode === 'table' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer" title="Dense Table View">
+                    <button type="button" @click="setViewMode('table')" :aria-pressed="viewMode === 'table'" :class="viewMode === 'table' ? 'bg-white dark:bg-zinc-800 text-accent shadow-xs' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'" class="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer" title="Dense Table View" aria-label="{{ __('Table view') }}">
                         <flux:icon.bars-3-bottom-left class="size-4" />
                     </button>
                 </div>
@@ -428,6 +505,11 @@ new class extends Component
                     </flux:button>
                 </flux:modal.trigger>
             </div>
+        </div>
+
+        <!-- In-flight request indicator -->
+        <div wire:loading class="meter is-indeterminate mb-5 fade-in" role="progressbar" aria-label="{{ __('Loading sites') }}">
+            <div class="meter-fill"></div>
         </div>
 
         <!-- Modals -->
@@ -489,9 +571,9 @@ new class extends Component
 
         <!-- Empty State -->
         @if($sites->isEmpty())
-            <div class="py-16 flex flex-col items-center justify-center text-center">
-                <div class="size-16 rounded-2xl bg-accent/[0.08] text-accent flex items-center justify-center mb-4 border border-accent/20 shadow-xs">
-                    <flux:icon.cloud-arrow-up class="size-8" />
+            <div class="rise-in py-16 flex flex-col items-center justify-center text-center">
+                <div class="size-16 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-4 border border-accent/20 shadow-xs">
+                    <flux:icon.cloud-arrow-up class="size-8" aria-hidden="true" />
                 </div>
                 @if($search)
                     <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">No matching sites found</h3>
@@ -531,7 +613,21 @@ new class extends Component
                     class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
                 >
                     @foreach ($sites as $site)
-                        <div wire:key="site-card-{{ $site->id }}" class="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-950/40 p-5 hover:border-accent/40 hover:shadow-md transition-all duration-150 flex flex-col justify-between relative overflow-hidden">
+                        @php
+                            $daysLeft = null;
+                            $lifetimePct = null;
+                            if (! $site->is_permanent && $site->expires_at) {
+                                $daysLeft = $site->expires_at->isFuture()
+                                    ? (int) ceil(now()->diffInSeconds($site->expires_at) / 86400)
+                                    : 0;
+                                $lifetimePct = max(0, min(100, (int) round(($daysLeft / 30) * 100)));
+                            }
+                        @endphp
+                        <div
+                            wire:key="site-card-{{ $site->id }}"
+                            style="--i: {{ $loop->index }}"
+                            class="rise-in group panel panel-interactive bg-zinc-50/80 dark:bg-zinc-950/40 p-5 flex flex-col justify-between relative overflow-hidden"
+                        >
                             <div>
                                 <!-- Header Row -->
                                 <div class="flex items-start justify-between gap-3 mb-3">
@@ -549,7 +645,7 @@ new class extends Component
                                         </div>
 
                                         <div class="flex items-center gap-1.5 mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                            <a href="/s/{{ $site->slug }}" target="_blank" class="font-mono text-accent dark:text-accent-content hover:underline truncate max-w-[190px]">
+                                            <a href="/s/{{ $site->slug }}" target="_blank" rel="noopener" class="font-mono text-accent dark:text-accent-content hover:underline truncate max-w-[190px]">
                                                 /s/{{ $site->slug }}
                                             </a>
                                             <button 
@@ -557,6 +653,7 @@ new class extends Component
                                                 @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))" 
                                                 class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-0.5 rounded transition-colors duration-150 cursor-pointer" 
                                                 title="Copy live URL"
+                                                aria-label="{{ __('Copy live URL for') }} {{ $site->slug }}"
                                             >
                                                 <flux:icon.clipboard x-show="copiedId !== @js($site->id)" class="size-3.5" />
                                                 <flux:icon.check x-show="copiedId === @js($site->id)" x-cloak class="size-3.5 text-emerald-500" />
@@ -571,7 +668,7 @@ new class extends Component
                                         </span>
 
                                         <flux:dropdown>
-                                            <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" class="rounded-lg cursor-pointer" />
+                                            <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" class="rounded-lg cursor-pointer" aria-label="{{ __('More actions for') }} {{ $site->slug }}" />
                                             <flux:menu class="w-48">
                                                 <flux:menu.item icon="pencil-square" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Code Studio</flux:menu.item>
                                                 <flux:menu.item icon="photo" :href="route('dashboard.sites.media', $site->id)" wire:navigate>Media Assets</flux:menu.item>
@@ -600,7 +697,7 @@ new class extends Component
                                 @if($site->domains->count() > 0)
                                     <div class="mb-3 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 text-xs">
                                         <flux:icon.globe-alt class="size-3.5 text-accent shrink-0" />
-                                        <a href="https://{{ $site->domains->first()->domain }}" target="_blank" class="truncate font-mono font-medium text-zinc-700 dark:text-zinc-300 hover:underline">
+                                        <a href="https://{{ $site->domains->first()->domain }}" target="_blank" rel="noopener" class="truncate font-mono font-medium text-zinc-700 dark:text-zinc-300 hover:underline">
                                             {{ $site->domains->first()->domain }}
                                         </a>
                                     </div>
@@ -625,10 +722,10 @@ new class extends Component
                                 </div>
 
                                 <!-- Expiry Status Indicator -->
-                                <div class="text-xs mb-3">
+                                <div class="text-xs mb-3 space-y-1.5">
                                     @if($site->is_permanent)
                                         <div class="flex items-center gap-1.5 text-accent dark:text-accent-content font-semibold">
-                                            <flux:icon.sparkles class="size-3.5" />
+                                            <flux:icon.sparkles class="size-3.5" aria-hidden="true" />
                                             <span>Permanent (Never expires)</span>
                                         </div>
                                     @elseif($site->expires_at)
@@ -638,6 +735,11 @@ new class extends Component
                                                 {{ $site->expires_at->isPast() ? 'Expired' : $site->expires_at->diffForHumans(null, true) }}
                                             </span>
                                         </div>
+                                        @if($lifetimePct !== null)
+                                            <span class="meter block" title="{{ __('Lifetime remaining in the current 30-day cycle') }}">
+                                                <span class="meter-fill block {{ $site->expires_at->isPast() ? 'is-danger' : ($lifetimePct <= 25 ? 'is-warn' : 'is-ok') }}" style="width: {{ $site->expires_at->isPast() ? 100 : max($lifetimePct, 4) }}%"></span>
+                                            </span>
+                                        @endif
                                     @else
                                         <span class="text-zinc-400">—</span>
                                     @endif
@@ -646,16 +748,16 @@ new class extends Component
 
                             <!-- Card Action Buttons -->
                             <div class="flex items-center justify-between gap-2 pt-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
-                                <a href="/s/{{ $site->slug }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-colors duration-150 shadow-xs">
-                                    <flux:icon.arrow-top-right-on-square class="size-3.5" />
+                                <a href="/s/{{ $site->slug }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-all duration-150 shadow-xs hover:shadow-md hover:-translate-y-0.5">
+                                    <flux:icon.arrow-top-right-on-square class="size-3.5" aria-hidden="true" />
                                     Preview
                                 </a>
                                 <div class="flex items-center gap-1">
-                                    <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" class="rounded-lg" />
-                                    <flux:button :href="route('dashboard.sites.media', $site->id)" wire:navigate variant="ghost" size="xs" icon="photo" title="Media Assets" class="rounded-lg" />
-                                    <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" class="rounded-lg" />
-                                    <flux:button :href="route('dashboard.sites.domains', $site->id)" wire:navigate variant="ghost" size="xs" icon="globe-alt" title="Domains" class="rounded-lg" />
-                                    <flux:button :href="route('dashboard.sites.settings', $site->id)" wire:navigate variant="ghost" size="xs" icon="cog-6-tooth" title="Settings" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" aria-label="{{ __('Open Code Studio for') }} {{ $site->slug }}" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.media', $site->id)" wire:navigate variant="ghost" size="xs" icon="photo" title="Media Assets" aria-label="{{ __('Media assets for') }} {{ $site->slug }}" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" aria-label="{{ __('Analytics for') }} {{ $site->slug }}" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.domains', $site->id)" wire:navigate variant="ghost" size="xs" icon="globe-alt" title="Domains" aria-label="{{ __('Domains for') }} {{ $site->slug }}" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.settings', $site->id)" wire:navigate variant="ghost" size="xs" icon="cog-6-tooth" title="Settings" aria-label="{{ __('Settings for') }} {{ $site->slug }}" class="rounded-lg" />
                                 </div>
                             </div>
                         </div>
@@ -677,27 +779,36 @@ new class extends Component
                     <flux:table>
                         <flux:table.columns>
                             <flux:table.column>
-                                <button type="button" wire:click="sortBy('original_name')" class="inline-flex items-center gap-1 font-semibold cursor-pointer hover:text-accent transition-colors duration-150">
+                                <button
+                                    type="button"
+                                    wire:click="sortBy('original_name')"
+                                    aria-label="{{ __('Sort by name') }}"
+                                    @class(['inline-flex items-center gap-1 font-semibold cursor-pointer transition-colors duration-150 hover:text-accent', 'text-accent' => $sortBy === 'original_name'])
+                                >
                                     Name &amp; Slug
-                                    @if($sortBy === 'original_name')
-                                        <flux:icon.chevron-up class="size-3 {{ $sortDir === 'asc' ? '' : 'rotate-180' }}" />
-                                    @endif
+                                    <flux:icon.chevron-up class="size-3 transition-transform duration-200 @if($sortBy === 'original_name') {{ $sortDir === 'asc' ? '' : 'rotate-180' }} @else opacity-30 @endif" />
                                 </button>
                             </flux:table.column>
                             <flux:table.column>
-                                <button type="button" wire:click="sortBy('views')" class="inline-flex items-center gap-1 font-semibold cursor-pointer hover:text-accent transition-colors duration-150">
+                                <button
+                                    type="button"
+                                    wire:click="sortBy('views')"
+                                    aria-label="{{ __('Sort by views') }}"
+                                    @class(['inline-flex items-center gap-1 font-semibold cursor-pointer transition-colors duration-150 hover:text-accent', 'text-accent' => $sortBy === 'views'])
+                                >
                                     Views
-                                    @if($sortBy === 'views')
-                                        <flux:icon.chevron-up class="size-3 {{ $sortDir === 'asc' ? '' : 'rotate-180' }}" />
-                                    @endif
+                                    <flux:icon.chevron-up class="size-3 transition-transform duration-200 @if($sortBy === 'views') {{ $sortDir === 'asc' ? '' : 'rotate-180' }} @else opacity-30 @endif" />
                                 </button>
                             </flux:table.column>
                             <flux:table.column>
-                                <button type="button" wire:click="sortBy('expires_at')" class="inline-flex items-center gap-1 font-semibold cursor-pointer hover:text-accent transition-colors duration-150">
+                                <button
+                                    type="button"
+                                    wire:click="sortBy('expires_at')"
+                                    aria-label="{{ __('Sort by expiry') }}"
+                                    @class(['inline-flex items-center gap-1 font-semibold cursor-pointer transition-colors duration-150 hover:text-accent', 'text-accent' => $sortBy === 'expires_at'])
+                                >
                                     Expiry Status
-                                    @if($sortBy === 'expires_at')
-                                        <flux:icon.chevron-up class="size-3 {{ $sortDir === 'asc' ? '' : 'rotate-180' }}" />
-                                    @endif
+                                    <flux:icon.chevron-up class="size-3 transition-transform duration-200 @if($sortBy === 'expires_at') {{ $sortDir === 'asc' ? '' : 'rotate-180' }} @else opacity-30 @endif" />
                                 </button>
                             </flux:table.column>
                             <flux:table.column>Security</flux:table.column>
@@ -716,7 +827,7 @@ new class extends Component
                                             @endif
                                         </div>
                                         <div class="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
-                                            <a href="/s/{{ $site->slug }}" target="_blank" class="hover:underline text-accent dark:text-accent-content font-mono">/s/{{ $site->slug }}</a>
+                                            <a href="/s/{{ $site->slug }}" target="_blank" rel="noopener" class="hover:underline text-accent dark:text-accent-content font-mono">/s/{{ $site->slug }}</a>
                                             @if($site->domains->count() > 0)
                                                 <span class="text-zinc-400">&bull;</span>
                                                 <span class="text-zinc-400 font-medium">{{ $site->domains->first()->domain }}</span>
@@ -751,13 +862,13 @@ new class extends Component
                                     </flux:table.cell>
                                     <flux:table.cell class="text-right">
                                         <div class="flex items-center justify-end gap-1">
-                                            <flux:button variant="ghost" size="xs" icon="clipboard" @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))" title="Copy URL" />
-                                            <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" />
-                                            <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" />
-                                            <flux:dropdown>
-                                                <flux:button variant="ghost" size="xs" icon="ellipsis-horizontal" />
+                                            <flux:button variant="ghost" size="xs" icon="clipboard" @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))" title="Copy URL" aria-label="{{ __('Copy live URL for') }} {{ $site->slug }}" />
+                                            <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" aria-label="{{ __('Open Code Studio for') }} {{ $site->slug }}" />
+                                            <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" aria-label="{{ __('Analytics for') }} {{ $site->slug }}" />
+                                            <flux:dropdown position="bottom" align="end">
+                                                <flux:button variant="ghost" size="xs" icon="ellipsis-horizontal" aria-label="{{ __('More actions for') }} {{ $site->slug }}" />
                                                 <flux:menu>
-                                                    <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank">View Live</flux:menu.item>
+                                                    <flux:menu.item icon="arrow-top-right-on-square" href="/s/{{ $site->slug }}" target="_blank" rel="noopener">View Live</flux:menu.item>
                                                     <flux:menu.item icon="photo" :href="route('dashboard.sites.media', $site->id)" wire:navigate>Media Assets</flux:menu.item>
                                                     <flux:menu.item icon="globe-alt" :href="route('dashboard.sites.domains', $site->id)" wire:navigate>Domains</flux:menu.item>
                                                     <flux:menu.item icon="cog-6-tooth" :href="route('dashboard.sites.settings', $site->id)" wire:navigate>Settings</flux:menu.item>

@@ -89,7 +89,7 @@ new class extends Component
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Domains List & Add Form (2 Cols) -->
         <div class="lg:col-span-2">
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-7">
+            <div class="panel p-6 sm:p-7 rise-in" style="--i: 0">
                 <div class="mb-5">
                     <span class="eyebrow mb-2.5">Custom Domains</span>
                     <h3 class="font-bold text-base sm:text-lg tracking-tight text-zinc-900 dark:text-zinc-100">Link a Custom Domain</h3>
@@ -139,7 +139,7 @@ new class extends Component
                     @else
                         <div class="space-y-3">
                             @foreach($site->domains as $domain)
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs hover:border-accent/40 transition-all">
+                                <div class="panel panel-interactive p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-2">
                                             <flux:icon.globe-alt class="size-4 text-accent dark:text-accent-content shrink-0" />
@@ -201,7 +201,7 @@ new class extends Component
         <!-- DNS Configuration Instructions Sidebar (1 Col) -->
         <div class="lg:col-span-1 space-y-6">
             <!-- Platform URL -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 sm:p-6">
+            <div class="panel p-5 sm:p-6 rise-in" style="--i: 1">
                 <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2.5 flex items-center gap-1.5">
                     <flux:icon.link class="size-3.5 text-accent dark:text-accent-content" />
                     <span>Default Platform URL</span>
@@ -222,7 +222,7 @@ new class extends Component
             </div>
 
             <!-- DNS Setup Helper -->
-            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 sm:p-6">
+            <div class="panel p-5 sm:p-6 rise-in" style="--i: 2">
                 <h3 class="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 mb-1 flex items-center gap-2">
                     <flux:icon.cpu-chip class="size-4 text-accent dark:text-accent-content" />
                     <span>DNS Configuration</span>
