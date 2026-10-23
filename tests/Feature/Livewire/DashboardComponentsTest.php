@@ -258,6 +258,24 @@ test('file uploader publishes sites', function () {
     expect($user->sites()->count())->toBe(1);
 });
 
+test('file uploader applies the uploads rate limit', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $component = Livewire::test('file-uploader');
+    for ($i = 0; $i < 20; $i++) {
+        $component->set('file', UploadedFile::fake()->create("page-$i.html", 1, 'text/html'));
+    }
+
+    // The 21st upload within a minute exceeds the named "uploads" limiter
+    $component->set('file', UploadedFile::fake()->create('page-20.html', 1, 'text/html'))
+        ->assertSet('errorMessage', fn ($v) => str_contains($v, 'Too many uploads'));
+
+    expect($user->sites()->count())->toBe(20);
+});
+
 test('command palette mounts and filters sites on search', function () {
     $user = User::factory()->create();
     $site1 = Site::create([

@@ -13,6 +13,8 @@
 
 <link rel="canonical" href="{{ $seoCanonical }}">
 
+<meta name="description" content="{{ $seoDescription }}">
+
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{{ config('app.name', 'DropHTML') }}">
 <meta property="og:title" content="{{ $seoTitle }}">

@@ -21,6 +21,9 @@
          landing.css contains the custom nested CSS for everything on this page. --}}
     @vite(['resources/css/app.css', 'resources/css/landing.css', 'resources/js/app.js'])
     @fluxAppearance
+
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0d0e15" media="(prefers-color-scheme: dark)">
 </head>
 <body class="lp-body">
     <a href="#main-content" class="lp-skip-link">Skip to content</a>

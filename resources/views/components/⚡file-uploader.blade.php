@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\SiteDeploymentService;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -27,6 +28,17 @@ new class extends Component
 
     public function upload(SiteDeploymentService $deploymentService)
     {
+        // Consume the named "uploads" rate limiter (20/min per user or IP)
+        // manually, since Livewire updates don't pass through route middleware.
+        $limit = RateLimiter::limiter('uploads')(request());
+
+        if (RateLimiter::tooManyAttempts($limit->key, $limit->maxAttempts)) {
+            $this->errorMessage = 'Too many uploads. Please wait a minute before trying again.';
+
+            return;
+        }
+        RateLimiter::hit($limit->key, $limit->decaySeconds);
+
         $this->uploading = true;
         $this->message = '';
         $this->errorMessage = '';

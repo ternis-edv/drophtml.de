@@ -250,4 +250,44 @@ test('redirect creation rejects unsafe protocols like javascript or data', funct
         ->assertHasErrors(['toUrl']);
 
     expect($site->redirects()->count())->toBe(0);
+
+    // API should also reject vbscript: and file:
+    foreach (['vbscript:msgbox(1)', 'file:///etc/passwd'] as $to) {
+        $response = $this->actingAs($user)->postJson("/api/sites/{$site->id}/redirects", [
+            'from_path' => '/xss',
+            'to_url' => $to,
+            'status_code' => 301,
+        ]);
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['to_url']);
+    }
+
+    expect($site->redirects()->count())->toBe(0);
+});
+
+test('redirect import from _redirects file skips unsafe targets', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+    $site = Site::create([
+        'slug' => 'import-redirect-site',
+        'path' => 'sites/import-redirect-site',
+        'user_id' => $user->id,
+        'status' => 'active',
+    ]);
+
+    Storage::disk('public')->put("{$site->path}/_redirects", implode("\n", [
+        '# comment line',
+        '/one https://example.com/one',
+        '/evil javascript:alert(1)',
+        '/two 302!',
+    ]));
+
+    Livewire::actingAs($user)
+        ->test('dashboard.site-redirects', ['siteId' => $site->id])
+        ->call('importFromFile');
+
+    expect($site->redirects()->count())->toBe(2);
+    expect($site->redirects()->where('from_path', '/one')->exists())->toBeTrue();
+    expect($site->redirects()->where('from_path', '/evil')->exists())->toBeFalse();
 });

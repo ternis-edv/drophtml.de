@@ -42,7 +42,16 @@ Route::domain($appDomain)->group(function () {
             abort(404);
         }
 
-        return view('pages.legal.show', ['page' => $page]);
+        $description = str(trim(strip_tags((string) __('legal.'.$page.'.content'))))
+            ->squish()
+            ->limit(155, '...')
+            ->toString();
+
+        return view('pages.legal.show', [
+            'page' => $page,
+            'title' => __('legal.'.$page.'.title'),
+            'description' => $description,
+        ]);
     })->name('legal.show');
 
     Route::get('/sitemap.xml', function () {

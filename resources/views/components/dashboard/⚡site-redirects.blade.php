@@ -2,6 +2,7 @@
 
 use App\Models\Site;
 use App\Models\SiteRedirect;
+use App\Rules\SafeRedirectTarget;
 use App\Services\ActivityLogService;
 use App\Services\SiteServingService;
 use Illuminate\Support\Facades\Storage;
@@ -70,17 +71,7 @@ new class extends Component
     {
         $this->validate([
             'fromPath' => ['required', 'string', 'max:2048'],
-            'toUrl' => [
-                'required',
-                'string',
-                'max:2048',
-                function ($attribute, $value, $fail) {
-                    $lower = strtolower(trim($value));
-                    if (str_starts_with($lower, 'javascript:') || str_starts_with($lower, 'data:') || str_starts_with($lower, 'vbscript:') || str_starts_with($lower, 'file:')) {
-                        $fail('The destination target URL contains an unsafe protocol.');
-                    }
-                },
-            ],
+            'toUrl' => ['required', 'string', 'max:2048', new SafeRedirectTarget],
             'statusCode' => ['required', 'integer', Rule::in([200, 301, 302, 307, 308])],
             'description' => ['nullable', 'string', 'max:255'],
         ]);
@@ -126,17 +117,7 @@ new class extends Component
     {
         $this->validate([
             'fromPath' => ['required', 'string', 'max:2048'],
-            'toUrl' => [
-                'required',
-                'string',
-                'max:2048',
-                function ($attribute, $value, $fail) {
-                    $lower = strtolower(trim($value));
-                    if (str_starts_with($lower, 'javascript:') || str_starts_with($lower, 'data:') || str_starts_with($lower, 'vbscript:') || str_starts_with($lower, 'file:')) {
-                        $fail('The destination target URL contains an unsafe protocol.');
-                    }
-                },
-            ],
+            'toUrl' => ['required', 'string', 'max:2048', new SafeRedirectTarget],
             'statusCode' => ['required', 'integer', Rule::in([200, 301, 302, 307, 308])],
             'description' => ['nullable', 'string', 'max:255'],
             'isActive' => ['boolean'],
@@ -206,7 +187,14 @@ new class extends Component
         $rules = $servingService->parseRedirectRules($content);
 
         $imported = 0;
+        $skipped = 0;
         foreach ($rules as $rule) {
+            if (! SafeRedirectTarget::isSafe($rule['to'] ?? null)) {
+                $skipped++;
+
+                continue;
+            }
+
             $fromPath = '/'.ltrim($rule['from'], '/');
             $exists = $this->site->redirects()->where('from_path', $fromPath)->exists();
 
@@ -229,7 +217,12 @@ new class extends Component
             "Imported {$imported} redirect rules from _redirects file"
         );
 
-        Flux::toast("Imported {$imported} redirect rule(s) from _redirects file.");
+        $toast = "Imported {$imported} redirect rule(s) from _redirects file.";
+        if ($skipped > 0) {
+            $toast .= " Skipped {$skipped} rule(s) with unsafe targets.";
+        }
+
+        Flux::toast($toast);
     }
 
     public function render()

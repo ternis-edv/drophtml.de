@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SiteRedirectResource;
 use App\Models\Site;
 use App\Models\SiteRedirect;
+use App\Rules\SafeRedirectTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -25,17 +26,7 @@ class SiteRedirectController extends Controller
 
         $validated = $request->validate([
             'from_path' => ['required', 'string', 'max:2048'],
-            'to_url' => [
-                'required',
-                'string',
-                'max:2048',
-                function ($attribute, $value, $fail) {
-                    $lower = strtolower(trim($value));
-                    if (str_starts_with($lower, 'javascript:') || str_starts_with($lower, 'data:') || str_starts_with($lower, 'vbscript:') || str_starts_with($lower, 'file:')) {
-                        $fail('The destination target URL contains an unsafe protocol.');
-                    }
-                },
-            ],
+            'to_url' => ['required', 'string', 'max:2048', new SafeRedirectTarget],
             'status_code' => ['nullable', 'integer', Rule::in([200, 301, 302, 307, 308])],
             'is_active' => ['nullable', 'boolean'],
             'description' => ['nullable', 'string', 'max:255'],
@@ -75,18 +66,7 @@ class SiteRedirectController extends Controller
 
         $validated = $request->validate([
             'from_path' => ['sometimes', 'required', 'string', 'max:2048'],
-            'to_url' => [
-                'sometimes',
-                'required',
-                'string',
-                'max:2048',
-                function ($attribute, $value, $fail) {
-                    $lower = strtolower(trim($value));
-                    if (str_starts_with($lower, 'javascript:') || str_starts_with($lower, 'data:') || str_starts_with($lower, 'vbscript:') || str_starts_with($lower, 'file:')) {
-                        $fail('The destination target URL contains an unsafe protocol.');
-                    }
-                },
-            ],
+            'to_url' => ['sometimes', 'required', 'string', 'max:2048', new SafeRedirectTarget],
             'status_code' => ['nullable', 'integer', Rule::in([200, 301, 302, 307, 308])],
             'is_active' => ['nullable', 'boolean'],
             'description' => ['nullable', 'string', 'max:255'],
