@@ -251,3 +251,39 @@ test('public skill specification endpoints and docs page are accessible', functi
     $responseDocs->assertSee('DropHTML for AI Agents');
     $responseDocs->assertSee('SKILL.md Specification');
 });
+
+test('agent can create a site with custom slug via API', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $response = $this->postJson('/api/sites', [
+        'original_name' => 'Custom Slug Site',
+        'html' => '<h1>Custom Slug Works</h1>',
+        'custom_slug' => 'my-agent-demo',
+        'is_permanent' => true,
+    ]);
+
+    $response->assertCreated();
+    $response->assertJsonPath('data.slug', 'my-agent-demo');
+    $this->assertDatabaseHas('sites', [
+        'user_id' => $user->id,
+        'slug' => 'my-agent-demo',
+    ]);
+});
+
+test('landing page renders terminal section and agent links', function () {
+    $response = $this->get('/');
+    $response->assertOk();
+    $response->assertSee('Deploy from Terminal or AI Agents');
+    $response->assertSee('drophtml deploy');
+    $response->assertSee('Agent Skill');
+});
+
+test('settings api tokens page renders agent quickstart guide', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/settings/api-tokens');
+    $response->assertOk();
+    $response->assertSee('Use with AI Agents &amp; CLI', false);
+    $response->assertSee('DROPHTML_API_TOKEN');
+});

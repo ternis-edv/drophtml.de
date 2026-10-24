@@ -18,8 +18,10 @@
             <!-- Desktop Nav Links -->
             <div class="lp-nav__links">
                 <a href="#upload">Upload</a>
+                <a href="#terminal">CLI &amp; Agents</a>
                 <a href="#features">Features</a>
                 <a href="#faq">FAQs</a>
+                <a href="{{ route('docs.agents') }}">Agent Skill</a>
                 <a href="{{ url('/docs/api') }}">API Docs</a>
             </div>
 
@@ -99,8 +101,10 @@
         style="display: none;"
     >
         <a href="#upload" @click="mobileMenuOpen = false">Upload</a>
+        <a href="#terminal" @click="mobileMenuOpen = false">CLI &amp; Agents</a>
         <a href="#features" @click="mobileMenuOpen = false">Features</a>
         <a href="#faq" @click="mobileMenuOpen = false">FAQs</a>
+        <a href="{{ route('docs.agents') }}" @click="mobileMenuOpen = false">Agent Skill</a>
         <a href="{{ url('/docs/api') }}" @click="mobileMenuOpen = false">API Documentation</a>
 
         <div class="lp-drawer-actions">

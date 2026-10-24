@@ -116,5 +116,30 @@ new #[Title('API Tokens')] class extends Component {
             </div>
         @endif
 
+        <div class="mt-10 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+            <div class="panel p-5 bg-gradient-to-br from-zinc-900/50 to-zinc-950/70 border border-zinc-800/80 rounded-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="icon-tile bg-sky-500/10 text-sky-400 border border-sky-500/20" aria-hidden="true">
+                            <flux:icon.cpu-chip class="size-4" />
+                        </span>
+                        <div>
+                            <flux:heading size="sm">{{ __('Use with AI Agents & CLI') }}</flux:heading>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{{ __('Equip Claude Code, Antigravity, Cursor, and custom agents with DropHTML capabilities.') }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('docs.agents') }}" target="_blank" class="text-xs text-sky-400 hover:text-sky-300 font-medium inline-flex items-center gap-1">
+                        {{ __('Agent Docs') }} &rarr;
+                    </a>
+                </div>
+
+                <div class="mt-4 space-y-2 font-mono text-xs bg-zinc-950 p-3.5 rounded-xl border border-zinc-800 text-zinc-300">
+                    <div class="text-zinc-500"># 1. Export your token in your terminal or agent environment</div>
+                    <div>export DROPHTML_API_TOKEN="your_token_here"</div>
+                    <div class="pt-2 text-zinc-500"># 2. Initialize the skill in any project workspace</div>
+                    <div>./scripts/drophtml init</div>
+                </div>
+            </div>
+        </div>
     </x-pages::settings.layout>
 </section>

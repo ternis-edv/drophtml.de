@@ -45,6 +45,9 @@ ${BOLD}COMMANDS${RESET}
     ${CYAN}site get${RESET} <site_id>             Get metadata, live URL, and deployment status of a site
     ${CYAN}site delete${RESET} <site_id>          Permanently delete a site and its files
     ${CYAN}site download${RESET} <site_id>        Download site files as a ZIP archive
+    ${CYAN}init${RESET} [directory]               Equip a workspace or project with the DropHTML Agent Skill
+    ${CYAN}auth login${RESET} [token]             Save API token to ~/.drophtml/token
+    ${CYAN}auth logout${RESET}                  Clear saved API token
     ${CYAN}whoami${RESET}                        Show current authenticated user and storage quota
 
 ${BOLD}OPTIONS${RESET}
@@ -163,6 +166,51 @@ api_request() {
 # -------------------------------------------------------------
 # Command implementations
 # -------------------------------------------------------------
+
+cmd_init() {
+    local target_dir="${1:-.}"
+    local skill_dir="${target_dir}/.agents/skills/drophtml"
+    local skill_file="${skill_dir}/SKILL.md"
+
+    mkdir -p "$skill_dir"
+
+    if [ -f "$(dirname "$0")/../.agents/skills/drophtml/SKILL.md" ]; then
+        cp "$(dirname "$0")/../.agents/skills/drophtml/SKILL.md" "$skill_file"
+    else
+        echo -e "${CYAN}Downloading official DropHTML Agent Skill specification...${RESET}"
+        curl -sSL "${BASE_URL}/skills/drophtml/SKILL.md" -o "$skill_file"
+    fi
+
+    echo -e "${BOLD}${GREEN}✔ DropHTML Agent Skill initialized!${RESET}"
+    echo -e "Skill definition saved to: ${CYAN}${skill_file}${RESET}"
+    echo "AI agents (Claude Code, Antigravity, Cursor, Windsurf) can now deploy sites and host media autonomously."
+}
+
+cmd_auth_login() {
+    local token="$1"
+    if [ -z "$token" ]; then
+        echo -n "Enter your DropHTML API token: "
+        read -r token
+    fi
+
+    if [ -z "$token" ]; then
+        echo -e "${RED}Error:${RESET} Token cannot be empty." >&2
+        exit 1
+    fi
+
+    mkdir -p "$HOME/.drophtml"
+    echo "$token" > "$HOME/.drophtml/token"
+    chmod 600 "$HOME/.drophtml/token"
+
+    API_TOKEN="$token"
+    echo -e "${GREEN}API token saved to ~/.drophtml/token${RESET}"
+    cmd_whoami
+}
+
+cmd_auth_logout() {
+    rm -f "$HOME/.drophtml/token"
+    echo -e "${GREEN}Logged out successfully. Removed saved token.${RESET}"
+}
 
 cmd_whoami() {
     ensure_token
@@ -694,6 +742,29 @@ COMMAND="$1"
 shift || true
 
 case "$COMMAND" in
+    init)
+        cmd_init "$@"
+        ;;
+    auth)
+        SUB_CMD="$1"
+        shift || true
+        case "$SUB_CMD" in
+            login)
+                cmd_auth_login "$@"
+                ;;
+            logout)
+                cmd_auth_logout "$@"
+                ;;
+            status|whoami)
+                cmd_whoami "$@"
+                ;;
+            *)
+                echo -e "${RED}Unknown auth command:${RESET} $SUB_CMD" >&2
+                show_help
+                exit 1
+                ;;
+        esac
+        ;;
     whoami)
         cmd_whoami "$@"
         ;;
