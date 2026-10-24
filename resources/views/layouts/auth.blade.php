@@ -4,6 +4,7 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100 selection:bg-accent selection:text-white">
+        <a href="#main-auth" class="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-accent focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg">{{ __('Skip to main content') }}</a>
         <div class="relative min-h-screen grid lg:grid-cols-12 overflow-hidden">
             <!-- Left Branding & Showcase Panel (Desktop lg:col-span-5 xl:col-span-6) -->
             <div class="relative hidden lg:flex lg:col-span-5 xl:col-span-6 flex-col justify-between p-12 bg-zinc-950 text-white border-e border-zinc-800/80 overflow-hidden">
@@ -74,7 +75,7 @@
 
                     <!-- Theme Toggle -->
                     <div class="flex items-center gap-1 text-xs" x-data>
-                        <button type="button" @click="$flux.appearance = document.documentElement.classList.contains('dark') ? 'light' : 'dark'" class="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer" title="Toggle Theme">
+                        <button type="button" @click="$flux.appearance = document.documentElement.classList.contains('dark') ? 'light' : 'dark'" class="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer" title="Toggle Theme" aria-label="{{ __('Toggle light and dark mode') }}">
                             <flux:icon.sun class="size-4 hidden dark:block text-amber-500" />
                             <flux:icon.moon class="size-4 block dark:hidden text-accent" />
                         </button>
@@ -82,8 +83,8 @@
                 </div>
 
                 <!-- Main Auth Card Content Container -->
-                <div class="my-auto mx-auto w-full max-w-md">
-                    <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-xl shadow-zinc-900/5 dark:shadow-none border border-zinc-200/80 dark:border-zinc-800">
+                <div id="main-auth" tabindex="-1" class="my-auto mx-auto w-full max-w-md">
+                    <div class="panel p-6 sm:p-8 shadow-xl shadow-zinc-900/5 dark:shadow-none rise-in">
                         {{ $slot }}
                     </div>
                 </div>

@@ -90,11 +90,11 @@ new #[Title('API Tokens')] class extends Component {
                 <flux:heading size="sm">{{ __('Active Tokens') }}</flux:heading>
                 <div class="mt-4 space-y-3">
                     @foreach ($tokens as $token)
-                        <div class="flex items-center justify-between p-3.5 bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
+                        <div class="panel p-3.5 flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="size-8 rounded-lg bg-accent/10 text-accent dark:text-accent-content flex items-center justify-center ring-1 ring-accent/20">
+                                <span class="icon-tile" aria-hidden="true">
                                     <flux:icon.key class="size-4" />
-                                </div>
+                                </span>
                                 <div>
                                     <div class="font-semibold text-xs tracking-tight text-zinc-900 dark:text-zinc-100">{{ $token->name }}</div>
                                     <div class="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-0.5">

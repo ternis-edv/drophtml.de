@@ -9,31 +9,12 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <!-- Self-hosted Instrument Sans brand font -->
+    @fonts
 
     <!-- Scripts / Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
-
-    <style>
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-        }
-        .dark .glass-panel {
-            background: rgba(24, 24, 27, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-15px) scale(1.03); }
-        }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-    </style>
 </head>
 <body class="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-4 selection:bg-accent selection:text-white relative overflow-hidden transition-colors duration-200">
     <!-- Ambient Background Glow -->
@@ -46,7 +27,7 @@
             type="button" 
             @click="$flux.appearance = document.documentElement.classList.contains('dark') ? 'light' : 'dark'" 
             class="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer" 
-            title="Toggle Theme"
+            title="Toggle Theme" aria-label="{{ __('Toggle light and dark mode') }}"
         >
             <flux:icon.sun class="size-4 hidden dark:block text-amber-400" />
             <flux:icon.moon class="size-4 block dark:hidden text-accent" />
@@ -54,7 +35,7 @@
     </div>
 
     <div class="w-full max-w-md relative z-10">
-        <div class="glass-panel rounded-2xl p-8 shadow-2xl">
+        <div class="panel p-8 shadow-2xl rise-in">
             <div class="flex flex-col items-center text-center mb-6">
                 <div class="w-14 h-14 rounded-2xl bg-accent/10 text-accent dark:text-brand-300 border border-accent/20 flex items-center justify-center mb-4">
                     <flux:icon.lock-closed class="w-7 h-7" />
@@ -85,7 +66,7 @@
                             name="password" 
                             required 
                             autofocus 
-                            placeholder="Enter password..."
+                            placeholder="Enter password..." autocomplete="current-password"
                             class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900/90 border border-zinc-300 dark:border-zinc-700/80 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all font-mono text-sm"
                         >
                     </div>

@@ -34,7 +34,7 @@ new #[Title('Data export')] class extends Component {
             </p>
 
             <!-- What will be exported -->
-            <div class="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 space-y-4">
+            <div class="panel p-5 space-y-4">
                 <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Included in your export') }}</div>
 
                 <ul class="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
@@ -72,7 +72,7 @@ new #[Title('Data export')] class extends Component {
             </div>
 
             <!-- What is excluded -->
-            <div class="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 space-y-4">
+            <div class="panel p-5 space-y-4">
                 <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Deliberately excluded') }}</div>
 
                 <ul class="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">

@@ -36,6 +36,21 @@
             </a>
         </div>
 
+        @if(config('services.ternis.client_id') && config('services.ternis.client_secret'))
+            <!-- Ternis SSO Register -->
+            <div>
+                <a
+                    href="{{ route('social.redirect.ternis') }}"
+                    class="w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent/90 text-white font-medium text-sm transition-all shadow-xs hover:shadow-md cursor-pointer"
+                >
+                    <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 0 0 9-9 9 9 0 0 0-9-9 9 9 0 0 0-9 9 9 9 0 0 0 9 9Zm0 0c2.5 0 4.5-4.03 4.5-9S14.5 3 12 3 7.5 7.03 7.5 12s2 9 4.5 9ZM3.6 9h16.8M3.6 15h16.8" />
+                    </svg>
+                    <span>{{ __('Sign up with Ternis') }}</span>
+                </a>
+            </div>
+        @endif
+
         @if (config('fortify.email_signups_enabled', true))
             <!-- Divider -->
             <div class="relative flex items-center justify-center">

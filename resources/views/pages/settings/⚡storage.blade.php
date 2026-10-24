@@ -71,7 +71,7 @@ new #[Title('Storage & Usage')] class extends Component {
             @endif
 
             <!-- Storage Overview Meter Card -->
-            <div class="p-5 sm:p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 space-y-5">
+            <div class="panel p-5 sm:p-6 space-y-5 rise-in" style="--i: 0">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Account Storage Capacity</div>
@@ -140,7 +140,7 @@ new #[Title('Storage & Usage')] class extends Component {
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     @foreach($stats['file_types'] as $key => $ft)
-                        <div class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between">
+                        <div class="panel p-3.5 flex flex-col justify-between">
                             <div class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide truncate">{{ $ft['label'] }}</div>
                             <div class="mt-2 font-mono font-bold text-base text-zinc-900 dark:text-zinc-100">{{ $ft['formatted'] }}</div>
                             <div class="text-[10px] text-zinc-400 mt-0.5">{{ $ft['count'] }} {{ Str::plural('item', $ft['count']) }}</div>
@@ -166,7 +166,7 @@ new #[Title('Storage & Usage')] class extends Component {
                         <p class="text-xs text-zinc-500 mt-1">Deploy a site to begin tracking site code and cloud media usage.</p>
                     </div>
                 @else
-                    <div class="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60">
+                    <div class="panel overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-zinc-50/80 dark:bg-zinc-800/60 text-zinc-500 uppercase font-semibold text-[10px] tracking-wider border-b border-zinc-200/70 dark:border-zinc-800">
                                 <tr>
@@ -237,7 +237,7 @@ new #[Title('Storage & Usage')] class extends Component {
 
                     <div class="space-y-2">
                         @foreach($largestFiles as $f)
-                            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3 text-xs">
+                            <div class="panel p-3 flex items-center justify-between gap-3 text-xs">
                                 <div class="flex items-center gap-2.5 min-w-0">
                                     <div class="size-7 rounded-lg bg-zinc-200/60 dark:bg-zinc-800 flex items-center justify-center shrink-0">
                                         <flux:icon.document class="size-3.5 text-zinc-500" />

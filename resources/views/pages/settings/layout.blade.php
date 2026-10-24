@@ -1,6 +1,6 @@
 <div class="flex items-start max-md:flex-col gap-6 md:gap-8">
     <div class="w-full md:w-56 shrink-0">
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-2.5">
+        <div class="panel p-2.5 rise-in" style="--i: 0">
             <flux:navlist aria-label="{{ __('Settings') }}">
                 <flux:navlist.item icon="user" :href="route('profile.edit')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
                 <flux:navlist.item icon="shield-check" :href="route('security.edit')" wire:navigate>{{ __('Security') }}</flux:navlist.item>

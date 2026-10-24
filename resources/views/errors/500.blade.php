@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="pt-40 pb-24 flex flex-col items-center justify-center min-h-[70vh] px-4 relative z-10">
-    <div class="glass-panel rounded-3xl p-10 md:p-16 max-w-2xl w-full mx-auto shadow-2xl border border-zinc-200 dark:border-zinc-800 text-center relative overflow-hidden">
-        <div class="absolute top-[-50%] left-[-10%] w-[60%] h-[60%] rounded-full bg-red-400/20 dark:bg-red-500/10 blur-[80px] pointer-events-none"></div>
+    <div class="panel rise-in p-10 md:p-16 max-w-2xl w-full mx-auto shadow-xl text-center relative overflow-hidden backdrop-blur-sm">
+        <div class="absolute top-[-50%] left-[-10%] w-[60%] h-[60%] rounded-full bg-red-400/20 dark:bg-red-500/10 blur-[80px] pointer-events-none" aria-hidden="true"></div>
         
         <div class="relative z-10 flex flex-col items-center">
             <div class="w-20 h-20 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-500 rounded-2xl flex items-center justify-center mb-8 ring-1 ring-red-500/30">
                 <flux:icon.server-stack class="w-10 h-10" />
             </div>
-            <h1 class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-zinc-800 to-zinc-500 dark:from-white dark:to-zinc-500 mb-4">500</h1>
+            <h1 class="text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-zinc-800 to-zinc-500 dark:from-white dark:to-zinc-500 mb-4">500</h1>
             <h2 class="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Server Error</h2>
             <p class="text-zinc-600 dark:text-zinc-400 max-w-md mx-auto mb-10 leading-relaxed">Whoops, something went wrong on our servers. We've been notified and are looking into it.</p>
             
