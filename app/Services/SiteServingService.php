@@ -280,7 +280,7 @@ class SiteServingService
 
         $isValid = false;
         if (! empty($site->site_password)) {
-            $isValid = Hash::check($inputPassword, $site->site_password) || ($inputPassword === $site->site_password);
+            $isValid = Hash::check($inputPassword, $site->site_password);
         }
 
         if (! $isValid) {
@@ -289,9 +289,37 @@ class SiteServingService
 
         $request->session()->put("site_unlocked_{$site->id}", true);
 
-        $redirectTo = $request->input('redirect_to', $fallbackUrl);
+        $redirectTo = $this->sanitizeRedirectTarget($request, $request->input('redirect_to'), $fallbackUrl);
 
         return redirect()->to($redirectTo);
+    }
+
+    /**
+     * Restrict the post-unlock redirect to local paths or trusted hosts to prevent open redirects.
+     */
+    private function sanitizeRedirectTarget(Request $request, mixed $target, string $fallbackUrl): string
+    {
+        if (! is_string($target) || $target === '') {
+            return $fallbackUrl;
+        }
+
+        // Local relative paths are safe as long as they cannot escape the origin ("//", "/\").
+        if (str_starts_with($target, '/') && preg_match('#^//|^/\\\\#', $target) !== 1) {
+            return $target;
+        }
+
+        $allowedHosts = array_filter([
+            $request->host(),
+            parse_url(config('app.url'), PHP_URL_HOST),
+        ]);
+
+        $targetHost = parse_url($target, PHP_URL_HOST);
+
+        if (is_string($targetHost) && in_array($targetHost, $allowedHosts, true)) {
+            return $target;
+        }
+
+        return $fallbackUrl;
     }
 
     /**

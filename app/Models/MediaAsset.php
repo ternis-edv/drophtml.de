@@ -163,7 +163,7 @@ class MediaAsset extends Model
         if ($this->isVideo()) {
             $mime = htmlspecialchars($this->mime_type ?: 'video/mp4', ENT_QUOTES, 'UTF-8');
 
-            return '<video controls preload="metadata" class="w-full rounded-lg">'."\n".
+            return '<video controls preload="metadata">'."\n".
                    '    <source src="'.$url.'" type="'.$mime.'">'."\n".
                    '    Your browser does not support the video tag.'."\n".
                    '</video>';
@@ -178,7 +178,7 @@ class MediaAsset extends Model
                    '</audio>';
         }
 
-        return '<a href="'.$url.'" target="_blank" download="'.$name.'">'.$name.'</a>';
+        return '<a href="'.$url.'" target="_blank" rel="noopener" download="'.$name.'">'.$name.'</a>';
     }
 
     /**
@@ -186,13 +186,13 @@ class MediaAsset extends Model
      */
     public function getMarkdownTagAttribute(): string
     {
-        $url = $this->resolved_url;
-        $name = $this->original_name;
+        $url = str_replace([' ', '<', '>', "\r", "\n"], ['%20', '%3C', '%3E', '%0D', '%0A'], $this->resolved_url);
+        $name = str_replace(['\\', '[', ']'], ['\\\\', '\\[', '\\]'], preg_replace('/[\r\n]+/', ' ', $this->original_name));
 
         if ($this->isImage()) {
-            return "![{$name}]({$url})";
+            return "![{$name}](<{$url}>)";
         }
 
-        return "[{$name}]({$url})";
+        return "[{$name}](<{$url}>)";
     }
 }

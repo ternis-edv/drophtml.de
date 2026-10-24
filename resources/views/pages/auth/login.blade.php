@@ -2,7 +2,7 @@
     <div class="flex flex-col gap-6">
         <!-- Header -->
         <div class="text-center space-y-1.5">
-            <div class="inline-flex size-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-2">
+            <div class="inline-flex size-11 items-center justify-center rounded-xl bg-accent/10 text-accent dark:text-brand-300 border border-accent/20 mb-2">
                 <flux:icon.arrow-right-end-on-rectangle class="size-6" />
             </div>
             <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ __('Welcome back') }}</h1>
@@ -30,7 +30,7 @@
             <div>
                 <a
                     href="{{ route('social.redirect.ternis') }}"
-                    class="w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all border border-indigo-500/80 shadow-xs hover:shadow-md cursor-pointer"
+                    class="w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent/90 text-white font-medium text-sm transition-all shadow-xs hover:shadow-md cursor-pointer"
                 >
                     <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 0 0 9-9 9 9 0 0 0-9-9 9 9 0 0 0-9 9 9 9 0 0 0 9 9Zm0 0c2.5 0 4.5-4.03 4.5-9S14.5 3 12 3 7.5 7.03 7.5 12s2 9 4.5 9ZM3.6 9h16.8M3.6 15h16.8" />
@@ -79,7 +79,7 @@
 
                 @if (Route::has('password.request'))
                     <div class="flex justify-end pt-1">
-                        <flux:link class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline" :href="route('password.request')" wire:navigate>
+                        <flux:link class="text-xs text-accent dark:text-brand-300 hover:underline" :href="route('password.request')" wire:navigate>
                             {{ __('Forgot your password?') }}
                         </flux:link>
                     </div>
@@ -95,7 +95,7 @@
             <button 
                 type="submit" 
                 data-test="login-button"
-                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-sm shadow-md shadow-accent/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
             >
                 <span>{{ __('Log in') }}</span>
                 <flux:icon.arrow-right class="size-4" />
@@ -106,7 +106,7 @@
         @if (Route::has('register'))
             <div class="text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
                 <span>{{ __("Don't have an account?") }}</span>
-                <a href="{{ route('register') }}" wire:navigate class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline ml-1">
+                <a href="{{ route('register') }}" wire:navigate class="text-accent dark:text-brand-300 font-semibold hover:underline ml-1">
                     {{ __('Create account') }}
                 </a>
             </div>

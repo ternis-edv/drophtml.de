@@ -12,12 +12,12 @@
             <flux:avatar
                 :name="auth()->user()->name"
                 :initials="auth()->user()->initials()"
-                class="size-9 ring-2 ring-indigo-500/30"
+                class="size-9 ring-2 ring-accent/30"
             />
             <div class="grid flex-1 text-start text-sm leading-tight min-w-0">
                 <div class="flex items-center justify-between gap-1">
                     <flux:heading class="truncate font-bold text-zinc-900 dark:text-zinc-100">{{ auth()->user()->name }}</flux:heading>
-                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">Free</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-accent/10 text-accent dark:text-brand-300 border border-accent/20">Free</span>
                 </div>
                 <flux:text class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ auth()->user()->email }}</flux:text>
             </div>

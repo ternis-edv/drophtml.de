@@ -8,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/css/app.css', 'resources/css/landing.css', 'resources/js/app.js', 'resources/css/editor.css', 'resources/css/site-workspace.css', 'resources/js/editor.js'],
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
@@ -18,6 +18,12 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    css: {
+        // Flatten native CSS nesting (landing.css) in dev as well, so the dev
+        // server serves the same output as the production build instead of raw
+        // nested syntax that older browsers drop entirely.
+        transformer: 'lightningcss',
+    },
     server: {
         cors: true,
         watch: {

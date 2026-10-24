@@ -188,3 +188,15 @@ test('generates correct HTML and Markdown tags for different media types', funct
     expect($pdfAsset->html_tag)->toContain('<a href=')
         ->and($pdfAsset->isPdf())->toBeTrue();
 });
+
+it('escapes special filenames and URLs in portable embed snippets', function () {
+    $asset = new MediaAsset([
+        'original_name' => 'A [draft] "image".png',
+        'public_url' => 'https://cdn.example.test/a (draft).png?x=1&y=2',
+        'file_type' => 'image',
+    ]);
+    expect($asset->html_tag)
+        ->toContain('alt="A [draft] &quot;image&quot;.png"')
+        ->toContain('?x=1&amp;y=2');
+    expect($asset->markdown_tag)->toBe('![A \\[draft\\] "image".png](<https://cdn.example.test/a%20(draft).png?x=1&y=2>)');
+});

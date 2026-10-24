@@ -95,28 +95,33 @@ new class extends Component
             x-transition:leave="ease-in duration-150"
             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
             x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-            class="mx-auto w-full max-w-2xl transform divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl ring-1 ring-zinc-200/80 dark:ring-zinc-700/60 transition-all"
+            class="mx-auto w-full max-w-2xl transform divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-xl ring-1 ring-zinc-200/80 dark:ring-zinc-700/60 transition-all"
         >
             <!-- Search Input Header -->
             <div class="relative flex items-center px-4 py-3 sm:px-6">
-                <flux:icon.magnifying-glass class="pointer-events-none size-5 text-indigo-500 shrink-0" />
+                <flux:icon.magnifying-glass class="pointer-events-none size-5 text-accent shrink-0" />
                 <input 
                     type="text" 
                     x-ref="commandInput"
                     wire:model.live.debounce.150ms="search"
                     placeholder="Type a command or search sites..."
+                    aria-label="{{ __('Search sites and commands') }}"
+                    role="combobox"
+                    aria-expanded="true"
+                    aria-controls="command-palette-results"
                     class="h-11 w-full border-0 bg-transparent pl-3.5 pr-10 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-hidden focus:ring-0"
                 />
                 <button 
                     type="button" 
                     @click="close()"
+                    aria-label="{{ __('Close command palette') }}"
                     class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-md cursor-pointer"
                 >
                     <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">ESC</kbd>
                 </button>
             </div>
 
-            <div class="max-h-96 scroll-py-2 overflow-y-auto p-3 text-sm text-zinc-700 dark:text-zinc-300 divide-y divide-zinc-100 dark:divide-zinc-800/60 custom-scrollbar">
+            <div id="command-palette-results" class="max-h-96 scroll-py-2 overflow-y-auto p-3 text-sm text-zinc-700 dark:text-zinc-300 divide-y divide-zinc-100 dark:divide-zinc-800/60 custom-scrollbar">
                 <!-- Matching Sites Section -->
                 @if($matchedSites->isNotEmpty())
                     <div class="py-2">
@@ -135,19 +140,19 @@ new class extends Component
                                     </a>
 
                                     <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
-                                        <a href="{{ url('/s/' . $site->slug) }}" target="_blank" class="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" title="Live Site">
+                                        <a href="{{ url('/s/' . $site->slug) }}" target="_blank" rel="noopener" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Live Site" aria-label="{{ __('Open live site') }}">
                                             <flux:icon.arrow-top-right-on-square class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.edit', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" title="Code Editor">
+                                        <a href="{{ route('dashboard.sites.edit', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Code Editor">
                                             <flux:icon.pencil-square class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.stats', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" title="Analytics">
+                                        <a href="{{ route('dashboard.sites.stats', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Analytics">
                                             <flux:icon.chart-bar-square class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.deployments', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" title="Deployments">
+                                        <a href="{{ route('dashboard.sites.deployments', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Deployments">
                                             <flux:icon.archive-box class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.settings', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" title="Settings">
+                                        <a href="{{ route('dashboard.sites.settings', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Settings">
                                             <flux:icon.cog class="size-3.5" />
                                         </a>
                                     </div>
@@ -164,43 +169,43 @@ new class extends Component
                     </div>
                     <div class="space-y-0.5">
                         <a href="{{ route('dashboard.sites.upload') }}" wire:navigate @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                            <flux:icon.arrow-up-tray class="size-4 text-indigo-500" />
+                            <flux:icon.arrow-up-tray class="size-4 text-accent dark:text-brand-300" />
                             <span class="flex-1 font-medium text-xs">Deploy / Upload New Site</span>
                             <kbd class="text-[10px] text-zinc-400 font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Upload</kbd>
                         </a>
 
                         <a href="{{ route('dashboard.media') }}" wire:navigate @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                            <flux:icon.photo class="size-4 text-cyan-500" />
+                            <flux:icon.photo class="size-4 text-accent dark:text-brand-300" />
                             <span class="flex-1 font-medium text-xs">Cloud Media Storage</span>
                             <kbd class="text-[10px] text-zinc-400 font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Media</kbd>
                         </a>
 
                         <a href="{{ route('dashboard') }}" wire:navigate @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                            <flux:icon.home class="size-4 text-zinc-500" />
+                            <flux:icon.home class="size-4 text-accent dark:text-brand-300" />
                             <span class="flex-1 font-medium text-xs">Sites Overview Dashboard</span>
                             <kbd class="text-[10px] text-zinc-400 font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Home</kbd>
                         </a>
 
                         <a href="{{ route('dashboard.activity') }}" wire:navigate @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                            <flux:icon.clipboard-document-list class="size-4 text-emerald-500" />
+                            <flux:icon.clipboard-document-list class="size-4 text-accent dark:text-brand-300" />
                             <span class="flex-1 font-medium text-xs">Platform Activity Log</span>
                             <kbd class="text-[10px] text-zinc-400 font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Logs</kbd>
                         </a>
 
                         <a href="{{ route('profile.edit') }}" wire:navigate @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                            <flux:icon.cog class="size-4 text-purple-500" />
+                            <flux:icon.cog class="size-4 text-accent dark:text-brand-300" />
                             <span class="flex-1 font-medium text-xs">Account Settings & API Tokens</span>
                             <kbd class="text-[10px] text-zinc-400 font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">API</kbd>
                         </a>
 
                         <a href="/docs/api" @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                            <flux:icon.document-text class="size-4 text-amber-500" />
+                            <flux:icon.document-text class="size-4 text-accent dark:text-brand-300" />
                             <span class="flex-1 font-medium text-xs">REST API Documentation</span>
                             <flux:icon.arrow-top-right-on-square class="size-3 text-zinc-400" />
                         </a>
 
                         <a href="https://github.com/ternis-edv/drophtml.de" target="_blank" @click="close()" class="flex items-center gap-3 rounded-xl px-3 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                            <flux:icon.folder-git-2 class="size-4 text-zinc-500" />
+                            <flux:icon.folder-git-2 class="size-4 text-accent dark:text-brand-300" />
                             <span class="flex-1 font-medium text-xs">GitHub Repository</span>
                             <flux:icon.arrow-top-right-on-square class="size-3 text-zinc-400" />
                         </a>
@@ -218,7 +223,7 @@ new class extends Component
                             @click="$flux.appearance = 'light'; close()" 
                             class="flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                         >
-                            <flux:icon.sun class="size-3.5 text-amber-500" />
+                            <flux:icon.sun class="size-3.5 text-zinc-400 dark:text-zinc-500" />
                             <span>Light</span>
                         </button>
 
@@ -227,7 +232,7 @@ new class extends Component
                             @click="$flux.appearance = 'dark'; close()" 
                             class="flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                         >
-                            <flux:icon.moon class="size-3.5 text-indigo-400" />
+                            <flux:icon.moon class="size-3.5 text-accent dark:text-brand-300" />
                             <span>Dark</span>
                         </button>
 

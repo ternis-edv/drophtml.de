@@ -84,7 +84,7 @@ new class extends Component
     deviceChart: null,
     hourlyChart: null,
     isDark() {
-        return document.documentElement.classList.contains('dark');
+        return document.body.classList.contains('dark') || document.documentElement.classList.contains('dark');
     },
     init() {
         this.$nextTick(() => {
@@ -130,8 +130,8 @@ new class extends Component
     buildCharts() {
         if (typeof Chart === 'undefined') return;
         const dark = this.isDark();
-        const tickColor = dark ? '#a1a1aa' : '#71717a';
-        const gridColor = dark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)';
+        const tickColor = dark ? '#9aa1b2' : '#6e7587';
+        const gridColor = dark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(23, 25, 35, 0.05)';
 
         // Traffic Line Chart
         if (this.$refs.trafficChart) {
@@ -139,12 +139,12 @@ new class extends Component
             const ctx = this.$refs.trafficChart.getContext('2d');
             
             const indigoGradient = ctx.createLinearGradient(0, 0, 0, 260);
-            indigoGradient.addColorStop(0, dark ? 'rgba(99, 102, 241, 0.35)' : 'rgba(99, 102, 241, 0.2)');
+            indigoGradient.addColorStop(0, dark ? 'rgba(99, 102, 241, 0.35)' : 'rgba(79, 70, 229, 0.18)');
             indigoGradient.addColorStop(1, 'rgba(99, 102, 241, 0.00)');
 
-            const emeraldGradient = ctx.createLinearGradient(0, 0, 0, 260);
-            emeraldGradient.addColorStop(0, dark ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.18)');
-            emeraldGradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+            const periwinkleGradient = ctx.createLinearGradient(0, 0, 0, 260);
+            periwinkleGradient.addColorStop(0, dark ? 'rgba(165, 180, 252, 0.28)' : 'rgba(129, 140, 248, 0.16)');
+            periwinkleGradient.addColorStop(1, 'rgba(165, 180, 252, 0.00)');
 
             this.trafficChart = new Chart(this.$refs.trafficChart, {
                 type: 'line',
@@ -154,13 +154,13 @@ new class extends Component
                         {
                             label: 'Page Views',
                             data: this.$wire.chartData.views || [],
-                            borderColor: '#6366f1',
+                            borderColor: dark ? '#6366f1' : '#4f46e5',
                             backgroundColor: indigoGradient,
                             fill: true,
                             tension: 0.35,
                             borderWidth: 2.5,
-                            pointBackgroundColor: '#6366f1',
-                            pointBorderColor: dark ? '#18181b' : '#ffffff',
+                            pointBackgroundColor: dark ? '#6366f1' : '#4f46e5',
+                            pointBorderColor: dark ? '#171923' : '#ffffff',
                             pointBorderWidth: 2,
                             pointRadius: 3.5,
                             pointHoverRadius: 6
@@ -168,13 +168,13 @@ new class extends Component
                         {
                             label: 'Unique Visitors',
                             data: this.$wire.chartData.uniques || [],
-                            borderColor: '#10b981',
-                            backgroundColor: emeraldGradient,
+                            borderColor: dark ? '#a5b4fc' : '#818cf8',
+                            backgroundColor: periwinkleGradient,
                             fill: true,
                             tension: 0.35,
                             borderWidth: 2.5,
-                            pointBackgroundColor: '#10b981',
-                            pointBorderColor: dark ? '#18181b' : '#ffffff',
+                            pointBackgroundColor: dark ? '#a5b4fc' : '#818cf8',
+                            pointBorderColor: dark ? '#171923' : '#ffffff',
                             pointBorderWidth: 2,
                             pointRadius: 3.5,
                             pointHoverRadius: 6
@@ -206,10 +206,10 @@ new class extends Component
                             padding: 10,
                             boxPadding: 4,
                             usePointStyle: true,
-                            backgroundColor: dark ? '#18181b' : '#ffffff',
-                            titleColor: dark ? '#ffffff' : '#18181b',
-                            bodyColor: dark ? '#d4d4d8' : '#3f3f46',
-                            borderColor: dark ? '#27272a' : '#e4e4e7',
+                            backgroundColor: dark ? '#171923' : '#ffffff',
+                            titleColor: dark ? '#ffffff' : '#171923',
+                            bodyColor: dark ? '#c9ccd8' : '#3f4553',
+                            borderColor: dark ? '#282c38' : '#e3e5ec',
                             borderWidth: 1
                         }
                     },
@@ -237,9 +237,9 @@ new class extends Component
                     labels: this.$wire.deviceData.labels || [],
                     datasets: [{
                         data: this.$wire.deviceData.data || [],
-                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6'],
+                        backgroundColor: ['#4f46e5', '#818cf8', '#a5b4fc', '#c7d2fe'],
                         borderWidth: 2,
-                        borderColor: dark ? '#18181b' : '#ffffff',
+                        borderColor: dark ? '#171923' : '#ffffff',
                         hoverOffset: 6
                     }]
                 },
@@ -325,19 +325,22 @@ new class extends Component
 
         <div class="flex flex-wrap items-center gap-2.5">
             <!-- Period Filters -->
-            <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80">
-                <button wire:click="setPeriod(1)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $period === 1 ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">24h</button>
-                <button wire:click="setPeriod(7)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $period === 7 ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">7d</button>
-                <button wire:click="setPeriod(14)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $period === 14 ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">14d</button>
-                <button wire:click="setPeriod(30)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $period === 30 ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">30d</button>
-                <button wire:click="setPeriod(90)" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $period === 90 ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">90d</button>
+            <div class="pill-group" role="group" aria-label="Time period">
+                @foreach ([1 => '24h', 7 => '7d', 14 => '14d', 30 => '30d', 90 => '90d'] as $days => $label)
+                    <button
+                        type="button"
+                        wire:click="setPeriod({{ $days }})"
+                        aria-pressed="{{ $period === $days ? 'true' : 'false' }}"
+                        @class(['pill', 'is-active' => $period === $days])
+                    >{{ $label }}</button>
+                @endforeach
             </div>
 
             <!-- Bot Filter Toggle -->
             <button 
                 type="button"
                 wire:click="toggleBots" 
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition-colors cursor-pointer {{ $includeBots ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/40 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition-colors duration-150 cursor-pointer {{ $includeBots ? 'bg-accent/[0.08] border-accent/30 text-accent' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700' }}"
                 title="Toggle crawler bot requests"
             >
                 <flux:icon.cpu-chip class="size-3.5" />
@@ -349,7 +352,7 @@ new class extends Component
                 href="{{ route('dashboard.sites.stats.export', ['site' => $site->id, 'days' => $period]) }}" 
                 target="_blank" 
                 download 
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 transition-colors shadow-xs cursor-pointer"
+                class="btn-secondary px-3 py-1.5 text-xs"
             >
                 <flux:icon.arrow-down-tray class="size-3.5" />
                 <span>Export CSV</span>
@@ -358,17 +361,17 @@ new class extends Component
     </div>
 
     <!-- Quick Stats Metric Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <!-- Total Page Views -->
-        <div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
-                <span>Total Page Views</span>
-                <span class="inline-flex items-center gap-0.5 text-xs font-semibold {{ $overview['views_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['views_growth'] < 0 ? 'rotate-180 text-rose-500' : '' }}" />
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 0">
+            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+                <span class="uppercase tracking-wider">Total Page Views</span>
+                <span class="inline-flex items-center gap-0.5 text-xs font-semibold normal-case tracking-normal {{ $overview['views_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['views_growth'] < 0 ? 'rotate-180 text-red-500' : '' }}" />
                     {{ $overview['views_growth'] >= 0 ? '+' : '' }}{{ $overview['views_growth'] }}%
                 </span>
             </div>
-            <div class="text-3xl font-black tracking-tight text-indigo-600 dark:text-indigo-400">
+            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {{ number_format($overview['total_views']) }}
             </div>
             <div class="text-xs text-zinc-400 mt-2 font-mono">
@@ -377,15 +380,15 @@ new class extends Component
         </div>
 
         <!-- Unique Visitors -->
-        <div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
-                <span>Unique Visitors</span>
-                <span class="inline-flex items-center gap-0.5 text-xs font-semibold {{ $overview['visitors_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['visitors_growth'] < 0 ? 'rotate-180 text-rose-500' : '' }}" />
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 1">
+            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+                <span class="uppercase tracking-wider">Unique Visitors</span>
+                <span class="inline-flex items-center gap-0.5 text-xs font-semibold normal-case tracking-normal {{ $overview['visitors_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['visitors_growth'] < 0 ? 'rotate-180 text-red-500' : '' }}" />
                     {{ $overview['visitors_growth'] >= 0 ? '+' : '' }}{{ $overview['visitors_growth'] }}%
                 </span>
             </div>
-            <div class="text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">
+            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {{ number_format($overview['unique_visitors']) }}
             </div>
             <div class="text-xs text-zinc-400 mt-2 font-mono">
@@ -394,12 +397,12 @@ new class extends Component
         </div>
 
         <!-- Views Per Visitor -->
-        <div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
-                <span>Views / Visitor</span>
-                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400">Depth</span>
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 2">
+            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+                <span class="uppercase tracking-wider">Views / Visitor</span>
+                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">Depth</span>
             </div>
-            <div class="text-3xl font-black tracking-tight text-purple-600 dark:text-purple-400">
+            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {{ $overview['views_per_visitor'] }}
             </div>
             <div class="text-xs text-zinc-400 mt-2 font-mono">
@@ -408,12 +411,12 @@ new class extends Component
         </div>
 
         <!-- Redirect Hits & Conversion -->
-        <div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
-                <span>Redirect Hits</span>
-                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-400">Routing</span>
+        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 3">
+            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+                <span class="uppercase tracking-wider">Redirect Hits</span>
+                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">Routing</span>
             </div>
-            <div class="text-3xl font-black tracking-tight text-cyan-600 dark:text-cyan-400">
+            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {{ number_format($overview['redirect_hits'] ?? 0) }}
             </div>
             <div class="text-xs text-zinc-400 mt-2 font-mono">
@@ -423,58 +426,76 @@ new class extends Component
     </div>
 
     <!-- Tabbed Navigation -->
-    <div class="flex items-center space-x-1 sm:space-x-2 border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-6 overflow-x-auto">
+    <div class="pill-group mb-6" role="tablist" aria-label="Analytics views">
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('traffic')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'traffic' ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'traffic' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'traffic'])
         >
-            <flux:icon.chart-bar class="size-4" />
-            <span>Traffic & Trends</span>
+            <flux:icon.chart-bar class="size-3.5" />
+            <span>Traffic &amp; Trends</span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('pages')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'pages' ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'pages' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'pages'])
         >
-            <flux:icon.document-text class="size-4" />
-            <span>Pages & Broken Links</span>
+            <flux:icon.document-text class="size-3.5" />
+            <span>Pages &amp; Broken Links</span>
             @if(($overview['not_found_hits'] ?? 0) > 0)
-                <span class="size-2 rounded-full bg-rose-500"></span>
+                <span class="size-1.5 rounded-full bg-red-500" aria-label="Broken links detected"></span>
             @endif
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('sources')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'sources' ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'sources' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'sources'])
         >
-            <flux:icon.arrow-path-rounded-square class="size-4" />
-            <span>Sources & Campaigns</span>
+            <flux:icon.arrow-path-rounded-square class="size-3.5" />
+            <span>Sources &amp; Campaigns</span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('locations')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'locations' ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'locations' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'locations'])
         >
-            <flux:icon.globe-alt class="size-4" />
-            <span>Locations & Tech</span>
+            <flux:icon.globe-alt class="size-3.5" />
+            <span>Locations &amp; Tech</span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('redirects')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'redirects' ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'redirects' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'redirects'])
         >
-            <flux:icon.arrows-right-left class="size-4" />
+            <flux:icon.arrows-right-left class="size-3.5" />
             <span>Redirects Telemetry</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-200">
                 {{ $overview['redirect_hits'] ?? 0 }}
             </span>
         </button>
 
         <button 
+            type="button"
+            role="tab"
             wire:click="setTab('activity')" 
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap {{ $activeTab === 'activity' ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+            aria-selected="{{ $activeTab === 'activity' ? 'true' : 'false' }}"
+            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'activity'])
         >
-            <flux:icon.bolt class="size-4" />
+            <flux:icon.bolt class="size-3.5" />
             <span>Live Stream</span>
         </button>
     </div>
@@ -484,11 +505,11 @@ new class extends Component
         <div class="space-y-6">
             <!-- Line & Doughnut Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass-card rounded-2xl p-5 lg:col-span-2">
+                <div class="panel p-5 rise-in lg:col-span-2" style="--i: 4">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                <flux:icon.chart-bar class="size-4 text-indigo-500" />
+                                <flux:icon.chart-bar class="size-4 text-accent" />
                                 Traffic Timeline
                             </h3>
                             <p class="text-xs text-zinc-500 mt-0.5">Page views and unique visitors over the last {{ $period === 1 ? '24 hours' : "{$period} days" }}</p>
@@ -499,11 +520,11 @@ new class extends Component
                     </div>
                 </div>
 
-                <div class="glass-card rounded-2xl p-5">
+                <div class="panel p-5 rise-in">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                <flux:icon.computer-desktop class="size-4 text-emerald-500" />
+                                <flux:icon.computer-desktop class="size-4 text-accent" />
                                 Device Breakdown
                             </h3>
                             <p class="text-xs text-zinc-500 mt-0.5">Distribution across hardware types</p>
@@ -516,11 +537,11 @@ new class extends Component
             </div>
 
             <!-- Peak Activity Hours Bar Chart -->
-            <div class="glass-card rounded-2xl p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.clock class="size-4 text-amber-500" />
+                            <flux:icon.clock class="size-4 text-accent" />
                             Visitor Peak Timing (24-Hour Distribution)
                         </h3>
                         <p class="text-xs text-zinc-500 mt-0.5">Traffic pattern by hour of the day (UTC)</p>
@@ -537,11 +558,11 @@ new class extends Component
     @if($activeTab === 'pages')
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Top Visited Pages -->
-            <div class="glass-card rounded-2xl p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.document-text class="size-4 text-indigo-500" />
+                            <flux:icon.document-text class="size-4 text-accent" />
                             Top Visited Pages
                         </h3>
                         <p class="text-xs text-zinc-500 mt-0.5">Most frequented paths and documents</p>
@@ -590,16 +611,16 @@ new class extends Component
             </div>
 
             <!-- Broken Links / 404 Requests with 1-Click Redirect -->
-            <div class="glass-card rounded-2xl p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.exclamation-triangle class="size-4 text-rose-500" />
+                            <flux:icon.exclamation-triangle class="size-4 text-red-500" />
                             Broken Links (404s Detected)
                         </h3>
                         <p class="text-xs text-zinc-500 mt-0.5">Missing paths requested by visitors; create a redirect to fix them</p>
                     </div>
-                    <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg {{ count($brokenLinks) > 0 ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }}">
+                    <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg {{ count($brokenLinks) > 0 ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }}">
                         {{ count($brokenLinks) }} Missing
                     </span>
                 </div>
@@ -617,7 +638,7 @@ new class extends Component
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                             @forelse($brokenLinks as $link)
                                 <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                    <td class="py-2.5 font-mono text-xs text-rose-600 dark:text-rose-400 truncate max-w-xs">
+                                    <td class="py-2.5 font-mono text-xs text-red-600 dark:text-red-400 truncate max-w-xs">
                                         {{ $link['path'] }}
                                     </td>
                                     <td class="py-2.5 text-right font-semibold text-zinc-700 dark:text-zinc-300 font-mono">
@@ -629,7 +650,7 @@ new class extends Component
                                     <td class="py-2.5 text-right">
                                         <a 
                                             href="{{ route('dashboard.sites.redirects', $site) }}" 
-                                            class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-md hover:underline cursor-pointer"
+                                            class="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 bg-accent/[0.08] border border-accent/20 px-2 py-0.5 rounded-md transition-opacity duration-150 cursor-pointer"
                                         >
                                             <flux:icon.plus class="size-3" />
                                             <span>Redirect</span>
@@ -658,11 +679,11 @@ new class extends Component
     @if($activeTab === 'sources')
         <div class="space-y-6">
             <!-- Top Referrers -->
-            <div class="glass-card rounded-2xl p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.arrow-path-rounded-square class="size-4 text-purple-500" />
+                            <flux:icon.arrow-path-rounded-square class="size-4 text-accent" />
                             Inbound Traffic Sources & Channels
                         </h3>
                         <p class="text-xs text-zinc-500 mt-0.5">Where your visitors originate from</p>
@@ -695,7 +716,7 @@ new class extends Component
                                         <div class="flex items-center justify-end gap-2">
                                             <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 font-mono">{{ $ref['percentage'] }}%</span>
                                             <div class="w-14 bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                                <div class="bg-purple-600 h-1.5 rounded-full" style="width: {{ min($ref['percentage'], 100) }}%"></div>
+                                                <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($ref['percentage'], 100) }}%"></div>
                                             </div>
                                         </div>
                                     </td>
@@ -712,11 +733,11 @@ new class extends Component
 
             <!-- UTM Campaigns -->
             @if($campaigns->isNotEmpty())
-                <div class="glass-card rounded-2xl p-5">
+                <div class="panel p-5 rise-in">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                <flux:icon.tag class="size-4 text-amber-500" />
+                                <flux:icon.tag class="size-4 text-accent" />
                                 UTM Marketing Campaigns
                             </h3>
                             <p class="text-xs text-zinc-500 mt-0.5">Campaign performance tracked through query parameters</p>
@@ -759,11 +780,11 @@ new class extends Component
     @if($activeTab === 'locations')
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Countries Breakdown -->
-            <div class="glass-card rounded-2xl p-5">
+            <div class="panel p-5 rise-in">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.globe-alt class="size-4 text-emerald-500" />
+                            <flux:icon.globe-alt class="size-4 text-accent" />
                             Geographic Distribution
                         </h3>
                         <p class="text-xs text-zinc-500 mt-0.5">Visitor traffic by country of origin</p>
@@ -782,7 +803,7 @@ new class extends Component
                             <div class="flex items-center gap-3 shrink-0">
                                 <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 font-mono">{{ number_format($country['views']) }}</span>
                                 <div class="w-20 bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ min($country['percentage'], 100) }}%"></div>
+                                    <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($country['percentage'], 100) }}%"></div>
                                 </div>
                                 <span class="text-xs text-zinc-400 w-10 text-right font-mono">{{ $country['percentage'] }}%</span>
                             </div>
@@ -794,10 +815,10 @@ new class extends Component
             </div>
 
             <!-- Software Platforms & Browsers -->
-            <div class="glass-card rounded-2xl p-5">
+            <div class="panel p-5 rise-in">
                 <div class="mb-4">
                     <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <flux:icon.window class="size-4 text-amber-500" />
+                        <flux:icon.window class="size-4 text-accent" />
                         Software Environments
                     </h3>
                     <p class="text-xs text-zinc-500 mt-0.5">Browsers and operating systems used by visitors</p>
@@ -815,7 +836,7 @@ new class extends Component
                                         <span class="text-zinc-500 font-mono">{{ $b['percentage'] }}%</span>
                                     </div>
                                     <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-indigo-500 h-1.5 rounded-full" style="width: {{ min($b['percentage'], 100) }}%"></div>
+                                        <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($b['percentage'], 100) }}%"></div>
                                     </div>
                                 </div>
                             @empty
@@ -835,7 +856,7 @@ new class extends Component
                                         <span class="text-zinc-500 font-mono">{{ $os['percentage'] }}%</span>
                                     </div>
                                     <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-amber-500 h-1.5 rounded-full" style="width: {{ min($os['percentage'], 100) }}%"></div>
+                                        <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($os['percentage'], 100) }}%"></div>
                                     </div>
                                 </div>
                             @empty
@@ -850,18 +871,18 @@ new class extends Component
 
     <!-- TAB 5: REDIRECTS TELEMETRY -->
     @if($activeTab === 'redirects')
-        <div class="glass-card rounded-2xl p-5">
+        <div class="panel p-5 rise-in">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <flux:icon.arrows-right-left class="size-4 text-indigo-500" />
+                        <flux:icon.arrows-right-left class="size-4 text-accent" />
                         Redirect URL Performance &amp; Conversion
                     </h3>
                     <p class="text-xs text-zinc-500 mt-0.5">Traffic routed through configured redirect rules</p>
                 </div>
                 <a 
                     href="{{ route('dashboard.sites.redirects', $site) }}" 
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs cursor-pointer"
+                    class="btn-primary px-3 py-1.5 text-xs"
                 >
                     <flux:icon.plus class="size-3.5" />
                     <span>Manage Redirect Rules</span>
@@ -888,7 +909,7 @@ new class extends Component
                                     {{ $rp['from_path'] }}
                                 </td>
                                 <td class="py-2.5">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold {{ $rp['status_code'] === 301 ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400' }}">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-accent/[0.08] text-accent border border-accent/20">
                                         {{ $rp['status_code'] }}
                                     </span>
                                 </td>
@@ -923,11 +944,11 @@ new class extends Component
 
     <!-- TAB 6: LIVE REQUEST STREAM -->
     @if($activeTab === 'activity')
-        <div class="glass-card rounded-2xl p-5">
+        <div class="panel p-5 rise-in">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <flux:icon.bolt class="size-4 text-amber-500" />
+                        <flux:icon.bolt class="size-4 text-accent" />
                         Live Request Activity Stream
                     </h3>
                     <p class="text-xs text-zinc-500 mt-0.5">Real-time incoming visits, redirects, and 404 errors</p>
@@ -953,7 +974,7 @@ new class extends Component
                                     @if($view->is_redirect)
                                         <flux:badge size="sm" color="cyan">Redirect ({{ $view->status_code }})</flux:badge>
                                     @elseif($view->status_code === 404)
-                                        <flux:badge size="sm" color="rose">404 Error</flux:badge>
+                                        <flux:badge size="sm" color="red">404 Error</flux:badge>
                                     @elseif($view->is_bot)
                                         <flux:badge size="sm" color="amber">Bot</flux:badge>
                                     @elseif($view->is_quiet)

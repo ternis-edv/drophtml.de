@@ -8,31 +8,93 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * DropHTML design system — "Refined brand-true"
+ *
+ * Neutrals are derived from the brand Ink (#171923) and Slate (#687084):
+ * a cool, slightly blue-tinted scale that harmonises with Drop indigo.
+ * Brand colors (see docs/branding.md):
+ *   Drop indigo #4F46E5 · Periwinkle #A5B4FC · Ink #171923 · Mist #F4F3FF
+ */
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
 
-    --color-zinc-50: #fafafa;
-    --color-zinc-100: #f5f5f5;
-    --color-zinc-200: #e5e5e5;
-    --color-zinc-300: #d4d4d4;
-    --color-zinc-400: #a3a3a3;
-    --color-zinc-500: #737373;
-    --color-zinc-600: #525252;
-    --color-zinc-700: #404040;
-    --color-zinc-800: #262626;
-    --color-zinc-900: #171717;
-    --color-zinc-950: #0a0a0a;
+    /* Brand-true neutral scale (blue-tinted, derived from Ink/Slate) */
+    --color-zinc-50: #f8f9fb;
+    --color-zinc-100: #f1f2f6;
+    --color-zinc-200: #e3e5ec;
+    --color-zinc-300: #c9ccd8;
+    --color-zinc-400: #9aa1b2;
+    --color-zinc-500: #6e7587;
+    --color-zinc-600: #565d6e;
+    --color-zinc-700: #3f4553;
+    --color-zinc-800: #282c38;
+    --color-zinc-900: #171923; /* brand ink */
+    --color-zinc-950: #0d0e15;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
+    /* Brand scale (Drop indigo family) */
+    --color-brand-50: #f4f3ff;  /* brand mist */
+    --color-brand-100: #e8e7fe;
+    --color-brand-200: #c7d2fe;
+    --color-brand-300: #a5b4fc; /* brand periwinkle */
+    --color-brand-400: #818cf8;
+    --color-brand-500: #6366f1;
+    --color-brand-600: #4f46e5; /* drop indigo */
+    --color-brand-700: #4338ca;
+    --color-brand-800: #3730a3;
+    --color-brand-900: #312e81;
+    --color-brand-950: #1e1b4b;
+
+    /* Flux primary action color = Drop indigo */
+    --color-accent: #4f46e5;
+    --color-accent-content: #4f46e5;
+    --color-accent-foreground: #ffffff;
+
+    /* Refined depth — ink-tinted shadows instead of pure black */
+    --shadow-xs: 0 1px 2px rgb(23 25 35 / 0.06);
+    --shadow-sm: 0 1px 3px rgb(23 25 35 / 0.08), 0 1px 2px -1px rgb(23 25 35 / 0.06);
+    --shadow-md: 0 4px 12px -2px rgb(23 25 35 / 0.08), 0 2px 6px -2px rgb(23 25 35 / 0.05);
+    --shadow-lg: 0 12px 32px -8px rgb(23 25 35 / 0.12), 0 4px 12px -4px rgb(23 25 35 / 0.06);
+    --shadow-xl: 0 24px 48px -12px rgb(23 25 35 / 0.16), 0 8px 20px -8px rgb(23 25 35 / 0.08);
+
+    /* Motion tokens — one easing + duration scale for the whole dashboard */
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-press: 120ms;
+    --duration-swap: 180ms;
+    --duration-reveal: 280ms;
+    --duration-rise: 420ms;
+}
+
+/* Keyframes referenced by the animation tokens above (plain CSS so they are
+   always available to both utilities and component classes). */
+@keyframes dh-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes dh-rise-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes dh-pop-in {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes dh-shimmer {
+    from { background-position: 100% 50%; }
+    to { background-position: 0 50%; }
+}
+@keyframes dh-progress-stripes {
+    from { background-position: 1rem 0; }
+    to { background-position: 0 0; }
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: #6366f1;
+        --color-accent-content: #a5b4fc;
+        --color-accent-foreground: #ffffff;
     }
 }
 
@@ -44,6 +106,10 @@
     ::backdrop,
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
+    }
+
+    h1, h2, h3, h4 {
+        text-wrap: balance;
     }
 }
 
@@ -61,31 +127,278 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+/* ------------------------------------------------------------------ */
+/* Shared component utilities                                          */
+/* ------------------------------------------------------------------ */
 
+/* Primary call-to-action */
+@utility btn-primary {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl
+        bg-accent text-accent-foreground shadow-sm
+        hover:bg-accent/90 hover:shadow-md hover:-translate-y-0.5
+        active:translate-y-0 active:shadow-xs
+        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
+        transition-all duration-150 cursor-pointer;
+}
+
+/* Secondary action on a plain surface */
+@utility btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl
+        bg-white text-zinc-800 border border-zinc-200 shadow-xs
+        hover:bg-zinc-50 hover:border-zinc-300 hover:-translate-y-0.5
+        active:translate-y-0
+        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
+        transition-all duration-150 cursor-pointer
+        dark:bg-zinc-900/70 dark:text-zinc-100 dark:border-zinc-700/80 dark:hover:bg-zinc-800 dark:hover:border-zinc-600;
+}
+
+/* Section eyebrow pill — small label above every section heading */
+@utility eyebrow {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full
+        border border-accent/20 bg-accent/[0.06]
+        text-accent dark:text-accent-content
+        text-xs font-semibold uppercase tracking-wider;
+}
+
+/* Frosted surface used across marketing + app */
 @utility glass-panel {
-    background: rgba(255, 255, 255, 0.75);
+    background: rgb(255 255 255 / 0.75);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(228, 228, 231, 0.8);
+    border: 1px solid rgb(227 229 236 / 0.8);
 
     @variant dark {
-        background: rgba(18, 18, 20, 0.75);
-        border: 1px solid rgba(39, 39, 42, 0.8);
+        background: rgb(20 22 30 / 0.72);
+        border: 1px solid rgb(40 44 56 / 0.8);
     }
 }
 
 @utility glass-card {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgb(255 255 255 / 0.88);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(228, 228, 231, 0.9);
+    border: 1px solid rgb(227 229 236 / 0.9);
 
     @variant dark {
-        background: rgba(24, 24, 27, 0.7);
-        border: 1px solid rgba(39, 39, 42, 0.7);
+        background: rgb(23 25 35 / 0.7);
+        border: 1px solid rgb(40 44 56 / 0.7);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Dashboard component layer                                           */
+/*                                                                     */
+/* Shared building blocks so every dashboard screen uses the same       */
+/* surface, heading, chip, tile, meter and motion language.             */
+/* ------------------------------------------------------------------ */
+@layer components {
+
+    /* --- Surfaces ---------------------------------------------------- */
+
+    /* The one card surface: white in light, ink in dark. */
+    .panel {
+        @apply rounded-2xl border border-zinc-200 bg-white shadow-xs
+            dark:border-zinc-800 dark:bg-zinc-900/60;
+    }
+
+    /* Interactive card: raises slightly on hover, gains a focus ring when
+       a child control receives keyboard focus. */
+    .panel-interactive {
+        @apply transition-all duration-200 ease-out cursor-pointer;
+        transition-timing-function: var(--ease-out-quint);
+    }
+    .panel-interactive:hover {
+        @apply border-accent/35 shadow-md;
+        transform: translateY(-2px);
+    }
+    .panel-interactive:focus-within {
+        @apply border-accent/40;
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
+    }
+
+    /* --- Typography rhythm ------------------------------------------ */
+
+    .page-title {
+        @apply text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100;
+        text-wrap: balance;
+    }
+    .page-lede {
+        @apply text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed;
+        text-wrap: pretty;
+    }
+    .section-title {
+        @apply text-sm sm:text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100;
+    }
+    .stat-label {
+        @apply text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400;
+    }
+    .stat-value {
+        @apply text-2xl sm:text-3xl font-bold tracking-tight tabular-nums
+            text-zinc-900 dark:text-zinc-100 mt-1;
+    }
+
+    /* --- Icon tiles -------------------------------------------------- */
+
+    /* The tinted rounded square that leads headings, stats and empty states. */
+    .icon-tile {
+        @apply inline-flex size-9 shrink-0 items-center justify-center rounded-xl
+            border border-accent/20 bg-accent/10 text-accent shadow-xs;
+    }
+    .icon-tile-lg {
+        @apply size-12 rounded-2xl;
+    }
+
+    /* --- Segmented pill groups (filters, view switchers, tabs) ------- */
+
+    .pill-group {
+        @apply inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded-xl border
+            border-zinc-200 bg-zinc-100 p-1 text-xs
+            dark:border-zinc-800 dark:bg-zinc-950/60;
+        scrollbar-width: none;
+    }
+    .pill-group::-webkit-scrollbar {
+        display: none;
+    }
+    .pill {
+        @apply shrink-0 cursor-pointer rounded-lg px-3 py-1 font-semibold text-zinc-600
+            transition-colors duration-150
+            hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100;
+        &:focus-visible {
+            @apply outline-2 outline-offset-1 outline-accent;
+        }
+    }
+    .pill[aria-pressed='true'],
+    .pill.is-active {
+        @apply bg-white text-accent shadow-xs dark:bg-zinc-800 dark:text-brand-300;
+    }
+
+    /* --- Inline badge for counts ------------------------------------- */
+
+    .count-badge {
+        @apply ms-1 inline-flex min-w-4 items-center justify-center rounded-full
+            bg-accent px-1 py-0.5 text-[10px] font-bold leading-none text-white;
+    }
+
+    /* --- Meters (storage quota, link health, …) ---------------------- */
+
+    .meter {
+        @apply h-1.5 w-full overflow-hidden rounded-full bg-zinc-200/80 dark:bg-zinc-700/60;
+    }
+    .meter-lg {
+        @apply h-2;
+    }
+    .meter-fill {
+        @apply h-full rounded-full bg-accent transition-[width] duration-500;
+        transition-timing-function: var(--ease-out-expo);
+    }
+    .meter-fill.is-ok { @apply bg-emerald-500; }
+    .meter-fill.is-warn { @apply bg-amber-500; }
+    .meter-fill.is-danger { @apply bg-red-500; }
+
+    /* Indeterminate striped meter for in-flight operations. */
+    .meter.is-indeterminate .meter-fill {
+        width: 40%;
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgb(255 255 255 / 0.28) 0 6px,
+            transparent 6px 12px
+        );
+        background-size: 1rem 100%;
+        animation: dh-progress-stripes 700ms linear infinite, dh-indeterminate 1.2s var(--ease-out-expo) infinite;
+    }
+    @keyframes dh-indeterminate {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(320%); }
+    }
+
+    /* --- Skeleton loading ------------------------------------------- */
+
+    .skeleton {
+        background-color: var(--color-zinc-100);
+        background-image: linear-gradient(
+            90deg,
+            var(--color-zinc-100) 0%,
+            var(--color-zinc-200) 40%,
+            var(--color-zinc-100) 80%
+        );
+        background-size: 300% 100%;
+        animation: dh-shimmer 1.4s ease-in-out infinite;
+        @apply rounded-lg;
+    }
+    .dark .skeleton {
+        background-color: var(--color-zinc-800);
+        background-image: linear-gradient(
+            90deg,
+            var(--color-zinc-800) 0%,
+            var(--color-zinc-700) 40%,
+            var(--color-zinc-800) 80%
+        );
+    }
+
+    /* --- Entrance motion -------------------------------------------- */
+
+    /* Stagger children with style="--i: 3" (index of the child). */
+    .rise-in {
+        animation: dh-rise-in var(--duration-rise) var(--ease-out-quint) both;
+        animation-delay: calc(var(--i, 0) * 55ms);
+    }
+    .fade-in {
+        animation: dh-fade-in var(--duration-reveal) var(--ease-out-quint) both;
+    }
+    .pop-in {
+        animation: dh-pop-in var(--duration-swap) var(--ease-out-quint) both;
+    }
+
+    /* --- Sub-navigation tabs (site workspace) ------------------------ */
+
+    .subnav-tab {
+        @apply inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-transparent
+            px-3.5 py-2 text-xs font-semibold text-zinc-600 transition-colors duration-150
+            hover:bg-zinc-100 hover:text-zinc-900
+            sm:text-sm dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200;
+    }
+    .subnav-tab:focus-visible {
+        @apply outline-2 outline-offset-1 outline-accent;
+    }
+    .subnav-tab[aria-current='page'] {
+        @apply border-accent/20 bg-accent/10 text-accent shadow-xs dark:text-brand-300;
+    }
+
+    /* --- Code / command surfaces ------------------------------------ */
+
+    .code-block {
+        @apply overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-4
+            text-xs font-mono leading-relaxed text-zinc-100 sm:p-5;
+    }
+}
+
+/* Icon-only controls always show a keyboard focus ring. */
+@layer base {
+    a:focus-visible,
+    button:focus-visible,
+    [role='button']:focus-visible,
+    [role='tab']:focus-visible,
+    summary:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+        border-radius: 0.5rem;
+    }
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+        outline: none; /* Flux applies its own ring to form controls */
+    }
+}
+
+/* Motion must respect the OS preference. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }
 
@@ -98,15 +411,15 @@ select:focus[data-flux-control] {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(161, 161, 170, 0.3);
+    background: rgb(154 161 178 / 0.35);
     border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(161, 161, 170, 0.5);
+    background: rgb(154 161 178 / 0.55);
 }
 .dark ::-webkit-scrollbar-thumb {
-    background: rgba(113, 113, 122, 0.3);
+    background: rgb(63 69 83 / 0.5);
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(113, 113, 122, 0.5);
+    background: rgb(63 69 83 / 0.75);
 }

@@ -21,11 +21,11 @@ new class extends Component
 
         if ($this->actionFilter !== 'all') {
             if ($this->actionFilter === 'deploys') {
-                $query->whereIn('action', ['site_created', 'site_deployed', 'deployment_created']);
+                $query->whereIn('action', ['site_uploaded', 'site_redeployed', 'site_rollback', 'site_duplicated', 'github_deployed', 'github_auto_deployed']);
             } elseif ($this->actionFilter === 'files') {
                 $query->whereIn('action', ['file_created', 'file_edited', 'file_deleted', 'file_renamed', 'file_uploaded_to_manager']);
             } elseif ($this->actionFilter === 'domains') {
-                $query->whereIn('action', ['domain_created', 'domain_deleted', 'domain_verified']);
+                $query->whereIn('action', ['domain_added', 'domain_removed']);
             } elseif ($this->actionFilter === 'lifecycle') {
                 $query->whereIn('action', ['expiry_extended', 'site_updated', 'site_settings_updated']);
             }
@@ -48,26 +48,29 @@ new class extends Component
                 <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>Activity Log</flux:breadcrumbs.item>
             </flux:breadcrumbs>
-            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 mt-1.5 flex items-center gap-3">
-                <div class="size-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/20 shadow-2xs">
+            <h1 class="page-title mt-1.5 flex items-center gap-3">
+                <span class="icon-tile" aria-hidden="true">
                     <flux:icon.clipboard-document-list class="size-4.5" />
-                </div>
-                <span>Audit & Activity Log</span>
+                </span>
+                <span>Audit &amp; Activity Log</span>
             </h1>
         </div>
 
         <!-- Filter Pills -->
-        <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 text-xs font-semibold shrink-0">
-            <button wire:click="setFilter('all')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'all' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">All</button>
-            <button wire:click="setFilter('deploys')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'deploys' ? 'bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Deploys</button>
-            <button wire:click="setFilter('files')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'files' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Files</button>
-            <button wire:click="setFilter('domains')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'domains' ? 'bg-white dark:bg-zinc-900 text-purple-600 dark:text-purple-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Domains</button>
-            <button wire:click="setFilter('lifecycle')" class="px-3 py-1 rounded-lg transition-colors cursor-pointer {{ $actionFilter === 'lifecycle' ? 'bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-2xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100' }}">Lifecycle</button>
+        <div class="pill-group shrink-0" role="group" aria-label="Filter activity by type">
+            @foreach (['all' => 'All', 'deploys' => 'Deploys', 'files' => 'Files', 'domains' => 'Domains', 'lifecycle' => 'Lifecycle'] as $filterKey => $filterLabel)
+                <button
+                    type="button"
+                    wire:click="setFilter('{{ $filterKey }}')"
+                    aria-pressed="{{ $actionFilter === $filterKey ? 'true' : 'false' }}"
+                    @class(['pill', 'is-active' => $actionFilter === $filterKey])
+                >{{ $filterLabel }}</button>
+            @endforeach
         </div>
     </div>
 
     <!-- Activity Log List Card -->
-    <div class="glass-card rounded-3xl p-6 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+    <div class="panel p-6 rise-in" style="--i: 1">
         <div class="overflow-x-auto">
             <flux:table>
                 <flux:table.columns>
@@ -80,15 +83,16 @@ new class extends Component
 
                 <flux:table.rows>
                     @forelse ($logs as $log)
-                        <flux:table.row class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                        <flux:table.row class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors duration-150">
                             <flux:table.cell>
                                 @php
                                     $action = $log->action;
                                     $color = 'zinc';
                                     if (str_contains($action, 'create') || str_contains($action, 'deploy')) $color = 'emerald';
                                     elseif (str_contains($action, 'delete')) $color = 'red';
-                                    elseif (str_contains($action, 'domain')) $color = 'purple';
-                                    elseif (str_contains($action, 'expiry') || str_contains($action, 'update')) $color = 'amber';
+                                    elseif (str_contains($action, 'domain')) $color = 'indigo';
+                                    elseif (str_contains($action, 'expiry')) $color = 'amber';
+                                    elseif (str_contains($action, 'update')) $color = 'zinc';
                                     elseif (str_contains($action, 'file')) $color = 'indigo';
                                 @endphp
                                 <flux:badge size="sm" :color="$color" class="font-mono text-[11px]">
@@ -97,7 +101,7 @@ new class extends Component
                             </flux:table.cell>
                             <flux:table.cell>
                                 @if($log->site)
-                                    <a href="/s/{{ $log->site->slug }}" target="_blank" class="font-mono text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+                                    <a href="/s/{{ $log->site->slug }}" target="_blank" class="font-mono text-xs text-accent dark:text-accent-content hover:underline">
                                         {{ $log->site->slug }}
                                     </a>
                                 @else

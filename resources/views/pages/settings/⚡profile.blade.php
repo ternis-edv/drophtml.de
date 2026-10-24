@@ -82,18 +82,18 @@ new #[Title('Profile settings')] class extends Component {
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         @if (!auth()->user()->password_set_at)
-            <div class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 rounded-md border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+            <div class="mb-6 p-4 rounded-2xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3 shadow-xs">
                 <div class="flex items-center gap-3">
-                    <flux:icon.shield-exclamation class="w-5 h-5" />
+                    <flux:icon.shield-exclamation class="w-5 h-5 shrink-0" />
                     <p class="text-sm font-medium">{{ __('You haven\'t set a password for your account yet.') }}</p>
                 </div>
-                <flux:button :href="route('security.edit')" variant="ghost" size="sm" wire:navigate>
+                <flux:button :href="route('security.edit')" variant="ghost" size="sm" wire:navigate class="shrink-0">
                     {{ __('Set password') }}
                 </flux:button>
             </div>
         @endif
 
-        <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
+        <form wire:submit="updateProfileInformation" class="w-full space-y-6">
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 
             <div>

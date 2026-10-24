@@ -49,7 +49,7 @@ new #[Title('API Tokens')] class extends Component {
 
     <x-pages::settings.layout :heading="__('API Tokens')" :subheading="__('Manage your personal API tokens')">
 
-        <form wire:submit="createToken" class="mt-6 space-y-6">
+        <form wire:submit="createToken" class="space-y-6">
             <flux:input
                 wire:model="createTokenName"
                 :label="__('Token Name')"
@@ -66,12 +66,12 @@ new #[Title('API Tokens')] class extends Component {
         </form>
 
         @if ($plainTextToken)
-            <div class="mt-6 p-4 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs">
+            <div class="mt-6 p-4 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs">
                 <div class="flex items-center gap-2">
                     <flux:icon.check-circle class="size-4 text-emerald-600 dark:text-emerald-400" />
                     <p class="text-xs font-semibold">{{ __('Please copy your new API token now. For your security, it won\'t be shown again.') }}</p>
                 </div>
-                <div class="mt-3 flex items-center justify-between bg-white dark:bg-zinc-900 px-3 py-2 rounded-lg border border-emerald-200/80 dark:border-emerald-800/60 font-mono text-xs">
+                <div class="mt-3 flex items-center justify-between bg-white dark:bg-zinc-900 px-3 py-2 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 font-mono text-xs">
                     <code class="break-all text-emerald-900 dark:text-emerald-200">{{ $plainTextToken }}</code>
                     <button 
                         type="button" 
@@ -90,14 +90,14 @@ new #[Title('API Tokens')] class extends Component {
                 <flux:heading size="sm">{{ __('Active Tokens') }}</flux:heading>
                 <div class="mt-4 space-y-3">
                     @foreach ($tokens as $token)
-                        <div class="flex items-center justify-between p-3.5 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 rounded-xl">
+                        <div class="panel p-3.5 flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="size-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/20">
+                                <span class="icon-tile" aria-hidden="true">
                                     <flux:icon.key class="size-4" />
-                                </div>
+                                </span>
                                 <div>
-                                    <div class="font-semibold text-xs text-zinc-900 dark:text-white">{{ $token->name }}</div>
-                                    <div class="text-[11px] font-mono text-zinc-400 mt-0.5">
+                                    <div class="font-semibold text-xs tracking-tight text-zinc-900 dark:text-zinc-100">{{ $token->name }}</div>
+                                    <div class="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-0.5">
                                         @if ($token->last_used_at)
                                             {{ __('Last used') }} {{ $token->last_used_at->diffForHumans() }}
                                         @else

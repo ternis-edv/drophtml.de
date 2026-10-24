@@ -30,7 +30,7 @@
         >
             <!-- Header for OTP -->
             <div x-show="!showRecoveryInput" class="text-center space-y-1.5 mb-6">
-                <div class="inline-flex size-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-2">
+                <div class="inline-flex size-11 items-center justify-center rounded-xl bg-accent/10 text-accent dark:text-brand-300 border border-accent/20 mb-2">
                     <flux:icon.device-phone-mobile class="size-6" />
                 </div>
                 <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ __('Two-factor challenge') }}</h1>
@@ -88,7 +88,7 @@
                 <!-- Submit Button -->
                 <button 
                     type="submit" 
-                    class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+                    class="w-full py-2.5 px-4 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-sm shadow-md shadow-accent/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
                 >
                     <flux:icon.check class="size-4" />
                     <span>{{ __('Continue to Dashboard') }}</span>
@@ -99,7 +99,7 @@
                     <button 
                         type="button" 
                         @click="toggleInput()" 
-                        class="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium cursor-pointer"
+                        class="text-xs sm:text-sm text-accent dark:text-brand-300 hover:underline font-medium cursor-pointer"
                     >
                         <span x-show="!showRecoveryInput">{{ __('Use an emergency recovery code instead') }}</span>
                         <span x-show="showRecoveryInput">{{ __('Use an authentication code instead') }}</span>

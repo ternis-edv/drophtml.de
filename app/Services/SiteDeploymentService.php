@@ -100,6 +100,9 @@ class SiteDeploymentService
         $this->createDeploymentSnapshot($site, $deployment);
         $this->storageUsageService->calculateSiteStorageBytes($site);
 
+        // Automatically offload large media (images/videos) to cloud asset storage.
+        app(MediaStorageService::class)->offloadLargeAssets($site, $user);
+
         if ($user) {
             $this->activityLogService->log(
                 $user,
@@ -493,7 +496,7 @@ class SiteDeploymentService
 
                 if (Storage::disk('media')->exists($cloudSourcePath)) {
                     Storage::disk('media')->copy($cloudSourcePath, $newCloudPath);
-                    $newPublicUrl = Storage::disk('media')->url($newCloudPath);
+                    $newPublicUrl = app(MediaStorageService::class)->publicUrlFor($newCloudPath);
                 } else {
                     $newCloudPath = $cloudSourcePath;
                     $newPublicUrl = $mediaAsset->public_url;
@@ -636,6 +639,9 @@ class SiteDeploymentService
 
         $this->createDeploymentSnapshot($site, $deployment);
         $this->storageUsageService->calculateSiteStorageBytes($site);
+
+        // Automatically offload large media (images/videos) to cloud asset storage.
+        app(MediaStorageService::class)->offloadLargeAssets($site, $actor);
 
         if ($actor) {
             $this->activityLogService->log(
