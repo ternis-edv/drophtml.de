@@ -49,15 +49,20 @@
         </div>
 
         @php
-            $curlCreateSnippet = 'curl -X POST ' . url('/api/sites') . ' \\
-  -H "Authorization: Bearer YOUR_API_TOKEN" \\
-  -F "original_name=My Project" \\
-  -F "file=@dist.zip"';
+            $cliDeploySnippet = '# 1. Authenticate with your personal API token' . "\n" .
+'export DROPHTML_TOKEN="YOUR_API_TOKEN"' . "\n\n" .
+'# 2. Deploy directory, build folder or standalone file' . "\n" .
+'./scripts/drophtml deploy ./dist --name "My Project" --open';
 
-            $curlRedeploySnippet = 'curl -X POST ' . url('/api/sites/{site_id}/deploy') . ' \\
-  -H "Authorization: Bearer YOUR_API_TOKEN" \\
-  -F "file=@dist.zip" \\
-  -F "commit_message=Release v1.2.0"';
+            $curlCreateSnippet = 'curl -X POST ' . url('/api/sites') . ' \\' . "\n" .
+'  -H "Authorization: Bearer YOUR_API_TOKEN" \\' . "\n" .
+'  -F "original_name=My Project" \\' . "\n" .
+'  -F "file=@dist.zip"';
+
+            $curlRedeploySnippet = 'curl -X POST ' . url('/api/sites/{site_id}/deploy') . ' \\' . "\n" .
+'  -H "Authorization: Bearer YOUR_API_TOKEN" \\' . "\n" .
+'  -F "file=@dist.zip" \\' . "\n" .
+'  -F "commit_message=Release v1.2.0"';
 
             $githubSnippet = 'name: Deploy to DropHTML
 on:
@@ -79,28 +84,48 @@ jobs:
         @endphp
 
         <!-- Developer CLI & CI/CD Hub -->
-        <div class="panel p-6 sm:p-7 space-y-5 rise-in" style="--i: 5" x-data="{ tab: 'curl', copied: false, copyText(text) { navigator.clipboard.writeText(text); this.copied = true; setTimeout(() => this.copied = false, 2000); } }">
+        <div class="panel p-6 sm:p-7 space-y-5 rise-in" style="--i: 5" x-data="{ tab: 'cli', copied: false, copyText(text) { navigator.clipboard.writeText(text); this.copied = true; setTimeout(() => this.copied = false, 2000); } }">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <span class="icon-tile" aria-hidden="true">
                         <flux:icon.command-line class="size-5" />
                     </span>
                     <div>
-                        <h3 class="section-title">Deploy via Terminal &amp; CI/CD Pipelines</h3>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Automate static deployments with cURL or GitHub Actions CI/CD.</p>
+                        <h3 class="section-title">Deploy via CLI, Agents &amp; CI/CD Pipelines</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Automate static deployments with our developer CLI, coding agents, or GitHub Actions.</p>
                     </div>
                 </div>
 
                 <!-- Tabs -->
                 <div class="pill-group" role="tablist" aria-label="Deployment methods">
+                    <button type="button" role="tab" @click="tab = 'cli'" :aria-selected="tab === 'cli'" :class="tab === 'cli' ? 'is-active' : ''" class="pill">Agent &amp; CLI</button>
                     <button type="button" role="tab" @click="tab = 'curl'" :aria-selected="tab === 'curl'" :class="tab === 'curl' ? 'is-active' : ''" class="pill">cURL Deploy</button>
-                    <button type="button" role="tab" @click="tab = 'redeploy'" :aria-selected="tab === 'redeploy'" :class="tab === 'redeploy' ? 'is-active' : ''" class="pill">Redeploy Existing</button>
+                    <button type="button" role="tab" @click="tab = 'redeploy'" :aria-selected="tab === 'redeploy'" :class="tab === 'redeploy' ? 'is-active' : ''" class="pill">Redeploy</button>
                     <button type="button" role="tab" @click="tab = 'github'" :aria-selected="tab === 'github'" :class="tab === 'github' ? 'is-active' : ''" class="pill">GitHub Actions</button>
                 </div>
             </div>
 
+            <!-- Snippet 0: Agent & CLI -->
+            <div x-show="tab === 'cli'" class="space-y-2">
+                <div class="relative">
+                    <pre class="bg-zinc-950 text-zinc-100 p-4 sm:p-5 rounded-2xl text-xs font-mono overflow-x-auto leading-relaxed border border-zinc-800"><code>{!! $cliDeploySnippet !!}</code></pre>
+                    <button 
+                        type="button" 
+                        @click="copyText(@js($cliDeploySnippet))" 
+                        class="absolute top-3 right-3 px-3 py-1.5 text-[11px] font-semibold rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer border border-zinc-700 flex items-center gap-1.5"
+                    >
+                        <flux:icon.clipboard class="size-3" />
+                        <span x-show="!copied">Copy</span>
+                        <span x-show="copied" class="text-emerald-400" x-cloak>Copied!</span>
+                    </button>
+                </div>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                    Works seamlessly with local terminals and AI coding agents (Claude Code, Antigravity, Cursor). Learn more in <a href="{{ route('docs.agents') }}" wire:navigate class="text-accent underline underline-offset-2 font-semibold hover:opacity-80 transition-opacity duration-150">DropHTML for Agents</a>.
+                </p>
+            </div>
+
             <!-- Snippet 1: cURL Create -->
-            <div x-show="tab === 'curl'" class="space-y-2">
+            <div x-show="tab === 'curl'" class="space-y-2" x-cloak>
                 <div class="relative">
                     <pre class="bg-zinc-950 text-zinc-100 p-4 sm:p-5 rounded-2xl text-xs font-mono overflow-x-auto leading-relaxed border border-zinc-800"><code>{!! $curlCreateSnippet !!}</code></pre>
                     <button 

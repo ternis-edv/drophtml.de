@@ -408,7 +408,7 @@ new class extends Component
     </div>
 
     <!-- Main Container: Search, Filters & Content -->
-    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-5 sm:p-7">
+    <div class="panel p-5 sm:p-7">
         <!-- Filter and Search Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <!-- Search & Filter Chips -->
@@ -774,7 +774,7 @@ new class extends Component
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
-                    class="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800"
+                    class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/40"
                 >
                     <flux:table>
                         <flux:table.columns>

@@ -64,6 +64,9 @@
 
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Developer Resources')">
+                    <flux:sidebar.item icon="cpu-chip" :href="route('docs.agents')" :current="request()->routeIs('docs.agents')">
+                        {{ __('DropHTML for Agents') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="document-text" href="/docs/api">
                         {{ __('API Documentation') }}
                     </flux:sidebar.item>

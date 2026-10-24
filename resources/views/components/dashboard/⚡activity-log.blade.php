@@ -24,6 +24,11 @@ new class extends Component
                 $query->whereIn('action', ['site_uploaded', 'site_redeployed', 'site_rollback', 'site_duplicated', 'github_deployed', 'github_auto_deployed']);
             } elseif ($this->actionFilter === 'files') {
                 $query->whereIn('action', ['file_created', 'file_edited', 'file_deleted', 'file_renamed', 'file_uploaded_to_manager']);
+            } elseif ($this->actionFilter === 'media') {
+                $query->where(function ($q) {
+                    $q->where('action', 'like', 'media_%')
+                        ->orWhere('action', 'like', '%asset%');
+                });
             } elseif ($this->actionFilter === 'domains') {
                 $query->whereIn('action', ['domain_added', 'domain_removed']);
             } elseif ($this->actionFilter === 'lifecycle') {
@@ -58,7 +63,7 @@ new class extends Component
 
         <!-- Filter Pills -->
         <div class="pill-group shrink-0" role="group" aria-label="Filter activity by type">
-            @foreach (['all' => 'All', 'deploys' => 'Deploys', 'files' => 'Files', 'domains' => 'Domains', 'lifecycle' => 'Lifecycle'] as $filterKey => $filterLabel)
+            @foreach (['all' => 'All', 'deploys' => 'Deploys', 'files' => 'Files', 'media' => 'Media', 'domains' => 'Domains', 'lifecycle' => 'Lifecycle'] as $filterKey => $filterLabel)
                 <button
                     type="button"
                     wire:click="setFilter('{{ $filterKey }}')"
@@ -90,6 +95,7 @@ new class extends Component
                                     $color = 'zinc';
                                     if (str_contains($action, 'create') || str_contains($action, 'deploy')) $color = 'emerald';
                                     elseif (str_contains($action, 'delete')) $color = 'red';
+                                    elseif (str_contains($action, 'media')) $color = 'sky';
                                     elseif (str_contains($action, 'domain')) $color = 'indigo';
                                     elseif (str_contains($action, 'expiry')) $color = 'amber';
                                     elseif (str_contains($action, 'update')) $color = 'zinc';
