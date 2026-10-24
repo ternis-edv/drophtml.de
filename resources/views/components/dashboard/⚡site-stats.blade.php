@@ -84,7 +84,7 @@ new class extends Component
     deviceChart: null,
     hourlyChart: null,
     isDark() {
-        return document.documentElement.classList.contains('dark');
+        return document.body.classList.contains('dark') || document.documentElement.classList.contains('dark');
     },
     init() {
         this.$nextTick(() => {

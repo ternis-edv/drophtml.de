@@ -5,6 +5,7 @@
         <div class="studio-project"><span class="studio-project-name">{{ $site->original_name ?: $site->slug }}</span><span class="studio-label">Code Studio</span></div>
         <div class="studio-header-actions">
             <span class="studio-save-state" role="status"><i :class="{ 'is-dirty': dirty }"></i><span x-text="saving ? 'Saving…' : (dirty ? 'Unsaved changes' : 'All changes saved')"></span></span>
+            <a class="studio-button studio-visit" href="{{ route('dashboard.sites.media', $site) }}" @click="if (!canLeave()) $event.preventDefault()"><flux:icon.photo />Media library</a>
             <a class="studio-button studio-visit" href="{{ url('/s/'.$site->slug.'/') }}" target="_blank" rel="noopener">Visit site <flux:icon.arrow-top-right-on-square /></a>
             <button class="studio-button studio-button-primary" type="button" @click="save()" :disabled="saving || !$wire.currentFile || $wire.isBinary"><flux:icon.arrow-up-tray /><span x-text="saving ? 'Saving…' : 'Save changes'"></span></button>
         </div>
@@ -53,10 +54,11 @@
                 <div class="studio-media-tools"><p>Reusable assets, served from the cloud.</p><button class="studio-button" @click="$refs.cloudUpload.click()"><flux:icon.plus />Upload media</button><input type="file" class="hidden" x-ref="cloudUpload" wire:model="cloudUploadFile" aria-label="Upload cloud media" /></div>
                 <div class="studio-file-list studio-assets">
                     @forelse($cloudAssets as $asset)
-                        <article class="studio-asset" wire:key="asset-{{ $asset->id }}">
+                        <article class="studio-asset" x-data="mediaLibrary" wire:key="asset-{{ $asset->id }}">
                             @if($asset->isImage())<img src="{{ $asset->resolved_url }}" alt="{{ $asset->original_name }}" />@else<flux:icon.document />@endif
                             <strong title="{{ $asset->original_name }}">{{ $asset->original_name }}</strong><small>{{ $asset->formatted_size }}</small>
-                            <div><button class="studio-button" @click="$wire.insertAssetSnippet({{ \Illuminate\Support\Js::from($asset->html_tag) }})" :disabled="!$wire.currentFile || $wire.isBinary">Insert tag</button><a class="studio-icon-button" href="{{ $asset->resolved_url }}" target="_blank" rel="noopener" aria-label="Open {{ $asset->original_name }}"><flux:icon.arrow-top-right-on-square /></a></div>
+                            <div><button class="studio-button" @click="$wire.insertAssetSnippet({{ \Illuminate\Support\Js::from($asset->html_tag) }})" :disabled="!$wire.currentFile || $wire.isBinary">Insert tag</button><button class="studio-button" data-url="{{ $asset->resolved_url }}" @click="copy($el.dataset.url, 'url')" aria-label="Copy URL for {{ $asset->original_name }}"><span x-text="copied === 'url' ? 'Copied!' : 'Copy URL'"></span></button></div>
+                            <details class="studio-embed-details"><summary>HTML embed code</summary><textarea readonly x-ref="embedCode" aria-label="HTML embed for {{ $asset->original_name }}" @click="$el.select()">{{ $asset->html_tag }}</textarea><button class="studio-button" @click="copy($refs.embedCode.value, 'html')"><span x-text="copied === 'html' ? 'Copied!' : 'Copy HTML'"></span></button></details><p class="studio-copy-error" x-show="copyError" x-text="copyError" role="status"></p>
                         </article>
                     @empty
                         <div class="studio-explorer-empty"><flux:icon.cloud-arrow-up /><strong>A home for your media</strong><p>Upload images, videos, and documents, then insert them into your code.</p></div>
