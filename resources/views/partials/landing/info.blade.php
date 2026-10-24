@@ -67,6 +67,33 @@
                 </div>
                 <p>Host 4K videos, WebP images, and PDFs on dedicated high-speed cloud storage served from the edge.</p>
             </div>
+
+            <div class="lp-features__card">
+                <div class="lp-features__head">
+                    <span class="lp-features__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z" />
+                            <circle cx="9" cy="10" r="1" />
+                            <circle cx="15" cy="10" r="1" />
+                        </svg>
+                    </span>
+                    <h3>AI Agent native</h3>
+                </div>
+                <p>Official <code>SKILL.md</code> for Claude Code, Antigravity, and AI agents to deploy mockups and media. <a href="{{ route('docs.agents') }}" class="text-sky-400 underline font-medium">Agent docs &rarr;</a></p>
+            </div>
+
+            <div class="lp-features__card">
+                <div class="lp-features__head">
+                    <span class="lp-features__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="4 17 10 11 4 5" />
+                            <line x1="12" y1="19" x2="20" y2="19" />
+                        </svg>
+                    </span>
+                    <h3>Developer CLI &amp; API</h3>
+                </div>
+                <p>Full REST API with interactive OpenAPI docs and a lightweight zero-dependency CLI utility for CI/CD pipelines.</p>
+            </div>
         </div>
     </div>
 </section>

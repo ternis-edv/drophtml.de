@@ -133,6 +133,149 @@ class MediaStorageService
     }
 
     /**
+     * Store a base64 encoded media asset into either cloud Asset Storage or Site Code repository.
+     */
+    public function storeBase64(
+        string $base64Data,
+        string $originalName,
+        User $user,
+        ?Site $site = null,
+        string $storageDriver = 'asset_storage',
+        ?string $customSubdir = null
+    ): MediaAsset {
+        $mimeType = null;
+        if (preg_match('/^data:([^;]+);base64,(.+)$/s', $base64Data, $matches)) {
+            $mimeType = $matches[1];
+            $binary = base64_decode($matches[2], true);
+        } else {
+            $binary = base64_decode($base64Data, true);
+        }
+
+        if ($binary === false) {
+            throw new InvalidArgumentException('Invalid base64 payload provided.');
+        }
+
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if (! $mimeType) {
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($binary) ?: 'application/octet-stream';
+        }
+
+        if (empty($extension)) {
+            $extension = match ($mimeType) {
+                'image/png' => 'png',
+                'image/jpeg' => 'jpg',
+                'image/gif' => 'gif',
+                'image/webp' => 'webp',
+                'image/svg+xml' => 'svg',
+                'video/mp4' => 'mp4',
+                'audio/mpeg' => 'mp3',
+                'application/pdf' => 'pdf',
+                default => 'bin',
+            };
+            $originalName .= '.'.$extension;
+        }
+
+        if ($this->isDangerousExtension($extension)) {
+            throw new InvalidArgumentException("Uploading .{$extension} files is not permitted for security reasons.");
+        }
+
+        $size = strlen($binary);
+        $fileType = $this->determineFileType($mimeType, $extension);
+
+        app(StorageUsageService::class)->enforceQuota($user, $size);
+
+        $safeBase = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        if (empty($safeBase)) {
+            $safeBase = 'asset';
+        }
+        $uniqueSuffix = strtolower(Str::random(6));
+        $cleanFileName = "{$safeBase}-{$uniqueSuffix}.{$extension}";
+
+        if ($storageDriver === 'code') {
+            if (! $site) {
+                throw new InvalidArgumentException('A site must be specified to store a media file in the code repository.');
+            }
+
+            $subdir = trim($customSubdir ?: $this->defaultCodeFolder($fileType), '/');
+            $relativeSitePath = $subdir ? "{$subdir}/{$cleanFileName}" : $cleanFileName;
+            $fullDiskPath = "{$site->path}/{$relativeSitePath}";
+
+            Storage::disk('public')->put($fullDiskPath, $binary);
+
+            $publicUrl = url('/s/'.$site->slug.'/'.ltrim($relativeSitePath, '/'));
+
+            $asset = MediaAsset::create([
+                'user_id' => $user->id,
+                'site_id' => $site->id,
+                'original_name' => $originalName,
+                'path' => $fullDiskPath,
+                'disk' => 'public',
+                'storage_driver' => 'code',
+                'file_type' => $fileType,
+                'mime_type' => $mimeType,
+                'size' => $size,
+                'public_url' => $publicUrl,
+                'metadata' => [
+                    'relative_code_path' => $relativeSitePath,
+                    'folder' => $subdir,
+                    'uploaded_via' => 'base64',
+                ],
+            ]);
+
+            $this->activityLogService->log(
+                $user,
+                $site,
+                'media_uploaded_to_code',
+                "Uploaded media '{$originalName}' to site code ({$relativeSitePath})"
+            );
+
+            app(StorageUsageService::class)->calculateSiteStorageBytes($site);
+
+            return $asset;
+        }
+
+        // Default: Cloud Asset Storage (S3 / Cloudflare R2)
+        $disk = 'media';
+        $folder = $site
+            ? "sites/{$site->id}/media"
+            : "users/{$user->id}/media";
+
+        $storagePath = "{$folder}/{$cleanFileName}";
+
+        Storage::disk($disk)->put($storagePath, $binary, 'public');
+
+        $publicUrl = $this->publicUrlFor($storagePath);
+
+        $asset = MediaAsset::create([
+            'user_id' => $user->id,
+            'site_id' => $site?->id,
+            'original_name' => $originalName,
+            'path' => $storagePath,
+            'disk' => $disk,
+            'storage_driver' => 'asset_storage',
+            'file_type' => $fileType,
+            'mime_type' => $mimeType,
+            'size' => $size,
+            'public_url' => $publicUrl,
+            'metadata' => [
+                'provider' => $this->getActiveStorageProvider(),
+                'uploaded_via' => 'base64',
+            ],
+        ]);
+
+        $this->activityLogService->log(
+            $user,
+            $site,
+            'media_uploaded_to_asset_storage',
+            "Uploaded media '{$originalName}' to cloud Asset Storage ({$this->getActiveStorageProvider()})"
+        );
+
+        return $asset;
+    }
+
+    /**
      * Delete a media asset and remove its physical file.
      */
     public function delete(MediaAsset $asset, ?User $actor = null): bool

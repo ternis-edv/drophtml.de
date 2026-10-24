@@ -25,6 +25,10 @@ class StoreSiteRequest extends FormRequest
         return [
             'original_name' => ['required', 'string', 'max:255'],
             'file' => ['nullable', 'file', 'max:51200'], // Max 50MB
+            'html' => ['nullable', 'string'],
+            'content' => ['nullable', 'string'],
+            'files' => ['nullable', 'array'],
+            'custom_slug' => ['nullable', 'string', 'max:64', 'alpha_dash'],
             'github_repo' => ['nullable', 'string', 'max:255'],
             'github_repo_full_name' => ['nullable', 'string', 'max:255'],
             'github_branch' => ['nullable', 'string', 'max:255'],

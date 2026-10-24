@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AgentSkillController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\Auth\TernisAuthController;
 use App\Http\Controllers\SiteController;
@@ -58,6 +59,7 @@ Route::domain($appDomain)->group(function () {
         $pages = [
             ['loc' => route('home'), 'priority' => '1.0'],
             ['loc' => url('/docs/api'), 'priority' => '0.5'],
+            ['loc' => url('/docs/agents'), 'priority' => '0.8'],
             ['loc' => route('legal.show', ['page' => 'privacy']), 'priority' => '0.3'],
             ['loc' => route('legal.show', ['page' => 'terms']), 'priority' => '0.3'],
             ['loc' => route('legal.show', ['page' => 'imprint']), 'priority' => '0.3'],
@@ -67,6 +69,11 @@ Route::domain($appDomain)->group(function () {
             ->view('pages.sitemap', ['pages' => $pages])
             ->header('Content-Type', 'application/xml; charset=UTF-8');
     })->name('sitemap');
+
+    // DropHTML for Agents & Agent Skill standard endpoints
+    Route::get('/skills/drophtml/SKILL.md', [AgentSkillController::class, 'show'])->name('skills.drophtml');
+    Route::get('/.well-known/agent-skills/drophtml/SKILL.md', [AgentSkillController::class, 'show'])->name('skills.drophtml.well-known');
+    Route::get('/docs/agents', [AgentSkillController::class, 'docs'])->name('docs.agents');
 
     Route::get('/s/{slug}/{path?}', [SiteController::class, 'show'])->where('path', '.*');
     Route::post('/s/{slug}/_unlock', [SiteController::class, 'unlock'])->middleware('throttle:site-unlock')->name('site.unlock');

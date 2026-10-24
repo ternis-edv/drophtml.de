@@ -1,0 +1,760 @@
+#!/usr/bin/env bash
+#
+# DropHTML CLI for Developers & AI Agents
+# Instant static site deployment and media hosting.
+#
+
+set -eo pipefail
+
+VERSION="1.0.0"
+
+# Color helpers (disabled if NO_COLOR is set or not a tty)
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+    BOLD="$(printf '\033[1m')"
+    DIM="$(printf '\033[2m')"
+    GREEN="$(printf '\033[32m')"
+    BLUE="$(printf '\033[34m')"
+    CYAN="$(printf '\033[36m')"
+    YELLOW="$(printf '\033[33m')"
+    RED="$(printf '\033[31m')"
+    RESET="$(printf '\033[0m')"
+else
+    BOLD=""
+    DIM=""
+    GREEN=""
+    BLUE=""
+    CYAN=""
+    YELLOW=""
+    RED=""
+    RESET=""
+fi
+
+show_help() {
+    cat << EOF
+${BOLD}DropHTML CLI${RESET} (v${VERSION}) — Instant static hosting & media cloud for AI Agents and Developers
+
+${BOLD}USAGE${RESET}
+    drophtml <command> [arguments] [options]
+
+${BOLD}COMMANDS${RESET}
+    ${CYAN}deploy${RESET} [path|file]            Deploy a new static website from a folder, ZIP, or single HTML file
+    ${CYAN}redeploy${RESET} <site_id> [path|file]  Redeploy/update an existing site with new code or assets
+    ${CYAN}media upload${RESET} <file>            Upload an image, video, audio, or PDF to cloud CDN or site code
+    ${CYAN}media list${RESET}                     List uploaded media assets
+    ${CYAN}sites list${RESET}                     List all deployed sites
+    ${CYAN}site get${RESET} <site_id>             Get metadata, live URL, and deployment status of a site
+    ${CYAN}site delete${RESET} <site_id>          Permanently delete a site and its files
+    ${CYAN}site download${RESET} <site_id>        Download site files as a ZIP archive
+    ${CYAN}whoami${RESET}                        Show current authenticated user and storage quota
+
+${BOLD}OPTIONS${RESET}
+    --name <title>            Site title or original name
+    --slug <custom_slug>      Custom URL slug (alphanumeric and dashes)
+    --html <string>           Deploy raw HTML content directly without local files
+    --message <commit_msg>    Deployment commit message
+    --permanent               Prevent automatic 30-day site expiration
+    --password <pass>         Password-protect the deployed site
+    --site <site_id>          Associate media upload with a specific site
+    --driver <driver>         Storage driver: 'asset_storage' (Cloud CDN) or 'code' (default: asset_storage)
+    --token <api_token>       API bearer token (overrides DROPHTML_API_TOKEN env var)
+    --base-url <url>          DropHTML instance URL (default: \$DROPHTML_BASE_URL or https://drophtml.de)
+    --json                    Output response as raw JSON
+    -h, --help                Show this help message
+    -v, --version             Show CLI version
+
+${BOLD}ENVIRONMENT VARIABLES${RESET}
+    DROPHTML_API_TOKEN        Personal API token from dashboard (/settings/api-tokens)
+    DROPHTML_BASE_URL         Base platform URL (default: https://drophtml.de)
+
+${BOLD}EXAMPLES${RESET}
+    # Deploy a folder (automatically zipped and uploaded):
+    drophtml deploy ./dist --name "My Awesome App" --permanent
+
+    # Deploy raw HTML snippet directly:
+    drophtml deploy --name "Quick Demo" --html "<h1>Hello from AI Agent!</h1>"
+
+    # Upload an image to Cloud CDN:
+    drophtml media upload ./screenshot.png
+
+    # Redeploy updated code to existing site:
+    drophtml redeploy site_abc123 ./dist --message "Updated landing hero"
+
+    # List all sites in JSON format:
+    drophtml sites list --json
+EOF
+}
+
+# -------------------------------------------------------------
+# Configuration & Helpers
+# -------------------------------------------------------------
+
+JSON_OUTPUT=false
+API_TOKEN="${DROPHTML_API_TOKEN:-${DROPHTML_KEY:-}}"
+BASE_URL="${DROPHTML_BASE_URL:-}"
+
+# Auto-detect token from local .env if not explicitly set
+if [ -z "$API_TOKEN" ] && [ -f ".env" ]; then
+    API_TOKEN=$(grep -E "^DROPHTML_API_TOKEN=" .env | cut -d '=' -f2- | tr -d '"'\'' ' || true)
+fi
+if [ -z "$API_TOKEN" ] && [ -f "$HOME/.drophtml/token" ]; then
+    API_TOKEN=$(cat "$HOME/.drophtml/token" | tr -d '\r\n ' || true)
+fi
+
+# Fallback base URL
+if [ -z "$BASE_URL" ]; then
+    if [ -n "${APP_URL:-}" ]; then
+        BASE_URL="$APP_URL"
+    elif [ -f ".env" ]; then
+        DETECTED_APP_URL=$(grep -E "^APP_URL=" .env | cut -d '=' -f2- | tr -d '"'\'' ' || true)
+        if [ -n "$DETECTED_APP_URL" ]; then
+            BASE_URL="$DETECTED_APP_URL"
+        else
+            BASE_URL="https://drophtml.de"
+        fi
+    else
+        BASE_URL="https://drophtml.de"
+    fi
+fi
+BASE_URL="${BASE_URL%/}"
+
+ensure_token() {
+    if [ -z "$API_TOKEN" ]; then
+        echo -e "${RED}Error:${RESET} DropHTML API token not found." >&2
+        echo "Please set DROPHTML_API_TOKEN environment variable or pass --token <your_token>." >&2
+        echo "You can generate an API token at: ${BASE_URL}/settings/api-tokens" >&2
+        exit 1
+    fi
+}
+
+api_request() {
+    local method="$1"
+    local endpoint="$2"
+    shift 2
+
+    local url="${BASE_URL}/api/${endpoint#/}"
+    local response
+    local http_code
+
+    response=$(curl -s -w "\n%{http_code}" -X "$method" "$url" \
+        -H "Authorization: Bearer ${API_TOKEN}" \
+        -H "Accept: application/json" \
+        "$@")
+
+    http_code=$(echo "$response" | tail -n 1)
+    body=$(echo "$response" | sed '$ d')
+
+    if [[ "$http_code" -ge 400 ]]; then
+        if [ "$JSON_OUTPUT" = true ]; then
+            echo "$body"
+        else
+            echo -e "${RED}API Error (HTTP ${http_code}):${RESET}" >&2
+            echo "$body" | python3 -m json.tool 2>/dev/null || echo "$body" >&2
+        fi
+        return 1
+    fi
+
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$body"
+    else
+        echo "$body"
+    fi
+}
+
+# -------------------------------------------------------------
+# Command implementations
+# -------------------------------------------------------------
+
+cmd_whoami() {
+    ensure_token
+    local res
+    res=$(api_request GET "user")
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        echo -e "${BOLD}${GREEN}Authenticated successfully!${RESET}"
+        python3 -c "
+import sys, json
+try:
+    d = json.loads('''$res''').get('data', {})
+    print(f'User:    {d.get(\"name\")} <{d.get(\"email\")}>')
+    print(f'ID:      {d.get(\"id\")}')
+    print(f'Sites:   {d.get(\"sites_count\", 0)}')
+except Exception:
+    print('''$res''')
+"
+    fi
+}
+
+cmd_sites_list() {
+    ensure_token
+    local res
+    res=$(api_request GET "sites")
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''').get('data', [])
+    if not data:
+        print('No sites found.')
+        sys.exit(0)
+    print(f'${BOLD}{\"SLUG\":<24} {\"PERMANENT\":<12} {\"STORAGE\":<12} {\"URL\"}${RESET}')
+    print('-' * 75)
+    for s in data:
+        perm = 'Yes' if s.get('is_permanent') else '30 days'
+        storage = s.get('formatted_storage_bytes', '0 B')
+        url = s.get('url', '')
+        slug = s.get('slug', '')
+        print(f'{slug:<24} {perm:<12} {storage:<12} {url}')
+except Exception as e:
+    print('''$res''')
+"
+    fi
+}
+
+cmd_site_get() {
+    ensure_token
+    local site_id="$1"
+    if [ -z "$site_id" ]; then
+        echo -e "${RED}Error:${RESET} Site ID or slug is required." >&2
+        exit 1
+    fi
+    local res
+    res=$(api_request GET "sites/${site_id}")
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        python3 -c "
+import sys, json
+try:
+    s = json.loads('''$res''').get('data', {})
+    print(f'${BOLD}Site:${RESET}        {s.get(\"original_name\")} ({s.get(\"slug\")})')
+    print(f'${BOLD}ID:${RESET}          {s.get(\"id\")}')
+    print(f'${BOLD}Live URL:${RESET}    ${GREEN}{s.get(\"url\")}${RESET}')
+    print(f'${BOLD}Status:${RESET}      {s.get(\"status\")} (Permanent: {s.get(\"is_permanent\")})')
+    print(f'${BOLD}Storage:${RESET}     {s.get(\"formatted_storage_bytes\", \"0 B\")}')
+    print(f'${BOLD}Views:${RESET}       {s.get(\"views_count\", 0)}')
+    if s.get('domains'):
+        print(f'${BOLD}Domains:${RESET}     ' + ', '.join([d.get('domain') for d in s.get('domains')]))
+except Exception as e:
+    print('''$res''')
+"
+    fi
+}
+
+cmd_site_delete() {
+    ensure_token
+    local site_id="$1"
+    if [ -z "$site_id" ]; then
+        echo -e "${RED}Error:${RESET} Site ID or slug is required." >&2
+        exit 1
+    fi
+    local res
+    res=$(api_request DELETE "sites/${site_id}")
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        echo -e "${GREEN}Site deleted successfully.${RESET}"
+    fi
+}
+
+cmd_site_download() {
+    ensure_token
+    local site_id="$1"
+    local output_file="${2:-${site_id}.zip}"
+    local include_media="${3:-false}"
+
+    local url="${BASE_URL}/api/sites/${site_id}/download"
+    if [ "$include_media" = "true" ]; then
+        url="${url}?include_media=1"
+    fi
+
+    echo -e "${CYAN}Downloading site archive...${RESET}"
+    curl -s -f -L -X GET "$url" \
+        -H "Authorization: Bearer ${API_TOKEN}" \
+        -o "$output_file"
+
+    echo -e "${GREEN}Saved archive to:${RESET} ${output_file}"
+}
+
+cmd_deploy() {
+    ensure_token
+
+    local target_path=""
+    local site_name=""
+    local custom_slug=""
+    local html_content=""
+    local is_permanent="false"
+    local site_password=""
+    local is_password_protected="false"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --name)
+                site_name="$2"
+                shift 2
+                ;;
+            --slug)
+                custom_slug="$2"
+                shift 2
+                ;;
+            --html)
+                html_content="$2"
+                shift 2
+                ;;
+            --permanent)
+                is_permanent="true"
+                shift
+                ;;
+            --password)
+                site_password="$2"
+                is_password_protected="true"
+                shift 2
+                ;;
+            *)
+                if [ -z "$target_path" ]; then
+                    target_path="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    # If raw HTML provided directly
+    if [ -n "$html_content" ]; then
+        if [ -z "$site_name" ]; then
+            site_name="Agent Landing Page"
+        fi
+
+        local payload
+        payload=$(python3 -c "
+import json
+print(json.dumps({
+    'original_name': '''$site_name''',
+    'html': '''$html_content''',
+    'is_permanent': ($is_permanent == 'true'),
+    'is_password_protected': ($is_password_protected == 'true'),
+    'site_password': '''$site_password''' if '''$site_password''' else None,
+    'custom_slug': '''$custom_slug''' if '''$custom_slug''' else None,
+}))
+")
+
+        local res
+        res=$(curl -s -X POST "${BASE_URL}/api/sites" \
+            -H "Authorization: Bearer ${API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            -d "$payload")
+
+        if [ "$JSON_OUTPUT" = true ]; then
+            echo "$res"
+        else
+            python3 -c "
+import json, sys
+try:
+    d = json.loads('''$res''').get('data', {})
+    print(f'${BOLD}${GREEN}✔ Site published successfully!${RESET}')
+    print(f'${BOLD}Live URL:${RESET}     ${CYAN}{d.get(\"url\")}${RESET}')
+    print(f'${BOLD}Site ID:${RESET}      {d.get(\"id\")}')
+    print(f'${BOLD}Slug:${RESET}         {d.get(\"slug\")}')
+    print(f'${BOLD}Permanent:${RESET}    {d.get(\"is_permanent\")}')
+except Exception:
+    print('''$res''')
+"
+        fi
+        return 0
+    fi
+
+    # Fallback to local path detection
+    if [ -z "$target_path" ]; then
+        if [ -f "index.html" ]; then
+            target_path="."
+        else
+            echo -e "${RED}Error:${RESET} Please provide a folder, ZIP, HTML file, or use --html." >&2
+            exit 1
+        fi
+    fi
+
+    if [ ! -e "$target_path" ]; then
+        echo -e "${RED}Error:${RESET} File or directory does not exist: $target_path" >&2
+        exit 1
+    fi
+
+    if [ -z "$site_name" ]; then
+        site_name=$(basename "$(realpath "$target_path")")
+    fi
+
+    local upload_file="$target_path"
+    local cleanup_zip=false
+
+    # If directory, package as zip
+    if [ -d "$target_path" ]; then
+        local temp_zip
+        temp_zip=$(mktemp /tmp/drophtml_upload_XXXXXX.zip)
+        (cd "$target_path" && zip -r -q "$temp_zip" . -x "*.git*" "*node_modules*" "*.DS_Store*")
+        upload_file="$temp_zip"
+        cleanup_zip=true
+    fi
+
+    local curl_args=(
+        -s
+        -X POST "${BASE_URL}/api/sites"
+        -H "Authorization: Bearer ${API_TOKEN}"
+        -H "Accept: application/json"
+        -F "file=@${upload_file}"
+        -F "original_name=${site_name}"
+        -F "is_permanent=${is_permanent}"
+    )
+
+    if [ -n "$custom_slug" ]; then
+        curl_args+=(-F "custom_slug=${custom_slug}")
+    fi
+    if [ "$is_password_protected" = "true" ]; then
+        curl_args+=(-F "is_password_protected=true" -F "site_password=${site_password}")
+    fi
+
+    local res
+    res=$(curl "${curl_args[@]}")
+
+    if [ "$cleanup_zip" = true ]; then
+        rm -f "$upload_file"
+    fi
+
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        python3 -c "
+import json, sys
+try:
+    d = json.loads('''$res''').get('data', {})
+    print(f'${BOLD}${GREEN}✔ Site published successfully!${RESET}')
+    print(f'${BOLD}Live URL:${RESET}     ${CYAN}{d.get(\"url\")}${RESET}')
+    print(f'${BOLD}Site ID:${RESET}      {d.get(\"id\")}')
+    print(f'${BOLD}Slug:${RESET}         {d.get(\"slug\")}')
+    print(f'${BOLD}Permanent:${RESET}    {d.get(\"is_permanent\")}')
+except Exception:
+    print('''$res''')
+"
+    fi
+}
+
+cmd_redeploy() {
+    ensure_token
+    local site_id="$1"
+    shift || true
+
+    if [ -z "$site_id" ]; then
+        echo -e "${RED}Error:${RESET} Site ID or slug is required for redeployment." >&2
+        exit 1
+    fi
+
+    local target_path=""
+    local commit_message="Redeployed via DropHTML CLI"
+    local html_content=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --message)
+                commit_message="$2"
+                shift 2
+                ;;
+            --html)
+                html_content="$2"
+                shift 2
+                ;;
+            *)
+                if [ -z "$target_path" ]; then
+                    target_path="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    # If raw HTML provided directly
+    if [ -n "$html_content" ]; then
+        local payload
+        payload=$(python3 -c "
+import json
+print(json.dumps({
+    'html': '''$html_content''',
+    'commit_message': '''$commit_message'''
+}))
+")
+        local res
+        res=$(curl -s -X POST "${BASE_URL}/api/sites/${site_id}/deploy" \
+            -H "Authorization: Bearer ${API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            -d "$payload")
+
+        if [ "$JSON_OUTPUT" = true ]; then
+            echo "$res"
+        else
+            echo -e "${BOLD}${GREEN}✔ Site redeployed successfully!${RESET}"
+            python3 -c "
+import json
+try:
+    d = json.loads('''$res''').get('data', {})
+    print(f'Deployment ID: {d.get(\"id\")}')
+    print(f'Commit Note:   {d.get(\"commit_message\")}')
+except Exception:
+    print('''$res''')
+"
+        fi
+        return 0
+    fi
+
+    if [ -z "$target_path" ]; then
+        if [ -f "index.html" ]; then
+            target_path="."
+        else
+            echo -e "${RED}Error:${RESET} Please provide a folder, ZIP, or HTML file to redeploy." >&2
+            exit 1
+        fi
+    fi
+
+    local upload_file="$target_path"
+    local cleanup_zip=false
+
+    if [ -d "$target_path" ]; then
+        local temp_zip
+        temp_zip=$(mktemp /tmp/drophtml_redeploy_XXXXXX.zip)
+        (cd "$target_path" && zip -r -q "$temp_zip" . -x "*.git*" "*node_modules*" "*.DS_Store*")
+        upload_file="$temp_zip"
+        cleanup_zip=true
+    fi
+
+    local res
+    res=$(curl -s -X POST "${BASE_URL}/api/sites/${site_id}/deploy" \
+        -H "Authorization: Bearer ${API_TOKEN}" \
+        -H "Accept: application/json" \
+        -F "file=@${upload_file}" \
+        -F "commit_message=${commit_message}")
+
+    if [ "$cleanup_zip" = true ]; then
+        rm -f "$upload_file"
+    fi
+
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        echo -e "${BOLD}${GREEN}✔ Site redeployed successfully!${RESET}"
+        python3 -c "
+import json
+try:
+    d = json.loads('''$res''').get('data', {})
+    print(f'Deployment ID: {d.get(\"id\")}')
+    print(f'Commit Note:   {d.get(\"commit_message\")}')
+except Exception:
+    print('''$res''')
+"
+    fi
+}
+
+cmd_media_upload() {
+    ensure_token
+    local file_path=""
+    local site_id=""
+    local storage_driver="asset_storage"
+    local custom_subdir=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --site)
+                site_id="$2"
+                shift 2
+                ;;
+            --driver)
+                storage_driver="$2"
+                shift 2
+                ;;
+            --subdir)
+                custom_subdir="$2"
+                shift 2
+                ;;
+            *)
+                if [ -z "$file_path" ]; then
+                    file_path="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [ -z "$file_path" ] || [ ! -f "$file_path" ]; then
+        echo -e "${RED}Error:${RESET} Valid file path is required to upload media." >&2
+        exit 1
+    fi
+
+    local curl_args=(
+        -s
+        -X POST "${BASE_URL}/api/media"
+        -H "Authorization: Bearer ${API_TOKEN}"
+        -H "Accept: application/json"
+        -F "file=@${file_path}"
+        -F "storage_driver=${storage_driver}"
+    )
+
+    if [ -n "$site_id" ]; then
+        curl_args+=(-F "site_id=${site_id}")
+    fi
+    if [ -n "$custom_subdir" ]; then
+        curl_args+=(-F "custom_subdir=${custom_subdir}")
+    fi
+
+    local res
+    res=$(curl "${curl_args[@]}")
+
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        python3 -c "
+import json, sys
+try:
+    d = json.loads('''$res''').get('data', {})
+    print(f'${BOLD}${GREEN}✔ Media uploaded successfully!${RESET}')
+    print(f'${BOLD}CDN URL:${RESET}      ${CYAN}{d.get(\"url\")}${RESET}')
+    print(f'${BOLD}Markdown:${RESET}     {d.get(\"markdown_tag\")}')
+    print(f'${BOLD}HTML Tag:${RESET}     {d.get(\"html_tag\")}')
+    print(f'${BOLD}Storage:${RESET}      {d.get(\"storage_driver\")} ({d.get(\"formatted_size\")})')
+except Exception:
+    print('''$res''')
+"
+    fi
+}
+
+cmd_media_list() {
+    ensure_token
+    local res
+    res=$(api_request GET "media")
+    if [ "$JSON_OUTPUT" = true ]; then
+        echo "$res"
+    else
+        python3 -c "
+import json, sys
+try:
+    data = json.loads('''$res''').get('data', [])
+    if not data:
+        print('No media assets found.')
+        sys.exit(0)
+    print(f'${BOLD}{\"NAME\":<30} {\"TYPE\":<10} {\"SIZE\":<10} {\"URL\"}${RESET}')
+    print('-' * 80)
+    for m in data:
+        print(f'{m.get(\"original_name\")[:28]:<30} {m.get(\"file_type\"):<10} {m.get(\"formatted_size\"):<10} {m.get(\"url\")}')
+except Exception:
+    print('''$res''')
+"
+    fi
+}
+
+# -------------------------------------------------------------
+# Main CLI Router
+# -------------------------------------------------------------
+
+# Parse global options first
+POSITIONAL_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --json)
+            JSON_OUTPUT=true
+            shift
+            ;;
+        --token)
+            API_TOKEN="$2"
+            shift 2
+            ;;
+        --base-url)
+            BASE_URL="${2%/}"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -v|--version)
+            echo "DropHTML CLI version ${VERSION}"
+            exit 0
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ ${#POSITIONAL_ARGS[@]} -eq 0 ]; then
+    show_help
+    exit 0
+fi
+
+set -- "${POSITIONAL_ARGS[@]}"
+COMMAND="$1"
+shift || true
+
+case "$COMMAND" in
+    whoami)
+        cmd_whoami "$@"
+        ;;
+    sites)
+        SUB_CMD="$1"
+        shift || true
+        case "$SUB_CMD" in
+            list)
+                cmd_sites_list "$@"
+                ;;
+            *)
+                cmd_sites_list "$SUB_CMD" "$@"
+                ;;
+        esac
+        ;;
+    site)
+        SUB_CMD="$1"
+        shift || true
+        case "$SUB_CMD" in
+            get|show)
+                cmd_site_get "$@"
+                ;;
+            delete|rm)
+                cmd_site_delete "$@"
+                ;;
+            download)
+                cmd_site_download "$@"
+                ;;
+            *)
+                echo -e "${RED}Unknown site command:${RESET} $SUB_CMD" >&2
+                show_help
+                exit 1
+                ;;
+        esac
+        ;;
+    deploy)
+        cmd_deploy "$@"
+        ;;
+    redeploy)
+        cmd_redeploy "$@"
+        ;;
+    media)
+        SUB_CMD="$1"
+        shift || true
+        case "$SUB_CMD" in
+            upload)
+                cmd_media_upload "$@"
+                ;;
+            list)
+                cmd_media_list "$@"
+                ;;
+            *)
+                echo -e "${RED}Unknown media command:${RESET} $SUB_CMD" >&2
+                show_help
+                exit 1
+                ;;
+        esac
+        ;;
+    *)
+        echo -e "${RED}Unknown command:${RESET} $COMMAND" >&2
+        show_help
+        exit 1
+        ;;
+esac

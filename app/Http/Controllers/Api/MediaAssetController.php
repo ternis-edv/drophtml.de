@@ -11,6 +11,7 @@ use App\Services\MediaStorageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 
 class MediaAssetController extends Controller
 {
@@ -46,6 +47,7 @@ class MediaAssetController extends Controller
 
     /**
      * Upload a new media asset to either Asset Storage (S3/R2) or Site Code.
+     * Supports multipart file upload or JSON base64 data string.
      */
     public function store(StoreMediaAssetRequest $request)
     {
@@ -62,13 +64,31 @@ class MediaAssetController extends Controller
         $storageDriver = $validated['storage_driver'] ?? 'asset_storage';
         $customSubdir = $validated['custom_subdir'] ?? null;
 
-        $asset = $this->mediaStorageService->store(
-            $request->file('file'),
-            $user,
-            $site,
-            $storageDriver,
-            $customSubdir
-        );
+        try {
+            if ($request->hasFile('file')) {
+                $asset = $this->mediaStorageService->store(
+                    $request->file('file'),
+                    $user,
+                    $site,
+                    $storageDriver,
+                    $customSubdir
+                );
+            } else {
+                $base64 = $request->input('data') ?? $request->input('content_base64');
+                $name = $request->input('name') ?? $request->input('original_name') ?? 'asset.bin';
+
+                $asset = $this->mediaStorageService->storeBase64(
+                    $base64,
+                    $name,
+                    $user,
+                    $site,
+                    $storageDriver,
+                    $customSubdir
+                );
+            }
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return (new MediaAssetResource($asset))
             ->response()
@@ -116,12 +136,16 @@ class MediaAssetController extends Controller
             $targetSite = $request->user()->sites()->findOrFail($request->input('target_site_id'));
         }
 
-        $migrated = $this->mediaStorageService->migrate(
-            $media,
-            $targetDriver,
-            $targetSite,
-            $request->user()
-        );
+        try {
+            $migrated = $this->mediaStorageService->migrate(
+                $media,
+                $targetDriver,
+                $targetSite,
+                $request->user()
+            );
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return new MediaAssetResource($migrated);
     }
