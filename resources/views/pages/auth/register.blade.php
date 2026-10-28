@@ -2,7 +2,7 @@
     <div class="flex flex-col gap-6">
         <!-- Header -->
         <div class="text-center space-y-1.5">
-            <div class="inline-flex size-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-2">
+            <div class="inline-flex size-11 items-center justify-center rounded-xl bg-accent/10 text-accent dark:text-brand-300 border border-accent/20 mb-2">
                 <flux:icon.user-plus class="size-6" />
             </div>
             <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ __('Create an account') }}</h1>
@@ -11,6 +11,17 @@
 
         <!-- Session Status -->
         <x-auth-session-status :status="session('status')" />
+
+        <!-- Email Sign-Up Maintenance Notice / Validation Errors -->
+        @if (! config('fortify.email_signups_enabled', true))
+            @if ($errors->any())
+                <flux:callout variant="danger" icon="x-circle" :heading="$errors->first()" />
+            @else
+                <flux:callout variant="info" icon="envelope" heading="{{ __('Email sign-ups are temporarily disabled') }}">
+                    {{ __('Our mail servers are currently under maintenance, so you cannot create an account with an email address right now. Please sign up with GitHub instead — it only takes a second.') }}
+                </flux:callout>
+            @endif
+        @endif
 
         <!-- Social GitHub Register -->
         <div>
@@ -25,15 +36,31 @@
             </a>
         </div>
 
-        <!-- Divider -->
-        <div class="relative flex items-center justify-center">
-            <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
-            <span class="bg-white dark:bg-zinc-900 px-3 text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 shrink-0 font-medium">{{ __('Or with email') }}</span>
-            <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
-        </div>
+        @if(config('services.ternis.client_id') && config('services.ternis.client_secret'))
+            <!-- Ternis SSO Register -->
+            <div>
+                <a
+                    href="{{ route('social.redirect.ternis') }}"
+                    class="w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent/90 text-white font-medium text-sm transition-all shadow-xs hover:shadow-md cursor-pointer"
+                >
+                    <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 0 0 9-9 9 9 0 0 0-9-9 9 9 0 0 0-9 9 9 9 0 0 0 9 9Zm0 0c2.5 0 4.5-4.03 4.5-9S14.5 3 12 3 7.5 7.03 7.5 12s2 9 4.5 9ZM3.6 9h16.8M3.6 15h16.8" />
+                    </svg>
+                    <span>{{ __('Sign up with Ternis') }}</span>
+                </a>
+            </div>
+        @endif
 
-        <!-- Form -->
-        <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-4">
+        @if (config('fortify.email_signups_enabled', true))
+            <!-- Divider -->
+            <div class="relative flex items-center justify-center">
+                <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
+                <span class="bg-white dark:bg-zinc-900 px-3 text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 shrink-0 font-medium">{{ __('Or with email') }}</span>
+                <div class="border-t border-zinc-200 dark:border-zinc-800 w-full"></div>
+            </div>
+
+            <!-- Form -->
+            <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-4">
             @csrf
 
             <!-- Name -->
@@ -92,12 +119,13 @@
             <button 
                 type="submit" 
                 data-test="register-user-button"
-                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-sm shadow-md shadow-accent/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
             >
                 <span>{{ __('Create account') }}</span>
                 <flux:icon.arrow-right class="size-4" />
             </button>
         </form>
+        @endif
 
         <!-- Terms Note -->
         <p class="text-[11px] text-zinc-600 dark:text-zinc-400 text-center leading-relaxed">
@@ -110,7 +138,7 @@
         <!-- Login Switch Link -->
         <div class="text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
             <span>{{ __('Already have an account?') }}</span>
-            <a href="{{ route('login') }}" wire:navigate class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline ml-1">
+            <a href="{{ route('login') }}" wire:navigate class="text-accent dark:text-brand-300 font-semibold hover:underline ml-1">
                 {{ __('Log in') }}
             </a>
         </div>

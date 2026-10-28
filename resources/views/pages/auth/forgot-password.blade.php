@@ -32,7 +32,7 @@
             <button 
                 type="submit" 
                 data-test="email-password-reset-link-button"
-                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+                class="w-full mt-2 py-2.5 px-4 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-sm shadow-md shadow-accent/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
             >
                 <flux:icon.paper-airplane class="size-4" />
                 <span>{{ __('Email password reset link') }}</span>
@@ -42,7 +42,7 @@
         <!-- Return to Login -->
         <div class="text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
             <span>{{ __('Remember your password?') }}</span>
-            <a href="{{ route('login') }}" wire:navigate class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline ml-1">
+            <a href="{{ route('login') }}" wire:navigate class="text-accent dark:text-brand-300 font-semibold hover:underline ml-1">
                 {{ __('Return to log in') }}
             </a>
         </div>

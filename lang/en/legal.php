@@ -31,7 +31,7 @@ return [
             <p>We integrate with third-party providers (such as GitHub for OAuth authentication and webhooks) strictly to facilitate our features. These providers process data in accordance with their respective privacy policies.</p>
 
             <h3>6. Your Rights (GDPR)</h3>
-            <p>If you are a resident of the European Economic Area (EEA), you have the right to access, update, export, or delete your personal data. You can manage your data directly from your account settings or contact us for assistance.</p>
+            <p>If you are a resident of the European Economic Area (EEA), you have the right to access, update, export, or delete your personal data. You can download a machine-readable copy of all personal data we store about your account at any time from <a href="/settings/data-export">Settings → Data export</a>, or manage your data directly from your account settings. For deletion, contact us for assistance.</p>
 
             <h3>7. Contact Us</h3>
             <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:legal@drophtml.de">legal@drophtml.de</a>.</p>

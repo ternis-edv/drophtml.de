@@ -98,7 +98,7 @@ new #[Title('Security settings')] class extends Component {
     <flux:heading class="sr-only">{{ __('Security settings') }}</flux:heading>
 
     <x-pages::settings.layout :heading="!auth()->user()->password_set_at ? __('Set password') : __('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
-        <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
+        <form method="POST" wire:submit="updatePassword" class="space-y-6">
             @if(auth()->user()->password_set_at)
                 <flux:input
                     wire:model="current_password"
@@ -134,11 +134,11 @@ new #[Title('Security settings')] class extends Component {
         </form>
 
         @if ($canManageTwoFactor)
-            <section class="mt-12">
-                <flux:heading>{{ __('Two-factor authentication') }}</flux:heading>
-                <flux:subheading>{{ __('Manage your two-factor authentication settings') }}</flux:subheading>
+            <section class="mt-10 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40">
+                <flux:heading class="tracking-tight">{{ __('Two-factor authentication') }}</flux:heading>
+                <flux:subheading class="mt-1">{{ __('Manage your two-factor authentication settings') }}</flux:subheading>
 
-                <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
+                <div class="flex flex-col w-full mx-auto space-y-6 text-sm mt-5" wire:cloak>
                     @if ($twoFactorEnabled)
                         <div class="space-y-4">
                             <flux:text>

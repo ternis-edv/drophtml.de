@@ -1,63 +1,68 @@
 <x-layouts::app :title="__('Deploy Site')">
     <div class="flex h-full w-full flex-1 flex-col gap-6 max-w-5xl mx-auto">
         <!-- Header -->
-        <div class="flex flex-col gap-1.5">
+        <div class="flex flex-col gap-1.5 rise-in" style="--i: 0">
             <flux:breadcrumbs>
                 <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>Deploy Site</flux:breadcrumbs.item>
             </flux:breadcrumbs>
-            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">Deploy Static Site</h1>
-            <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Upload standalone HTML or complete ZIP archives with automated Let's Encrypt SSL and global Edge CDN distribution in seconds.</p>
+            <h1 class="page-title mt-1">Deploy Static Site</h1>
+            <p class="page-lede">Upload standalone HTML or complete ZIP archives with automated Let's Encrypt SSL and global Edge CDN distribution in seconds.</p>
         </div>
 
         <!-- Uploader Card -->
-        <div class="rounded-3xl glass-card border border-zinc-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs">
+        <div class="panel p-6 sm:p-8 rise-in" style="--i: 1">
             <livewire:file-uploader />
         </div>
 
         <!-- Deployment Guidance Feature Row -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="p-5 rounded-2xl glass-card border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-2">
-                <div class="flex items-center gap-2.5 text-indigo-600 dark:text-indigo-400 font-bold text-xs">
-                    <div class="size-7 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+            <div class="panel p-5 space-y-2 rise-in" style="--i: 2">
+                <div class="flex items-center gap-2.5 text-zinc-900 dark:text-zinc-100 font-bold text-xs">
+                    <span class="icon-tile" aria-hidden="true">
                         <flux:icon.document-text class="size-4" />
-                    </div>
+                    </span>
                     <span>Single HTML File</span>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Drop a standalone <code class="font-mono text-zinc-800 dark:text-zinc-200">.html</code> file for instant portfolios, landing pages, or prototype review links.</p>
             </div>
 
-            <div class="p-5 rounded-2xl glass-card border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-2">
-                <div class="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                    <div class="size-7 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+            <div class="panel p-5 space-y-2 rise-in" style="--i: 3">
+                <div class="flex items-center gap-2.5 text-zinc-900 dark:text-zinc-100 font-bold text-xs">
+                    <span class="icon-tile" aria-hidden="true">
                         <flux:icon.archive-box class="size-4" />
-                    </div>
+                    </span>
                     <span>Full ZIP Archive</span>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Package your static build folder (<code class="font-mono text-zinc-800 dark:text-zinc-200">dist/</code> or <code class="font-mono text-zinc-800 dark:text-zinc-200">out/</code>) with an <code class="font-mono text-zinc-800 dark:text-zinc-200">index.html</code> at root.</p>
             </div>
 
-            <div class="p-5 rounded-2xl glass-card border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-2">
-                <div class="flex items-center gap-2.5 text-purple-600 dark:text-purple-400 font-bold text-xs">
-                    <div class="size-7 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+            <div class="panel p-5 space-y-2 rise-in" style="--i: 4">
+                <div class="flex items-center gap-2.5 text-zinc-900 dark:text-zinc-100 font-bold text-xs">
+                    <span class="icon-tile" aria-hidden="true">
                         <flux:icon.shield-check class="size-4" />
-                    </div>
-                    <span>Automated SSL & CDN</span>
+                    </span>
+                    <span>Automated SSL &amp; CDN</span>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Every site is automatically provisioned with auto-renewing TLS certificates across 300+ Edge nodes.</p>
             </div>
         </div>
 
         @php
-            $curlCreateSnippet = 'curl -X POST ' . url('/api/sites') . ' \\
-  -H "Authorization: Bearer YOUR_API_TOKEN" \\
-  -F "original_name=My Project" \\
-  -F "file=@dist.zip"';
+            $cliDeploySnippet = '# 1. Authenticate with your personal API token' . "\n" .
+'export DROPHTML_TOKEN="YOUR_API_TOKEN"' . "\n\n" .
+'# 2. Deploy directory, build folder or standalone file' . "\n" .
+'./scripts/drophtml deploy ./dist --name "My Project" --open';
 
-            $curlRedeploySnippet = 'curl -X POST ' . url('/api/sites/{site_id}/deploy') . ' \\
-  -H "Authorization: Bearer YOUR_API_TOKEN" \\
-  -F "file=@dist.zip" \\
-  -F "commit_message=Release v1.2.0"';
+            $curlCreateSnippet = 'curl -X POST ' . url('/api/sites') . ' \\' . "\n" .
+'  -H "Authorization: Bearer YOUR_API_TOKEN" \\' . "\n" .
+'  -F "original_name=My Project" \\' . "\n" .
+'  -F "file=@dist.zip"';
+
+            $curlRedeploySnippet = 'curl -X POST ' . url('/api/sites/{site_id}/deploy') . ' \\' . "\n" .
+'  -H "Authorization: Bearer YOUR_API_TOKEN" \\' . "\n" .
+'  -F "file=@dist.zip" \\' . "\n" .
+'  -F "commit_message=Release v1.2.0"';
 
             $githubSnippet = 'name: Deploy to DropHTML
 on:
@@ -79,28 +84,48 @@ jobs:
         @endphp
 
         <!-- Developer CLI & CI/CD Hub -->
-        <div class="rounded-3xl glass-card border border-zinc-200/80 dark:border-zinc-800 p-6 sm:p-7 space-y-5 shadow-xs" x-data="{ tab: 'curl', copied: false, copyText(text) { navigator.clipboard.writeText(text); this.copied = true; setTimeout(() => this.copied = false, 2000); } }">
+        <div class="panel p-6 sm:p-7 space-y-5 rise-in" style="--i: 5" x-data="{ tab: 'cli', copied: false, copyText(text) { navigator.clipboard.writeText(text); this.copied = true; setTimeout(() => this.copied = false, 2000); } }">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="size-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                    <span class="icon-tile" aria-hidden="true">
                         <flux:icon.command-line class="size-5" />
-                    </div>
+                    </span>
                     <div>
-                        <h3 class="font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">Deploy via Terminal &amp; CI/CD Pipelines</h3>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Automate static deployments with cURL or GitHub Actions CI/CD.</p>
+                        <h3 class="section-title">Deploy via CLI, Agents &amp; CI/CD Pipelines</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Automate static deployments with our developer CLI, coding agents, or GitHub Actions.</p>
                     </div>
                 </div>
 
                 <!-- Tabs -->
-                <div class="inline-flex rounded-xl p-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/80 text-xs">
-                    <button type="button" @click="tab = 'curl'" :class="tab === 'curl' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium'" class="px-3 py-1 rounded-lg transition-all cursor-pointer">cURL Deploy</button>
-                    <button type="button" @click="tab = 'redeploy'" :class="tab === 'redeploy' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium'" class="px-3 py-1 rounded-lg transition-all cursor-pointer">Redeploy Existing</button>
-                    <button type="button" @click="tab = 'github'" :class="tab === 'github' ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium'" class="px-3 py-1 rounded-lg transition-all cursor-pointer">GitHub Actions</button>
+                <div class="pill-group" role="tablist" aria-label="Deployment methods">
+                    <button type="button" role="tab" @click="tab = 'cli'" :aria-selected="tab === 'cli'" :class="tab === 'cli' ? 'is-active' : ''" class="pill">Agent &amp; CLI</button>
+                    <button type="button" role="tab" @click="tab = 'curl'" :aria-selected="tab === 'curl'" :class="tab === 'curl' ? 'is-active' : ''" class="pill">cURL Deploy</button>
+                    <button type="button" role="tab" @click="tab = 'redeploy'" :aria-selected="tab === 'redeploy'" :class="tab === 'redeploy' ? 'is-active' : ''" class="pill">Redeploy</button>
+                    <button type="button" role="tab" @click="tab = 'github'" :aria-selected="tab === 'github'" :class="tab === 'github' ? 'is-active' : ''" class="pill">GitHub Actions</button>
                 </div>
             </div>
 
+            <!-- Snippet 0: Agent & CLI -->
+            <div x-show="tab === 'cli'" class="space-y-2">
+                <div class="relative">
+                    <pre class="bg-zinc-950 text-zinc-100 p-4 sm:p-5 rounded-2xl text-xs font-mono overflow-x-auto leading-relaxed border border-zinc-800"><code>{!! $cliDeploySnippet !!}</code></pre>
+                    <button 
+                        type="button" 
+                        @click="copyText(@js($cliDeploySnippet))" 
+                        class="absolute top-3 right-3 px-3 py-1.5 text-[11px] font-semibold rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer border border-zinc-700 flex items-center gap-1.5"
+                    >
+                        <flux:icon.clipboard class="size-3" />
+                        <span x-show="!copied">Copy</span>
+                        <span x-show="copied" class="text-emerald-400" x-cloak>Copied!</span>
+                    </button>
+                </div>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                    Works seamlessly with local terminals and AI coding agents (Claude Code, Antigravity, Cursor). Learn more in <a href="{{ route('docs.agents') }}" wire:navigate class="text-accent underline underline-offset-2 font-semibold hover:opacity-80 transition-opacity duration-150">DropHTML for Agents</a>.
+                </p>
+            </div>
+
             <!-- Snippet 1: cURL Create -->
-            <div x-show="tab === 'curl'" class="space-y-2">
+            <div x-show="tab === 'curl'" class="space-y-2" x-cloak>
                 <div class="relative">
                     <pre class="bg-zinc-950 text-zinc-100 p-4 sm:p-5 rounded-2xl text-xs font-mono overflow-x-auto leading-relaxed border border-zinc-800"><code>{!! $curlCreateSnippet !!}</code></pre>
                     <button 
@@ -114,7 +139,7 @@ jobs:
                     </button>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                    Need an API token? Generate personal access tokens in <a href="{{ route('api-tokens.edit') }}" wire:navigate class="text-indigo-600 dark:text-indigo-400 underline font-semibold">API Tokens</a>.
+                    Need an API token? Generate personal access tokens in <a href="{{ route('api-tokens.edit') }}" wire:navigate class="text-accent underline underline-offset-2 font-semibold hover:opacity-80 transition-opacity duration-150">API Tokens</a>.
                 </p>
             </div>
 

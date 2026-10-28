@@ -1,56 +1,25 @@
-<section id="upload" class="py-20 relative z-10 reveal" x-intersect.once="$el.classList.add('is-shown')">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-10">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-3 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-                <flux:icon.arrow-up-tray class="size-3.5 text-indigo-500" />
-                <span>Drag &amp; Drop Publisher</span>
-            </div>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-3">
-                Deploy Instantly in Your Browser
-            </h2>
-            <p class="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-                No command-line setup or account required to test. Drop single <code>.html</code> files or full <code>.zip</code> archives below to publish immediately.
-            </p>
+<div id="upload" class="lp-upload" aria-labelledby="upload-title">
+    <div class="lp-upload__panel">
+        <div class="lp-upload__toolbar">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 22" /></svg> NEW DEPLOYMENT</span>
+            <span class="lp-upload__ready"><span class="lp-status-dot" aria-hidden="true"></span> Ready to publish</span>
         </div>
-
-        <div class="glass-panel rounded-3xl p-3 sm:p-5 border border-zinc-200/80 dark:border-zinc-800 shadow-2xl relative overflow-hidden">
-            <div class="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent"></div>
-            <div class="bg-white dark:bg-[#09090c] rounded-2xl p-6 sm:p-8 border border-zinc-200/80 dark:border-zinc-800 shadow-inner">
-                <livewire:file-uploader />
-            </div>
-
-            <!-- 3-Step Pipeline Visual Footer -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 mt-3 pt-4 border-t border-zinc-200/60 dark:border-zinc-800/60 text-xs">
-                <div class="flex items-start gap-3">
-                    <span class="size-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">1</span>
-                    <div>
-                        <p class="font-bold text-zinc-900 dark:text-zinc-100">Drop your file</p>
-                        <p class="text-[11px] text-zinc-500 mt-0.5">Accepts single HTML, CSS, JS, or zipped project folders.</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-3">
-                    <span class="size-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">2</span>
-                    <div>
-                        <p class="font-bold text-zinc-900 dark:text-zinc-100">Automatic Edge Caching</p>
-                        <p class="text-[11px] text-zinc-500 mt-0.5">Zip Slip protection, sanitized file extraction &amp; SSL generation.</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-3">
-                    <span class="size-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">3</span>
-                    <div>
-                        <p class="font-bold text-zinc-900 dark:text-zinc-100">Live URL in &lt; 2s</p>
-                        <p class="text-[11px] text-zinc-500 mt-0.5">Share with clients, lock with password, or connect your domain.</p>
-                    </div>
-                </div>
-            </div>
-
+        <div class="lp-upload__body">
+            <h2 id="upload-title">Drop a site. Make it live.</h2>
+            <p>Your next live link starts here.</p>
+            <div class="lp-upload__stage"><livewire:file-uploader /></div>
+            <div class="lp-upload__formats"><span>HTML or ZIP archive</span><span>Up to 50 MB</span></div>
+        </div>
+        <div class="lp-upload__footnote">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
             @guest
-                <div class="mt-4 text-center text-xs text-zinc-500">
-                    Guest uploads expire in 24 hours. <a href="{{ route('register') }}" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Create a free account</a> to retain them permanently and connect custom domains.
-                </div>
+                <span>Just trying things out? Guest sites stay live for 24 hours.</span>
+            @else
+                <span>Manage your published sites from your dashboard.</span>
             @endguest
         </div>
     </div>
-</section>
+    @guest
+        <p class="lp-upload__note">Want to keep it? <a href="{{ route('register') }}">Create a free account <svg class="lp-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7" /></svg></a></p>
+    @endguest
+</div>

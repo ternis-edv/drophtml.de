@@ -1,0 +1,2 @@
+/* Shared visual foundation for Code Studio and site management. */
+.studio, .site-console { --studio-bg: #151c28; --studio-code: #111823; --studio-panel: #19212f; --studio-raised: #202a3a; --studio-line: #ffffff0e; --studio-text: #d6deeb; --studio-muted: #8492a9; --studio-accent: #a5b4fc; }

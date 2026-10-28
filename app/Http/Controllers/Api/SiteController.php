@@ -12,6 +12,7 @@ use App\Services\SiteDeploymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use InvalidArgumentException;
 
 class SiteController extends Controller
 {
@@ -35,22 +36,36 @@ class SiteController extends Controller
         $validated = $request->validated();
         $user = $request->user();
 
-        if ($request->hasFile('file')) {
-            $site = $this->siteDeploymentService->createSiteFromUpload(
-                $request->file('file'),
-                $validated['original_name'],
-                $user,
-                $validated
-            );
-        } else {
-            $placeholderHtml = "<!DOCTYPE html><html><head><title>{$validated['original_name']}</title></head><body><h1>{$validated['original_name']}</h1><p>Created via DropHTML API.</p></body></html>";
+        try {
+            if ($request->hasFile('file')) {
+                $site = $this->siteDeploymentService->createSiteFromUpload(
+                    $request->file('file'),
+                    $validated['original_name'],
+                    $user,
+                    $validated
+                );
+            } elseif ($request->filled('files') && is_array($request->input('files'))) {
+                $site = $this->siteDeploymentService->createSiteFromFiles(
+                    $request->input('files'),
+                    $validated['original_name'],
+                    $user,
+                    $validated
+                );
+            } else {
+                $content = $request->input('html') ?? $request->input('content');
+                if (empty($content)) {
+                    $content = "<!DOCTYPE html><html><head><title>{$validated['original_name']}</title></head><body><h1>{$validated['original_name']}</h1><p>Created via DropHTML API.</p></body></html>";
+                }
 
-            $site = $this->siteDeploymentService->createSiteFromContent(
-                $placeholderHtml,
-                $validated['original_name'],
-                $user,
-                $validated
-            );
+                $site = $this->siteDeploymentService->createSiteFromContent(
+                    $content,
+                    $validated['original_name'],
+                    $user,
+                    $validated
+                );
+            }
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
 
         return new SiteResource($site);
@@ -98,17 +113,50 @@ class SiteController extends Controller
         Gate::authorize('update', $site);
 
         $request->validate([
-            'file' => 'required|file|max:51200',
+            'file' => 'nullable|file|max:51200',
+            'html' => 'nullable|string',
+            'content' => 'nullable|string',
+            'files' => 'nullable|array',
             'commit_message' => 'nullable|string|max:255',
         ]);
 
-        $deployment = $this->siteDeploymentService->deployToExistingSite(
-            $site,
-            $request->file('file'),
-            $request->user(),
-            $request->input('commit_message'),
-            'api'
-        );
+        $commitMessage = $request->input('commit_message');
+        $user = $request->user();
+
+        try {
+            if ($request->hasFile('file')) {
+                $deployment = $this->siteDeploymentService->deployToExistingSite(
+                    $site,
+                    $request->file('file'),
+                    $user,
+                    $commitMessage,
+                    'api'
+                );
+            } elseif ($request->filled('files') && is_array($request->input('files'))) {
+                $deployment = $this->siteDeploymentService->deployFilesToExistingSite(
+                    $site,
+                    $request->input('files'),
+                    $user,
+                    $commitMessage,
+                    'api'
+                );
+            } elseif ($request->filled('html') || $request->filled('content')) {
+                $html = $request->input('html') ?? $request->input('content');
+                $deployment = $this->siteDeploymentService->deployContentToExistingSite(
+                    $site,
+                    $html,
+                    $user,
+                    $commitMessage,
+                    'api'
+                );
+            } else {
+                return response()->json([
+                    'message' => 'A file upload, html/content string, or files array is required to deploy.',
+                ], 422);
+            }
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return (new DeploymentResource($deployment))
             ->response()

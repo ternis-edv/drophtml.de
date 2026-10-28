@@ -74,21 +74,22 @@ new class extends Component
 };
 ?>
 
+
 <div>
     <!-- Subnavigation Header -->
     <x-site-subnav :site="$site" current="deployments" />
 
     <div class="space-y-6">
         <!-- Top Info / Action Banner -->
-        <div class="glass-card p-6 sm:p-7 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="panel p-6 sm:p-7 rise-in flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="--i: 0">
             <div>
-                <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
-                    <div class="size-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/20">
+                <h2 class="section-title flex items-center gap-2.5">
+                    <span class="icon-tile" aria-hidden="true">
                         <flux:icon.archive-box class="size-4.5" />
-                    </div>
-                    <span>Deployment Snapshots & Rollback History</span>
+                    </span>
+                    <span>Deployment Snapshots &amp; Rollback History</span>
                 </h2>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 max-w-xl leading-relaxed">
+                <p class="page-lede mt-1.5 max-w-xl">
                     Every deployment automatically captures an immutable file archive. You can instantly restore your site to any previous point in time with zero downtime.
                 </p>
             </div>
@@ -96,7 +97,8 @@ new class extends Component
             <button 
                 type="button" 
                 wire:click="createManualSnapshot" 
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-colors cursor-pointer shrink-0"
+                class="btn-primary px-4 py-2 text-xs shrink-0"
+                aria-label="{{ __('Take snapshot now') }}"
             >
                 <flux:icon.camera class="size-4" />
                 <span>Take Snapshot Now</span>
@@ -105,19 +107,19 @@ new class extends Component
 
         <!-- Deployments List -->
         @if($deployments->isEmpty())
-            <div class="glass-card text-center py-16 px-4 rounded-2xl">
-                <div class="size-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center mx-auto mb-3.5 ring-1 ring-indigo-500/20">
-                    <flux:icon.archive-box class="size-8" />
+            <div class="panel text-center py-16 px-4 rise-in" style="--i: 1">
+                <div class="icon-tile-lg mx-auto mb-3.5" aria-hidden="true">
+                    <flux:icon.archive-box class="size-6" />
                 </div>
                 <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">No Deployment Snapshots Yet</h3>
-                <p class="text-xs text-zinc-500 mt-1 max-w-md mx-auto">
+                <p class="page-lede mt-1 max-w-md mx-auto">
                     Take a manual snapshot of your active files now to start recording deployment history and enable instant rollbacks.
                 </p>
                 <div class="mt-5">
                     <button 
                         type="button" 
                         wire:click="createManualSnapshot" 
-                        class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-colors cursor-pointer"
+                        class="btn-primary px-4 py-2 text-xs"
                     >
                         <flux:icon.camera class="size-4" />
                         <span>Create Initial Snapshot</span>
@@ -134,14 +136,17 @@ new class extends Component
                         $totalBytes = $metadata['total_bytes'] ?? null;
                         $source = $deployment->source ?: 'manual';
                     @endphp
-                    <div class="glass-card rounded-2xl transition-all p-5 border border-zinc-200/80 dark:border-zinc-800 shadow-xs {{ $isActive ? 'ring-2 ring-emerald-500/30 dark:ring-emerald-500/40 !border-emerald-500/40 bg-emerald-50/10 dark:bg-emerald-950/10' : '' }}">
+                    <div
+                        class="panel panel-interactive rise-in p-5 {{ $isActive ? 'ring-2 ring-emerald-500/30 dark:ring-emerald-500/40 border-emerald-500/40 bg-emerald-50/10 dark:bg-emerald-950/10' : '' }}"
+                        style="--i: {{ min($index + 1, 8) }}"
+                    >
                         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <!-- Left: Status, Info, Message -->
                             <div class="space-y-2.5 flex-1 min-w-0">
                                 <div class="flex items-center gap-2.5 flex-wrap">
                                     @if($isActive)
                                         <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 shadow-xs">
-                                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
                                             Active Release
                                         </span>
                                     @endif
@@ -152,7 +157,7 @@ new class extends Component
                                             <flux:icon.folder-git-2 class="size-3.5 text-zinc-500" />
                                             GitHub Push
                                         @elseif($source === 'upload')
-                                            <flux:icon.arrow-up-tray class="size-3.5 text-indigo-500" />
+                                            <flux:icon.arrow-up-tray class="size-3.5 text-accent" />
                                             ZIP Upload
                                         @elseif($source === 'editor')
                                             <flux:icon.pencil-square class="size-3.5 text-amber-500" />
@@ -221,6 +226,7 @@ new class extends Component
                                         wire:confirm="Are you sure you want to rollback to deployment #{{ substr($deployment->id, 0, 8) }}? This will restore your active site files to this snapshot."
                                         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 transition-colors cursor-pointer shadow-xs"
                                         title="Restore site files to this version"
+                                        aria-label="{{ __('Rollback to deployment') }} #{{ substr($deployment->id, 0, 8) }}"
                                     >
                                         <flux:icon.arrow-path class="size-3.5" />
                                         <span>Rollback</span>
@@ -230,8 +236,9 @@ new class extends Component
                                 @if(!empty($metadata['snapshot_path']))
                                     <a 
                                         href="{{ route('dashboard.sites.deployments.download', [$site, $deployment]) }}" 
-                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors shadow-xs"
+                                        class="btn-secondary px-3.5 py-1.5 text-xs"
                                         title="Download snapshot ZIP archive"
+                                        aria-label="{{ __('Download snapshot ZIP for') }} #{{ substr($deployment->id, 0, 8) }}"
                                     >
                                         <flux:icon.arrow-down-tray class="size-3.5" />
                                         <span>Snapshot ZIP</span>

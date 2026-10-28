@@ -100,6 +100,9 @@ class SiteDeploymentService
         $this->createDeploymentSnapshot($site, $deployment);
         $this->storageUsageService->calculateSiteStorageBytes($site);
 
+        // Automatically offload large media (images/videos) to cloud asset storage.
+        app(MediaStorageService::class)->offloadLargeAssets($site, $user);
+
         if ($user) {
             $this->activityLogService->log(
                 $user,
@@ -121,7 +124,17 @@ class SiteDeploymentService
         ?User $user = null,
         array $options = []
     ): Site {
-        $slug = $this->generateUniqueSlug($name);
+        if ($user) {
+            $this->storageUsageService->enforceQuota($user, strlen($content));
+        }
+
+        $slug = ! empty($options['custom_slug'])
+            ? Str::slug($options['custom_slug'])
+            : $this->generateUniqueSlug($name);
+
+        if (Site::where('slug', $slug)->exists()) {
+            $slug = $this->generateUniqueSlug($slug);
+        }
         $storagePath = "sites/{$slug}";
 
         Storage::disk('public')->makeDirectory($storagePath);
@@ -152,6 +165,7 @@ class SiteDeploymentService
             ],
         ]);
         $this->createDeploymentSnapshot($site, $deployment);
+        $this->storageUsageService->calculateSiteStorageBytes($site);
 
         if ($user) {
             $this->activityLogService->log(
@@ -493,7 +507,7 @@ class SiteDeploymentService
 
                 if (Storage::disk('media')->exists($cloudSourcePath)) {
                     Storage::disk('media')->copy($cloudSourcePath, $newCloudPath);
-                    $newPublicUrl = Storage::disk('media')->url($newCloudPath);
+                    $newPublicUrl = app(MediaStorageService::class)->publicUrlFor($newCloudPath);
                 } else {
                     $newCloudPath = $cloudSourcePath;
                     $newPublicUrl = $mediaAsset->public_url;
@@ -637,6 +651,9 @@ class SiteDeploymentService
         $this->createDeploymentSnapshot($site, $deployment);
         $this->storageUsageService->calculateSiteStorageBytes($site);
 
+        // Automatically offload large media (images/videos) to cloud asset storage.
+        app(MediaStorageService::class)->offloadLargeAssets($site, $actor);
+
         if ($actor) {
             $this->activityLogService->log(
                 $actor,
@@ -741,6 +758,273 @@ class SiteDeploymentService
         return response()->download($localDisk->path($snapshotPath), $filename, [
             'Content-Type' => 'application/zip',
         ]);
+    }
+
+    /**
+     * Create a site from an associative array of relative file paths and contents.
+     * Supports ['index.html' => '...', 'css/style.css' => '...'] or [['path' => '...', 'content' => '...']].
+     */
+    public function createSiteFromFiles(
+        array $files,
+        string $name,
+        ?User $user = null,
+        array $options = []
+    ): Site {
+        $normalizedFiles = [];
+        $totalBytes = 0;
+
+        foreach ($files as $key => $value) {
+            if (is_array($value) && isset($value['path'])) {
+                $path = (string) $value['path'];
+                $content = (string) ($value['content'] ?? '');
+            } else {
+                $path = (string) $key;
+                $content = (string) $value;
+            }
+
+            $path = str_replace('\\', '/', trim($path));
+
+            if (str_contains($path, '../') || str_starts_with($path, '/') || str_contains($path, '..\\')) {
+                throw new InvalidArgumentException("Security violation: path traversal detected in '{$path}'.");
+            }
+
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if ($this->isDangerousExtension($ext)) {
+                throw new InvalidArgumentException("Uploading .{$ext} files is not permitted for security reasons.");
+            }
+
+            $basename = strtolower(basename($path));
+            if (in_array($basename, ['.env', '.htaccess', '.htpasswd', '.git'], true)) {
+                throw new InvalidArgumentException("Uploading forbidden system file '{$path}' is not permitted.");
+            }
+
+            $normalizedFiles[$path] = $content;
+            $totalBytes += strlen($content);
+        }
+
+        if (empty($normalizedFiles)) {
+            throw new InvalidArgumentException('No valid files provided for site creation.');
+        }
+
+        if ($user) {
+            $this->storageUsageService->enforceQuota($user, $totalBytes);
+        }
+
+        $slug = ! empty($options['custom_slug'])
+            ? Str::slug($options['custom_slug'])
+            : $this->generateUniqueSlug($name);
+
+        if (Site::where('slug', $slug)->exists()) {
+            $slug = $this->generateUniqueSlug($slug);
+        }
+
+        $storagePath = "sites/{$slug}";
+        $publicDisk = Storage::disk('public');
+        $publicDisk->makeDirectory($storagePath);
+
+        foreach ($normalizedFiles as $relPath => $fileContent) {
+            $dir = dirname("{$storagePath}/{$relPath}");
+            if (! $publicDisk->exists($dir)) {
+                $publicDisk->makeDirectory($dir);
+            }
+            $publicDisk->put("{$storagePath}/{$relPath}", $fileContent);
+        }
+
+        $isPermanent = (bool) ($options['is_permanent'] ?? false);
+        $expiresAt = $this->calculateExpiry($user, $isPermanent);
+
+        $site = Site::create([
+            'slug' => $slug,
+            'original_name' => $name,
+            'path' => $storagePath,
+            'entry_path' => SiteServingService::detectEntryPath($storagePath),
+            'user_id' => $user?->id,
+            'status' => 'active',
+            'is_permanent' => $isPermanent,
+            'expires_at' => $expiresAt,
+            'is_password_protected' => (bool) ($options['is_password_protected'] ?? false),
+            'site_password' => ! empty($options['site_password']) ? Hash::make($options['site_password']) : null,
+        ]);
+
+        $deployment = $site->deployments()->create([
+            'status' => 'success',
+            'source' => $options['source'] ?? 'api',
+            'commit_message' => "Deployed site: {$name} (".count($normalizedFiles).' files)',
+            'metadata' => [
+                'files_count' => count($normalizedFiles),
+                'total_bytes' => $totalBytes,
+            ],
+        ]);
+
+        $this->createDeploymentSnapshot($site, $deployment);
+        $this->storageUsageService->calculateSiteStorageBytes($site);
+
+        app(MediaStorageService::class)->offloadLargeAssets($site, $user);
+
+        if ($user) {
+            $this->activityLogService->log(
+                $user,
+                $site,
+                'site_uploaded',
+                "Created site from files: {$name} ({$slug})"
+            );
+        }
+
+        return $site;
+    }
+
+    /**
+     * Deploy updated content string to an existing site.
+     */
+    public function deployContentToExistingSite(
+        Site $site,
+        string $content,
+        ?User $actor = null,
+        ?string $commitMessage = null,
+        string $source = 'api',
+        string $filename = 'index.html'
+    ): Deployment {
+        if ($actor) {
+            $this->storageUsageService->enforceQuota($actor, strlen($content));
+        }
+
+        $publicDisk = Storage::disk('public');
+        $publicDisk->makeDirectory($site->path);
+        $publicDisk->put("{$site->path}/{$filename}", $content);
+
+        $message = $commitMessage ?: 'Updated site content via '.$source;
+        $site->update(['entry_path' => SiteServingService::detectEntryPath($site->path)]);
+
+        $deployment = $site->deployments()->create([
+            'status' => 'success',
+            'source' => $source,
+            'commit_message' => $message,
+            'metadata' => [
+                'filename' => $filename,
+                'size' => strlen($content),
+            ],
+        ]);
+
+        $this->createDeploymentSnapshot($site, $deployment);
+        $this->storageUsageService->calculateSiteStorageBytes($site);
+
+        if ($actor) {
+            $this->activityLogService->log(
+                $actor,
+                $site,
+                'site_redeployed',
+                "Redeployed site content: {$site->original_name} ({$site->slug})"
+            );
+        }
+
+        if (! empty($site->webhook_url)) {
+            DispatchSiteWebhookJob::dispatch($site, 'site.deployed', [
+                'deployment_id' => $deployment->id,
+                'source' => $source,
+                'commit_message' => $message,
+            ]);
+        }
+
+        return $deployment;
+    }
+
+    /**
+     * Deploy updated files array to an existing site.
+     */
+    public function deployFilesToExistingSite(
+        Site $site,
+        array $files,
+        ?User $actor = null,
+        ?string $commitMessage = null,
+        string $source = 'api'
+    ): Deployment {
+        $normalizedFiles = [];
+        $totalBytes = 0;
+
+        foreach ($files as $key => $value) {
+            if (is_array($value) && isset($value['path'])) {
+                $path = (string) $value['path'];
+                $content = (string) ($value['content'] ?? '');
+            } else {
+                $path = (string) $key;
+                $content = (string) $value;
+            }
+
+            $path = str_replace('\\', '/', trim($path));
+
+            if (str_contains($path, '../') || str_starts_with($path, '/') || str_contains($path, '..\\')) {
+                throw new InvalidArgumentException("Security violation: path traversal detected in '{$path}'.");
+            }
+
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if ($this->isDangerousExtension($ext)) {
+                throw new InvalidArgumentException("Uploading .{$ext} files is not permitted for security reasons.");
+            }
+
+            $basename = strtolower(basename($path));
+            if (in_array($basename, ['.env', '.htaccess', '.htpasswd', '.git'], true)) {
+                throw new InvalidArgumentException("Uploading forbidden system file '{$path}' is not permitted.");
+            }
+
+            $normalizedFiles[$path] = $content;
+            $totalBytes += strlen($content);
+        }
+
+        if (empty($normalizedFiles)) {
+            throw new InvalidArgumentException('No valid files provided for site deployment.');
+        }
+
+        if ($actor) {
+            $this->storageUsageService->enforceQuota($actor, $totalBytes);
+        }
+
+        $publicDisk = Storage::disk('public');
+        $publicDisk->makeDirectory($site->path);
+
+        foreach ($normalizedFiles as $relPath => $fileContent) {
+            $dir = dirname("{$site->path}/{$relPath}");
+            if (! $publicDisk->exists($dir)) {
+                $publicDisk->makeDirectory($dir);
+            }
+            $publicDisk->put("{$site->path}/{$relPath}", $fileContent);
+        }
+
+        $message = $commitMessage ?: 'Redeployed '.count($normalizedFiles).' site files via '.$source;
+        $site->update(['entry_path' => SiteServingService::detectEntryPath($site->path)]);
+
+        $deployment = $site->deployments()->create([
+            'status' => 'success',
+            'source' => $source,
+            'commit_message' => $message,
+            'metadata' => [
+                'files_count' => count($normalizedFiles),
+                'total_bytes' => $totalBytes,
+            ],
+        ]);
+
+        $this->createDeploymentSnapshot($site, $deployment);
+        $this->storageUsageService->calculateSiteStorageBytes($site);
+
+        app(MediaStorageService::class)->offloadLargeAssets($site, $actor);
+
+        if ($actor) {
+            $this->activityLogService->log(
+                $actor,
+                $site,
+                'site_redeployed',
+                "Redeployed site files: {$site->original_name} ({$site->slug})"
+            );
+        }
+
+        if (! empty($site->webhook_url)) {
+            DispatchSiteWebhookJob::dispatch($site, 'site.deployed', [
+                'deployment_id' => $deployment->id,
+                'source' => $source,
+                'commit_message' => $message,
+            ]);
+        }
+
+        return $deployment;
     }
 
     /**

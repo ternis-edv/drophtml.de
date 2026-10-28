@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -103,7 +104,7 @@ class MediaStorageService
 
         Storage::disk($disk)->putFileAs($folder, $file, $cleanFileName, 'public');
 
-        $publicUrl = Storage::disk($disk)->url($storagePath);
+        $publicUrl = $this->publicUrlFor($storagePath);
 
         $asset = MediaAsset::create([
             'user_id' => $user->id,
@@ -118,6 +119,149 @@ class MediaStorageService
             'public_url' => $publicUrl,
             'metadata' => [
                 'provider' => $this->getActiveStorageProvider(),
+            ],
+        ]);
+
+        $this->activityLogService->log(
+            $user,
+            $site,
+            'media_uploaded_to_asset_storage',
+            "Uploaded media '{$originalName}' to cloud Asset Storage ({$this->getActiveStorageProvider()})"
+        );
+
+        return $asset;
+    }
+
+    /**
+     * Store a base64 encoded media asset into either cloud Asset Storage or Site Code repository.
+     */
+    public function storeBase64(
+        string $base64Data,
+        string $originalName,
+        User $user,
+        ?Site $site = null,
+        string $storageDriver = 'asset_storage',
+        ?string $customSubdir = null
+    ): MediaAsset {
+        $mimeType = null;
+        if (preg_match('/^data:([^;]+);base64,(.+)$/s', $base64Data, $matches)) {
+            $mimeType = $matches[1];
+            $binary = base64_decode($matches[2], true);
+        } else {
+            $binary = base64_decode($base64Data, true);
+        }
+
+        if ($binary === false) {
+            throw new InvalidArgumentException('Invalid base64 payload provided.');
+        }
+
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if (! $mimeType) {
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($binary) ?: 'application/octet-stream';
+        }
+
+        if (empty($extension)) {
+            $extension = match ($mimeType) {
+                'image/png' => 'png',
+                'image/jpeg' => 'jpg',
+                'image/gif' => 'gif',
+                'image/webp' => 'webp',
+                'image/svg+xml' => 'svg',
+                'video/mp4' => 'mp4',
+                'audio/mpeg' => 'mp3',
+                'application/pdf' => 'pdf',
+                default => 'bin',
+            };
+            $originalName .= '.'.$extension;
+        }
+
+        if ($this->isDangerousExtension($extension)) {
+            throw new InvalidArgumentException("Uploading .{$extension} files is not permitted for security reasons.");
+        }
+
+        $size = strlen($binary);
+        $fileType = $this->determineFileType($mimeType, $extension);
+
+        app(StorageUsageService::class)->enforceQuota($user, $size);
+
+        $safeBase = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
+        if (empty($safeBase)) {
+            $safeBase = 'asset';
+        }
+        $uniqueSuffix = strtolower(Str::random(6));
+        $cleanFileName = "{$safeBase}-{$uniqueSuffix}.{$extension}";
+
+        if ($storageDriver === 'code') {
+            if (! $site) {
+                throw new InvalidArgumentException('A site must be specified to store a media file in the code repository.');
+            }
+
+            $subdir = trim($customSubdir ?: $this->defaultCodeFolder($fileType), '/');
+            $relativeSitePath = $subdir ? "{$subdir}/{$cleanFileName}" : $cleanFileName;
+            $fullDiskPath = "{$site->path}/{$relativeSitePath}";
+
+            Storage::disk('public')->put($fullDiskPath, $binary);
+
+            $publicUrl = url('/s/'.$site->slug.'/'.ltrim($relativeSitePath, '/'));
+
+            $asset = MediaAsset::create([
+                'user_id' => $user->id,
+                'site_id' => $site->id,
+                'original_name' => $originalName,
+                'path' => $fullDiskPath,
+                'disk' => 'public',
+                'storage_driver' => 'code',
+                'file_type' => $fileType,
+                'mime_type' => $mimeType,
+                'size' => $size,
+                'public_url' => $publicUrl,
+                'metadata' => [
+                    'relative_code_path' => $relativeSitePath,
+                    'folder' => $subdir,
+                    'uploaded_via' => 'base64',
+                ],
+            ]);
+
+            $this->activityLogService->log(
+                $user,
+                $site,
+                'media_uploaded_to_code',
+                "Uploaded media '{$originalName}' to site code ({$relativeSitePath})"
+            );
+
+            app(StorageUsageService::class)->calculateSiteStorageBytes($site);
+
+            return $asset;
+        }
+
+        // Default: Cloud Asset Storage (S3 / Cloudflare R2)
+        $disk = 'media';
+        $folder = $site
+            ? "sites/{$site->id}/media"
+            : "users/{$user->id}/media";
+
+        $storagePath = "{$folder}/{$cleanFileName}";
+
+        Storage::disk($disk)->put($storagePath, $binary, 'public');
+
+        $publicUrl = $this->publicUrlFor($storagePath);
+
+        $asset = MediaAsset::create([
+            'user_id' => $user->id,
+            'site_id' => $site?->id,
+            'original_name' => $originalName,
+            'path' => $storagePath,
+            'disk' => $disk,
+            'storage_driver' => 'asset_storage',
+            'file_type' => $fileType,
+            'mime_type' => $mimeType,
+            'size' => $size,
+            'public_url' => $publicUrl,
+            'metadata' => [
+                'provider' => $this->getActiveStorageProvider(),
+                'uploaded_via' => 'base64',
             ],
         ]);
 
@@ -194,7 +338,7 @@ class MediaStorageService
             Storage::disk('media')->put($targetPath, $content, 'public');
             Storage::disk($sourceDisk)->delete($asset->path);
 
-            $publicUrl = Storage::disk('media')->url($targetPath);
+            $publicUrl = $this->publicUrlFor($targetPath);
 
             $asset->update([
                 'disk' => 'media',
@@ -319,7 +463,7 @@ class MediaStorageService
         $targetPath = "{$folder}/{$cleanFileName}";
 
         Storage::disk('media')->put($targetPath, $content, 'public');
-        $publicUrl = Storage::disk('media')->url($targetPath);
+        $publicUrl = $this->publicUrlFor($targetPath);
 
         if ($deleteFromCode) {
             Storage::disk('public')->delete($sourceDiskPath);
@@ -350,6 +494,224 @@ class MediaStorageService
         );
 
         return $asset;
+    }
+
+    /**
+     * Build a public delivery URL for a media-disk path. When a custom
+     * domain fronting the object-storage bucket is configured (e.g.
+     * assets.drophtml.de on Cloudflare R2), it is preferred over the
+     * driver's default URL.
+     */
+    public function publicUrlFor(string $path): string
+    {
+        $base = config('media.public_url');
+
+        if (filled($base) && $this->cloudStorageConfigured()) {
+            return rtrim($base, '/').'/'.ltrim($path, '/');
+        }
+
+        return Storage::disk('media')->url($path);
+    }
+
+    /**
+     * Whether cloud object storage (S3 / Cloudflare R2) is the active media disk.
+     */
+    public function cloudStorageConfigured(): bool
+    {
+        return config('filesystems.disks.media.driver') === 's3';
+    }
+
+    /**
+     * Automatically offload large media files (images/videos at or above the
+     * configured size threshold) from a site's code bundle to cloud asset
+     * storage, and rewrite references in the site's text files to the cloud
+     * delivery URL.
+     *
+     * @return array<int, array{path: string, url: string, size: int, replacements: int}>
+     */
+    public function offloadLargeAssets(Site $site, ?User $actor = null): array
+    {
+        if (! config('media.offload.enabled', true) || ! $this->cloudStorageConfigured()) {
+            return [];
+        }
+
+        $threshold = ((int) config('media.offload.threshold_kb', 512)) * 1024;
+        $types = config('media.offload.types', ['image', 'video']);
+
+        if ($threshold <= 0 || empty($types)) {
+            return [];
+        }
+
+        $publicDisk = Storage::disk('public');
+        $prefix = rtrim($site->path, '/').'/';
+        $candidates = [];
+
+        // Pass 1: collect offload candidates.
+        foreach ($publicDisk->allFiles($site->path) as $diskPath) {
+            if (! str_starts_with($diskPath, $prefix)) {
+                continue;
+            }
+
+            $size = $publicDisk->size($diskPath);
+            if ($size < $threshold) {
+                continue;
+            }
+
+            $relativePath = substr($diskPath, strlen($prefix));
+            $extension = strtolower(pathinfo($relativePath, PATHINFO_EXTENSION));
+            $mimeType = $publicDisk->mimeType($diskPath) ?: 'application/octet-stream';
+
+            if (! in_array($this->determineFileType($mimeType, $extension), $types, true)) {
+                continue;
+            }
+
+            $candidates[] = [
+                'disk_path' => $diskPath,
+                'relative_path' => $relativePath,
+                'size' => $size,
+                'mime_type' => $mimeType,
+            ];
+        }
+
+        if (empty($candidates)) {
+            return [];
+        }
+
+        // Offloaded bytes consume cloud storage quota — abort gracefully when exceeded.
+        try {
+            app(StorageUsageService::class)->enforceQuota($site->user, (int) collect($candidates)->sum('size'));
+        } catch (ValidationException) {
+            if ($actor) {
+                $this->activityLogService->log(
+                    $actor,
+                    $site,
+                    'media_offload_skipped',
+                    'Skipped automatic media offload: cloud storage quota exceeded'
+                );
+            }
+
+            return [];
+        }
+
+        // Pass 2: move to cloud storage and rewrite references.
+        $offloaded = [];
+
+        foreach ($candidates as $candidate) {
+            $relativePath = $candidate['relative_path'];
+            $targetPath = "sites/{$site->id}/offload/{$relativePath}";
+
+            $content = $publicDisk->get($candidate['disk_path']);
+            Storage::disk('media')->put($targetPath, $content, 'public');
+
+            $publicUrl = $this->publicUrlFor($targetPath);
+
+            $publicDisk->delete($candidate['disk_path']);
+
+            MediaAsset::create([
+                'user_id' => $site->user_id,
+                'site_id' => $site->id,
+                'original_name' => basename($relativePath),
+                'path' => $targetPath,
+                'disk' => 'media',
+                'storage_driver' => 'asset_storage',
+                'file_type' => $this->determineFileType($candidate['mime_type'], pathinfo($relativePath, PATHINFO_EXTENSION)),
+                'mime_type' => $candidate['mime_type'],
+                'size' => $candidate['size'],
+                'public_url' => $publicUrl,
+                'metadata' => [
+                    'offloaded_from_code' => $relativePath,
+                    'relative_code_path' => $relativePath,
+                    'provider' => $this->getActiveStorageProvider(),
+                    'offloaded_at' => now()->toIso8601String(),
+                ],
+            ]);
+
+            $replacements = $this->rewriteReferences($site, $relativePath, $publicUrl);
+
+            $offloaded[] = [
+                'path' => $relativePath,
+                'url' => $publicUrl,
+                'size' => $candidate['size'],
+                'replacements' => $replacements,
+            ];
+        }
+
+        app(StorageUsageService::class)->calculateSiteStorageBytes($site);
+
+        if ($actor) {
+            $this->activityLogService->log(
+                $actor,
+                $site,
+                'media_offloaded_to_cloud',
+                'Offloaded '.count($offloaded).' large media file(s) to Cloud Asset Storage ('.$this->getActiveStorageProvider().')'
+            );
+        }
+
+        return $offloaded;
+    }
+
+    /**
+     * Rewrite references to an offloaded code path inside the site's text
+     * files (HTML/CSS/JS/...) so they point at the cloud delivery URL.
+     * Returns the number of files updated.
+     */
+    protected function rewriteReferences(Site $site, string $relativePath, string $newUrl): int
+    {
+        $publicDisk = Storage::disk('public');
+        $prefix = rtrim($site->path, '/').'/';
+        $textExtensions = ['html', 'htm', 'css', 'js', 'mjs', 'json', 'txt', 'md', 'svg', 'webmanifest', 'xml'];
+        $quotedRel = preg_quote($relativePath, '~');
+        $replacementUrl = str_replace(['$', '\\'], '', $newUrl);
+        $updated = 0;
+
+        foreach ($publicDisk->allFiles($site->path) as $diskPath) {
+            if (! str_starts_with($diskPath, $prefix)) {
+                continue;
+            }
+
+            $extension = strtolower(pathinfo($diskPath, PATHINFO_EXTENSION));
+            if (! in_array($extension, $textExtensions, true)) {
+                continue;
+            }
+
+            $content = $publicDisk->get($diskPath);
+
+            if (! is_string($content) || $content === '' || str_contains($content, "\0")) {
+                continue;
+            }
+
+            $original = $content;
+
+            // src / href / poster attributes: rel, /rel, ./rel (plus query/fragment suffixes)
+            $content = preg_replace(
+                '~((?:src|href|poster|data-src|data-href)\s*=\s*["\'])(?:\./)?/?'.$quotedRel.'(["\'?#])~',
+                '$1'.$replacementUrl.'$2',
+                $content
+            );
+
+            // CSS url(...) references
+            $content = preg_replace(
+                '~url\(\s*["\']?(?:\./)?/?'.$quotedRel.'["\']?\s*\)~',
+                'url("'.$replacementUrl.'")',
+                $content
+            );
+
+            // srcset-style lists: replace the path inside the attribute value only
+            $content = preg_replace_callback(
+                '~((?:srcset|data-srcset)\s*=\s*["\'])([^"\']*)~',
+                function ($matches) use ($quotedRel, $replacementUrl) {
+                    return $matches[1].preg_replace('~(?:\./)?/?'.$quotedRel.'(?=[\s,"\'])~', $replacementUrl, $matches[2]);
+                },
+                $content
+            );
+
+            if ($content !== $original) {
+                $publicDisk->put($diskPath, $content);
+                $updated++;
+            }
+        }
+
+        return $updated;
     }
 
     /**
