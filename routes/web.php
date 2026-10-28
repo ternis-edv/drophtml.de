@@ -38,10 +38,11 @@ Route::domain($appDomain)->group(function () {
         ]);
     })->name('home');
 
-    Route::view('/barnading', 'pages.branding', [
+    Route::view('/branding', 'pages.branding', [
         'title' => 'Branding',
         'description' => 'Official DropHTML logos, wordmarks, icons, colors, and brand guidelines.',
     ])->name('branding');
+    Route::permanentRedirect('/barnading', '/branding');
 
     Route::get('/legal/{page}', function ($page) {
         if (! in_array($page, ['privacy', 'terms', 'imprint'])) {
