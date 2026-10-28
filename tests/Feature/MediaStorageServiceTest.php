@@ -32,7 +32,7 @@ test('can store media asset in cloud asset storage (S3/R2)', function () {
     $this->assertDatabaseHas('media_assets', [
         'id' => $asset->id,
         'user_id' => $user->id,
-        'storage_driver' => 'asset_storage',
+        'storage_location' => 'asset_storage',
     ]);
 });
 
@@ -199,4 +199,55 @@ it('escapes special filenames and URLs in portable embed snippets', function () 
         ->toContain('alt="A [draft] &quot;image&quot;.png"')
         ->toContain('?x=1&amp;y=2');
     expect($asset->markdown_tag)->toBe('![A \\[draft\\] "image".png](<https://cdn.example.test/a%20(draft).png?x=1&y=2>)');
+});
+
+test('UUID media keys resolve against the current delivery domain without persisting URLs', function () {
+    config(['filesystems.disks.media.driver' => 's3', 'media.public_url' => 'https://assets.example.test']);
+    $asset = $this->service->storeBase64(base64_encode('image content'), 'hero.png', User::factory()->create());
+
+    expect($asset->path)->toBe($asset->id.'.png')
+        ->and($asset->storage_key)->toBe($asset->id.'.png')
+        ->and($asset->extension)->toBe('png')
+        ->and($asset->getRawOriginal('public_url'))->toBeNull()
+        ->and($asset->resolved_url)->toBe('https://assets.example.test/'.$asset->id.'.png');
+
+    config(['media.public_url' => 'https://new.example.test']);
+    expect($asset->fresh()->resolved_url)->toBe('https://new.example.test/'.$asset->id.'.png');
+});
+
+test('legacy media migration is opt in and preserves source objects and legacy URLs', function () {
+    $asset = MediaAsset::create([
+        'user_id' => User::factory()->create()->id,
+        'original_name' => 'hero.png',
+        'path' => 'users/old/media/hero.png',
+        'disk' => 'media',
+        'storage_driver' => 'asset_storage',
+        'file_type' => 'image',
+        'size' => 7,
+        'public_url' => 'https://old.example.test/hero.png',
+    ]);
+    Storage::disk('media')->put($asset->path, 'content');
+    $this->artisan('media:migrate-keys')->assertSuccessful();
+    expect($asset->fresh()->path)->toBe('users/old/media/hero.png');
+    $this->artisan('media:migrate-keys', ['--apply' => true])->assertSuccessful();
+    $asset->refresh();
+    expect($asset->path)->toBe($asset->id.'.png')
+        ->and($asset->metadata['legacy_public_url'])->toBe('https://old.example.test/hero.png');
+    Storage::disk('media')->assertExists('users/old/media/hero.png');
+    expect(Storage::disk('media')->get($asset->path))->toBe('content');
+    $this->artisan('media:migrate-keys', ['--apply' => true])->assertSuccessful();
+});
+
+test('legacy migration refuses to replace a conflicting UUID object', function () {
+    $asset = MediaAsset::create([
+        'user_id' => User::factory()->create()->id,
+        'original_name' => 'hero.png', 'path' => 'legacy/hero.png',
+        'disk' => 'media', 'storage_driver' => 'asset_storage',
+        'file_type' => 'image', 'size' => 7,
+    ]);
+    Storage::disk('media')->put($asset->path, 'original');
+    Storage::disk('media')->put($asset->id.'.png', 'different');
+    $this->artisan('media:migrate-keys', ['--apply' => true])->assertFailed();
+    expect($asset->fresh()->path)->toBe('legacy/hero.png');
+    expect(Storage::disk('media')->get($asset->id.'.png'))->toBe('different');
 });

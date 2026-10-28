@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\MediaStorageService;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +15,10 @@ class MediaAsset extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $fillable = [
+        'id',
+        'storage_key',
+        'storage_location',
+        'extension',
         'user_id',
         'site_id',
         'original_name',
@@ -38,6 +44,61 @@ class MediaAsset extends Model
         'markdown_tag',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (self $asset) {
+            $asset->extension = strtolower(pathinfo($asset->path, PATHINFO_EXTENSION));
+            if ($asset->hasUuidKey() || $asset->storage_driver === 'code') {
+                $asset->attributes['public_url'] = null;
+            }
+        });
+    }
+
+    public function storageDisk(): Filesystem
+    {
+        $disk = Storage::disk($this->disk ?: 'media');
+        if ($this->storage_driver !== 'asset_storage' || $this->hasUuidKey()
+            || config('filesystems.disks.media.driver') !== 's3' || $disk->exists($this->path)) {
+            return $disk;
+        }
+
+        // Previous releases accidentally used the server path as the R2 key prefix.
+        return Storage::build(array_merge(config('filesystems.disks.media'), [
+            'root' => config('media.legacy_root'),
+        ]));
+    }
+
+    public function hasUuidKey(): bool
+    {
+        return $this->path === $this->id.'.'.strtolower(pathinfo($this->path ?? '', PATHINFO_EXTENSION));
+    }
+
+    // Compatibility for existing API clients and site-code integrations.
+    public function getPathAttribute(): ?string
+    {
+        return $this->attributes['storage_key'] ?? null;
+    }
+
+    public function setPathAttribute($value): void
+    {
+        $this->attributes['storage_key'] = $value;
+    }
+
+    public function getStorageDriverAttribute(): ?string
+    {
+        return $this->attributes['storage_location'] ?? null;
+    }
+
+    public function setStorageDriverAttribute($value): void
+    {
+        $this->attributes['storage_location'] = $value;
+    }
+
+    public function getPublicUrlAttribute(): string
+    {
+        return $this->resolved_url;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -50,12 +111,12 @@ class MediaAsset extends Model
 
     public function scopeAssetStorage($query)
     {
-        return $query->where('storage_driver', 'asset_storage');
+        return $query->where('storage_location', 'asset_storage');
     }
 
     public function scopeInCode($query)
     {
-        return $query->where('storage_driver', 'code');
+        return $query->where('storage_location', 'code');
     }
 
     public function scopeOfType($query, string $type)
@@ -124,8 +185,8 @@ class MediaAsset extends Model
      */
     public function getResolvedUrlAttribute(): string
     {
-        if (! empty($this->public_url)) {
-            return $this->public_url;
+        if (! empty($this->attributes['public_url']) && ! $this->hasUuidKey()) {
+            return $this->attributes['public_url'];
         }
 
         if ($this->storage_driver === 'code') {
@@ -145,7 +206,7 @@ class MediaAsset extends Model
 
         $disk = $this->disk ?: 'media';
 
-        return Storage::disk($disk)->url($this->path);
+        return app(MediaStorageService::class)->publicUrlFor($this->path);
     }
 
     /**

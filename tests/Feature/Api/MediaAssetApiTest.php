@@ -54,7 +54,7 @@ test('user can upload media to cloud asset storage via API', function () {
     $this->assertDatabaseHas('media_assets', [
         'user_id' => $user->id,
         'original_name' => 'test-image.jpg',
-        'storage_driver' => 'asset_storage',
+        'storage_location' => 'asset_storage',
     ]);
 });
 
@@ -86,7 +86,7 @@ test('user can upload media to site code storage via API', function () {
         'user_id' => $user->id,
         'site_id' => $site->id,
         'original_name' => 'whitepaper.pdf',
-        'storage_driver' => 'code',
+        'storage_location' => 'code',
     ]);
 });
 

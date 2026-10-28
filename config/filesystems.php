@@ -1,5 +1,7 @@
 <?php
 
+$mediaDriver = env('MEDIA_DISK_DRIVER', (env('R2_ACCESS_KEY_ID') || env('AWS_ACCESS_KEY_ID')) ? 's3' : 'local');
+
 return [
 
     /*
@@ -61,8 +63,8 @@ return [
         ],
 
         'media' => [
-            'driver' => env('MEDIA_DISK_DRIVER', (env('R2_ACCESS_KEY_ID') || env('AWS_ACCESS_KEY_ID')) ? 's3' : 'local'),
-            'root' => storage_path('app/public'),
+            'driver' => $mediaDriver,
+            'root' => $mediaDriver === 'local' ? storage_path('app/public') : '',
             'key' => env('R2_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
             'secret' => env('R2_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
             'region' => env('R2_DEFAULT_REGION', env('AWS_DEFAULT_REGION', 'auto')),
@@ -70,7 +72,7 @@ return [
             'url' => env('R2_URL', env('AWS_URL', rtrim(env('APP_URL', 'http://localhost'), '/').'/storage')),
             'endpoint' => env('R2_ENDPOINT', env('AWS_ENDPOINT')),
             'use_path_style_endpoint' => env('R2_USE_PATH_STYLE_ENDPOINT', env('AWS_USE_PATH_STYLE_ENDPOINT', false)),
-            'throw' => false,
+            'throw' => true,
             'report' => false,
             'visibility' => 'public',
         ],

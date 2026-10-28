@@ -64,27 +64,30 @@ test('large images in a code bundle are offloaded to cloud storage and reference
 
     $offloaded = $this->service->offloadLargeAssets($site, $user);
 
+    $asset = MediaAsset::where('site_id', $site->id)->firstOrFail();
+    expect($asset->path)->toBe($asset->id.'.jpg');
     expect($offloaded)->toHaveCount(1)
         ->and($offloaded[0]['path'])->toBe('images/hero.jpg')
-        ->and($offloaded[0]['url'])->toBe("https://assets.drophtml.de/sites/{$site->id}/offload/images/hero.jpg");
+        ->and($offloaded[0]['url'])->toBe("https://assets.drophtml.de/{$asset->id}.jpg");
 
     // File moved from code bundle to cloud storage
+    $asset = MediaAsset::where('site_id', $site->id)->firstOrFail();
     Storage::disk('public')->assertMissing("{$site->path}/images/hero.jpg");
-    Storage::disk('media')->assertExists("sites/{$site->id}/offload/images/hero.jpg");
+    Storage::disk('media')->assertExists($asset->path);
 
     // MediaAsset tracked as cloud asset with the custom-domain URL
     $asset = MediaAsset::where('site_id', $site->id)->first();
     expect($asset->storage_driver)->toBe('asset_storage')
-        ->and($asset->public_url)->toBe("https://assets.drophtml.de/sites/{$site->id}/offload/images/hero.jpg")
+        ->and($asset->public_url)->toBe("https://assets.drophtml.de/{$asset->id}.jpg")
         ->and($asset->metadata['offloaded_from_code'])->toBe('images/hero.jpg');
 
     // References rewritten in HTML and CSS
     $html = Storage::disk('public')->get("{$site->path}/index.html");
     $css = Storage::disk('public')->get("{$site->path}/css/site.css");
 
-    expect($html)->toContain("https://assets.drophtml.de/sites/{$site->id}/offload/images/hero.jpg")
+    expect($html)->toContain("https://assets.drophtml.de/{$asset->id}.jpg")
         ->not->toContain('src="images/hero.jpg"')
-        ->and($css)->toContain("url(\"https://assets.drophtml.de/sites/{$site->id}/offload/images/hero.jpg\")");
+        ->and($css)->toContain("url(\"https://assets.drophtml.de/{$asset->id}.jpg\")");
 });
 
 test('small files and non-media files stay in the code bundle', function () {
@@ -126,11 +129,12 @@ test('site uploads automatically offload large media', function () {
 
     $site = app(SiteDeploymentService::class)->createSiteFromUpload($file, 'my-site.zip', $user);
 
+    $asset = MediaAsset::where('site_id', $site->id)->firstOrFail();
     Storage::disk('public')->assertMissing("{$site->path}/images/hero.jpg");
-    Storage::disk('media')->assertExists("sites/{$site->id}/offload/images/hero.jpg");
+    Storage::disk('media')->assertExists($asset->path);
 
     $html = Storage::disk('public')->get("{$site->path}/index.html");
-    expect($html)->toContain("https://assets.drophtml.de/sites/{$site->id}/offload/images/hero.jpg");
+    expect($html)->toContain("https://assets.drophtml.de/{$asset->id}.jpg");
 
     @unlink($zipPath);
 });

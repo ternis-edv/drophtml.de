@@ -24,7 +24,7 @@ class StorageUsageService
 
         // 1. Cloud Media Storage
         $mediaAssets = $user->mediaAssets()->get();
-        $cloudMediaAssets = $mediaAssets->where('storage_driver', 'asset_storage');
+        $cloudMediaAssets = $mediaAssets->where('storage_location', 'asset_storage');
         $cloudMediaBytes = (int) $cloudMediaAssets->sum('size');
 
         // 2. Site Code Bundles
@@ -182,7 +182,7 @@ class StorageUsageService
         }
 
         $cloudMediaBytes = (int) $site->mediaAssets()
-            ->where('storage_driver', 'asset_storage')
+            ->where('storage_location', 'asset_storage')
             ->sum('size');
 
         $localDisk = Storage::disk('local');
@@ -265,7 +265,7 @@ class StorageUsageService
 
         // 1. Cloud media
         $mediaAssets = $user->mediaAssets()
-            ->where('storage_driver', 'asset_storage')
+            ->where('storage_location', 'asset_storage')
             ->orderByDesc('size')
             ->take($limit)
             ->get();

@@ -298,6 +298,10 @@ class SiteDeploymentService
             Storage::disk('local')->deleteDirectory("snapshots/{$site->id}");
         }
 
+        foreach ($site->mediaAssets()->withTrashed()->get() as $asset) {
+            app(MediaStorageService::class)->delete($asset);
+        }
+
         // Clean up cloud media assets directory for this site
         Storage::disk('media')->deleteDirectory("sites/{$site->id}");
 
@@ -393,7 +397,7 @@ class SiteDeploymentService
             $manifestAssets = [];
 
             foreach ($mediaAssets as $media) {
-                $targetDisk = Storage::disk($media->disk ?: 'media');
+                $targetDisk = $media->storageDisk();
                 if ($targetDisk->exists($media->path)) {
                     $mediaContent = $targetDisk->get($media->path);
                     $archivePath = '_cloud_media/'.$media->original_name;
@@ -503,17 +507,25 @@ class SiteDeploymentService
             } else {
                 $cloudSourcePath = $mediaAsset->path;
                 $cloudFileName = basename($cloudSourcePath);
-                $newCloudPath = "sites/{$clonedSite->id}/media/{$cloudFileName}";
+                $newAssetId = (string) Str::uuid7();
+                $newCloudPath = $newAssetId.'.'.strtolower(pathinfo($cloudFileName, PATHINFO_EXTENSION));
 
-                if (Storage::disk('media')->exists($cloudSourcePath)) {
-                    Storage::disk('media')->copy($cloudSourcePath, $newCloudPath);
+                if ($mediaAsset->storageDisk()->exists($cloudSourcePath)) {
+                    $stream = $mediaAsset->storageDisk()->readStream($cloudSourcePath);
+                    try {
+                        Storage::disk('media')->put($newCloudPath, $stream, 'public');
+                    } finally {
+                        if (is_resource($stream)) {
+                            fclose($stream);
+                        }
+                    }
                     $newPublicUrl = app(MediaStorageService::class)->publicUrlFor($newCloudPath);
                 } else {
-                    $newCloudPath = $cloudSourcePath;
-                    $newPublicUrl = $mediaAsset->public_url;
+                    throw new RuntimeException('Source media file missing: '.$cloudSourcePath);
                 }
 
                 MediaAsset::create([
+                    'id' => $newAssetId,
                     'user_id' => $user->id,
                     'site_id' => $clonedSite->id,
                     'original_name' => $mediaAsset->original_name,

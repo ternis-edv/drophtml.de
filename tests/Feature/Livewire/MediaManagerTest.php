@@ -39,7 +39,7 @@ test('user can upload media via Livewire media manager component', function () {
     $this->assertDatabaseHas('media_assets', [
         'user_id' => $user->id,
         'original_name' => 'nature.webp',
-        'storage_driver' => 'asset_storage',
+        'storage_location' => 'asset_storage',
     ]);
 });
 

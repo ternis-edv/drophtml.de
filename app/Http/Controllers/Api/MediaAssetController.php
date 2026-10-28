@@ -33,7 +33,7 @@ class MediaAssetController extends Controller
         }
 
         if ($request->filled('storage_driver')) {
-            $query->where('storage_driver', $request->input('storage_driver'));
+            $query->where('storage_location', $request->input('storage_driver'));
         }
 
         if ($request->filled('file_type')) {

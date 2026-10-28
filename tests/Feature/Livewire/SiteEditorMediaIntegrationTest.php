@@ -38,7 +38,7 @@ test('site editor allows switching to cloud assets tab and uploading to S3/R2', 
     $this->assertDatabaseHas('media_assets', [
         'site_id' => $site->id,
         'original_name' => 'cloud-graphic.png',
-        'storage_driver' => 'asset_storage',
+        'storage_location' => 'asset_storage',
     ]);
 });
 
@@ -85,7 +85,7 @@ test('site editor can migrate binary file to cloud asset storage', function () {
     $this->assertDatabaseHas('media_assets', [
         'site_id' => $site->id,
         'original_name' => 'big-image.png',
-        'storage_driver' => 'asset_storage',
+        'storage_location' => 'asset_storage',
     ]);
 
     expect(Storage::disk('public')->exists("{$site->path}/big-image.png"))->toBeFalse();

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\ProfileResource;
+use App\Services\MediaStorageService;
 use App\Services\SiteDeploymentService;
 use App\Services\StorageUsageService;
 use Illuminate\Http\Request;
@@ -64,6 +65,10 @@ class ProfileController extends Controller
 
         foreach ($user->sites as $site) {
             $this->siteDeploymentService->deleteSite($site);
+        }
+
+        foreach ($user->mediaAssets()->withTrashed()->get() as $asset) {
+            app(MediaStorageService::class)->delete($asset);
         }
 
         // Clean up standalone user cloud media assets

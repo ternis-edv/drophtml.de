@@ -28,7 +28,7 @@ class MediaStorageService
         string $storageDriver = 'asset_storage',
         ?string $customSubdir = null
     ): MediaAsset {
-        $extension = strtolower($file->getClientOriginalExtension());
+        $extension = strtolower($file->getClientOriginalExtension()) ?: 'bin';
 
         if ($this->isDangerousExtension($extension)) {
             throw new InvalidArgumentException("Uploading .{$extension} files is not permitted for security reasons.");
@@ -75,7 +75,6 @@ class MediaStorageService
                 'file_type' => $fileType,
                 'mime_type' => $mimeType,
                 'size' => $size,
-                'public_url' => $publicUrl,
                 'metadata' => [
                     'relative_code_path' => $relativeSitePath,
                     'folder' => $subdir,
@@ -96,13 +95,11 @@ class MediaStorageService
 
         // Default: Cloud Asset Storage (S3 / Cloudflare R2)
         $disk = 'media';
-        $folder = $site
-            ? "sites/{$site->id}/media"
-            : "users/{$user->id}/media";
 
-        $storagePath = "{$folder}/{$cleanFileName}";
+        $assetId = (string) Str::uuid7();
+        $storagePath = $assetId.'.'.$extension;
 
-        Storage::disk($disk)->putFileAs($folder, $file, $cleanFileName, 'public');
+        Storage::disk($disk)->putFileAs('', $file, $storagePath, 'public');
 
         $publicUrl = $this->publicUrlFor($storagePath);
 
@@ -110,13 +107,13 @@ class MediaStorageService
             'user_id' => $user->id,
             'site_id' => $site?->id,
             'original_name' => $originalName,
+            'id' => $assetId,
             'path' => $storagePath,
             'disk' => $disk,
             'storage_driver' => 'asset_storage',
             'file_type' => $fileType,
             'mime_type' => $mimeType,
             'size' => $size,
-            'public_url' => $publicUrl,
             'metadata' => [
                 'provider' => $this->getActiveStorageProvider(),
             ],
@@ -216,7 +213,6 @@ class MediaStorageService
                 'file_type' => $fileType,
                 'mime_type' => $mimeType,
                 'size' => $size,
-                'public_url' => $publicUrl,
                 'metadata' => [
                     'relative_code_path' => $relativeSitePath,
                     'folder' => $subdir,
@@ -238,11 +234,9 @@ class MediaStorageService
 
         // Default: Cloud Asset Storage (S3 / Cloudflare R2)
         $disk = 'media';
-        $folder = $site
-            ? "sites/{$site->id}/media"
-            : "users/{$user->id}/media";
 
-        $storagePath = "{$folder}/{$cleanFileName}";
+        $assetId = (string) Str::uuid7();
+        $storagePath = $assetId.'.'.$extension;
 
         Storage::disk($disk)->put($storagePath, $binary, 'public');
 
@@ -252,13 +246,13 @@ class MediaStorageService
             'user_id' => $user->id,
             'site_id' => $site?->id,
             'original_name' => $originalName,
+            'id' => $assetId,
             'path' => $storagePath,
             'disk' => $disk,
             'storage_driver' => 'asset_storage',
             'file_type' => $fileType,
             'mime_type' => $mimeType,
             'size' => $size,
-            'public_url' => $publicUrl,
             'metadata' => [
                 'provider' => $this->getActiveStorageProvider(),
                 'uploaded_via' => 'base64',
@@ -280,10 +274,16 @@ class MediaStorageService
      */
     public function delete(MediaAsset $asset, ?User $actor = null): bool
     {
-        $diskName = $asset->disk ?: ($asset->storage_driver === 'code' ? 'public' : 'media');
+        if ($asset->storageDisk()->exists($asset->path)) {
+            $asset->storageDisk()->delete($asset->path);
+        }
 
-        if (Storage::disk($diskName)->exists($asset->path)) {
-            Storage::disk($diskName)->delete($asset->path);
+        if ($legacyKey = ($asset->metadata['legacy_storage_key'] ?? null)) {
+            $legacy = clone $asset;
+            $legacy->path = $legacyKey;
+            if ($legacy->storageDisk()->exists($legacyKey)) {
+                $legacy->storageDisk()->delete($legacyKey);
+            }
         }
 
         if ($actor) {
@@ -322,21 +322,17 @@ class MediaStorageService
 
         if ($targetDriver === 'asset_storage') {
             // Migrate from Code -> S3/R2 Asset Storage
-            $sourceDisk = 'public';
-            if (! Storage::disk($sourceDisk)->exists($asset->path)) {
+            if (! $asset->storageDisk()->exists($asset->path)) {
                 throw new RuntimeException("Source code file not found: {$asset->path}");
             }
 
-            $content = Storage::disk($sourceDisk)->get($asset->path);
-            $folder = $asset->site
-                ? "sites/{$asset->site->id}/media"
-                : "users/{$asset->user_id}/media";
+            $content = $asset->storageDisk()->get($asset->path);
 
-            $filename = basename($asset->path);
-            $targetPath = "{$folder}/{$filename}";
+            $filename = Str::slug(pathinfo($asset->original_name, PATHINFO_FILENAME)).'-'.$asset->id.'.'.strtolower(pathinfo($asset->path, PATHINFO_EXTENSION));
+            $targetPath = $asset->id.'.'.strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
             Storage::disk('media')->put($targetPath, $content, 'public');
-            Storage::disk($sourceDisk)->delete($asset->path);
+            $asset->storageDisk()->delete($asset->path);
 
             $publicUrl = $this->publicUrlFor($targetPath);
 
@@ -344,7 +340,6 @@ class MediaStorageService
                 'disk' => 'media',
                 'storage_driver' => 'asset_storage',
                 'path' => $targetPath,
-                'public_url' => $publicUrl,
                 'metadata' => array_merge($asset->metadata ?? [], [
                     'migrated_from' => 'code',
                     'migrated_at' => now()->toIso8601String(),
@@ -370,19 +365,18 @@ class MediaStorageService
                 throw new InvalidArgumentException('Target site is required to migrate asset to Code.');
             }
 
-            $sourceDisk = $asset->disk ?: 'media';
-            if (! Storage::disk($sourceDisk)->exists($asset->path)) {
+            if (! $asset->storageDisk()->exists($asset->path)) {
                 throw new RuntimeException("Source asset storage file not found: {$asset->path}");
             }
 
-            $content = Storage::disk($sourceDisk)->get($asset->path);
+            $content = $asset->storageDisk()->get($asset->path);
             $subdir = $this->defaultCodeFolder($asset->file_type);
-            $filename = basename($asset->path);
+            $filename = Str::slug(pathinfo($asset->original_name, PATHINFO_FILENAME)).'-'.$asset->id.'.'.strtolower(pathinfo($asset->path, PATHINFO_EXTENSION));
             $relativeSitePath = "{$subdir}/{$filename}";
             $targetPath = "{$site->path}/{$relativeSitePath}";
 
             Storage::disk('public')->put($targetPath, $content);
-            Storage::disk($sourceDisk)->delete($asset->path);
+            $asset->storageDisk()->delete($asset->path);
 
             $publicUrl = url('/s/'.$site->slug.'/'.ltrim($relativeSitePath, '/'));
 
@@ -391,7 +385,6 @@ class MediaStorageService
                 'disk' => 'public',
                 'storage_driver' => 'code',
                 'path' => $targetPath,
-                'public_url' => $publicUrl,
                 'metadata' => array_merge($asset->metadata ?? [], [
                     'migrated_from' => 'asset_storage',
                     'migrated_at' => now()->toIso8601String(),
@@ -419,14 +412,13 @@ class MediaStorageService
      */
     public function copyToCode(MediaAsset $asset, Site $site, ?string $subpath = null): string
     {
-        $sourceDisk = $asset->disk ?: 'media';
-        if (! Storage::disk($sourceDisk)->exists($asset->path)) {
+        if (! $asset->storageDisk()->exists($asset->path)) {
             throw new RuntimeException("Asset file not found in storage: {$asset->path}");
         }
 
-        $content = Storage::disk($sourceDisk)->get($asset->path);
+        $content = $asset->storageDisk()->get($asset->path);
         $folder = trim($subpath ?: $this->defaultCodeFolder($asset->file_type), '/');
-        $filename = basename($asset->path);
+        $filename = Str::slug(pathinfo($asset->original_name, PATHINFO_FILENAME)).'-'.$asset->id.'.'.strtolower(pathinfo($asset->path, PATHINFO_EXTENSION));
         $relPath = $folder ? "{$folder}/{$filename}" : $filename;
         $targetDiskPath = "{$site->path}/{$relPath}";
 
@@ -457,10 +449,8 @@ class MediaStorageService
         $size = Storage::disk('public')->size($sourceDiskPath) ?: 0;
         $fileType = $this->determineFileType($mimeType, $ext);
 
-        $folder = "sites/{$site->id}/media";
-        $safeBase = Str::slug(pathinfo($originalName, PATHINFO_FILENAME));
-        $cleanFileName = "{$safeBase}-".strtolower(Str::random(6)).".{$ext}";
-        $targetPath = "{$folder}/{$cleanFileName}";
+        $assetId = (string) Str::uuid7();
+        $targetPath = $assetId.'.'.$ext;
 
         Storage::disk('media')->put($targetPath, $content, 'public');
         $publicUrl = $this->publicUrlFor($targetPath);
@@ -470,6 +460,7 @@ class MediaStorageService
         }
 
         $asset = MediaAsset::create([
+            'id' => $assetId,
             'user_id' => $user->id,
             'site_id' => $site->id,
             'original_name' => $originalName,
@@ -479,7 +470,6 @@ class MediaStorageService
             'file_type' => $fileType,
             'mime_type' => $mimeType,
             'size' => $size,
-            'public_url' => $publicUrl,
             'metadata' => [
                 'promoted_from_code' => $relativePath,
                 'provider' => $this->getActiveStorageProvider(),
@@ -598,7 +588,8 @@ class MediaStorageService
 
         foreach ($candidates as $candidate) {
             $relativePath = $candidate['relative_path'];
-            $targetPath = "sites/{$site->id}/offload/{$relativePath}";
+            $assetId = (string) Str::uuid7();
+            $targetPath = $assetId.'.'.strtolower(pathinfo($relativePath, PATHINFO_EXTENSION));
 
             $content = $publicDisk->get($candidate['disk_path']);
             Storage::disk('media')->put($targetPath, $content, 'public');
@@ -608,6 +599,7 @@ class MediaStorageService
             $publicDisk->delete($candidate['disk_path']);
 
             MediaAsset::create([
+                'id' => $assetId,
                 'user_id' => $site->user_id,
                 'site_id' => $site->id,
                 'original_name' => basename($relativePath),
@@ -617,7 +609,6 @@ class MediaStorageService
                 'file_type' => $this->determineFileType($candidate['mime_type'], pathinfo($relativePath, PATHINFO_EXTENSION)),
                 'mime_type' => $candidate['mime_type'],
                 'size' => $candidate['size'],
-                'public_url' => $publicUrl,
                 'metadata' => [
                     'offloaded_from_code' => $relativePath,
                     'relative_code_path' => $relativePath,

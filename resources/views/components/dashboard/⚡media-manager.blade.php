@@ -224,7 +224,7 @@ new class extends Component
         }
 
         if ($this->driverFilter !== 'all') {
-            $query->where('storage_driver', $this->driverFilter);
+            $query->where('storage_location', $this->driverFilter);
         }
 
         if (! empty($this->search)) {

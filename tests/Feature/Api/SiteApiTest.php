@@ -144,7 +144,9 @@ test('user can duplicate a site via API including media assets', function () {
     $clonedSite = Site::where('slug', 'my-cloned-site')->first();
     expect($clonedSite)->not->toBeNull();
     expect(Storage::disk('public')->exists("{$clonedSite->path}/index.html"))->toBeTrue();
-    expect(Storage::disk('media')->exists("sites/{$clonedSite->id}/media/hero-123.webp"))->toBeTrue();
+    $clonedAsset = $clonedSite->mediaAssets()->firstOrFail();
+    expect($clonedAsset->path)->toBe($clonedAsset->id.'.webp');
+    Storage::disk('media')->assertExists($clonedAsset->path);
     expect($clonedSite->mediaAssets()->count())->toBe(1);
 });
 

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'legacy_root' => env('MEDIA_LEGACY_ROOT', storage_path('app/public')),
 
     /*
     |--------------------------------------------------------------------------

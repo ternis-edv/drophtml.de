@@ -179,7 +179,7 @@ test('agent can upload media asset via base64 data URI to cloud storage', functi
     $this->assertDatabaseHas('media_assets', [
         'user_id' => $user->id,
         'original_name' => 'agent-chart.png',
-        'storage_driver' => 'asset_storage',
+        'storage_location' => 'asset_storage',
     ]);
 });
 
@@ -212,7 +212,7 @@ test('agent can upload media asset via base64 to site code storage', function ()
         'user_id' => $user->id,
         'site_id' => $site->id,
         'original_name' => 'logo.png',
-        'storage_driver' => 'code',
+        'storage_location' => 'code',
     ]);
 });
 
