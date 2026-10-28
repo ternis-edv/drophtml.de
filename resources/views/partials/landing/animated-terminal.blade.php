@@ -1,3 +1,17 @@
+@php
+    $terminalSnippets = [
+        'agent' => './scripts/drophtml deploy ./dist --name "Marketing Site" --permanent',
+        'html' => './scripts/drophtml deploy --name "Agent Prototype" --html "<!DOCTYPE html><html><body><h1>Instant Preview</h1></body></html>"',
+        'media' => './scripts/drophtml media upload ./assets/banner.webp --driver asset_storage',
+        'curl' => implode(" \\\n", [
+            'curl -X POST https://drophtml.de/api/sites',
+            '  -H "Authorization: Bearer $DROPHTML_API_TOKEN"',
+            '  -H "Content-Type: application/json"',
+            "  -d '".json_encode(['original_name' => 'Demo', 'html' => '<h1>Hello</h1>', 'is_permanent' => true], JSON_UNESCAPED_SLASHES)."'",
+        ]),
+    ];
+@endphp
+
 <section id="terminal" class="lp-section lp-reveal" aria-labelledby="terminal-heading">
     <div class="lp-container">
         <div class="lp-section-head">
@@ -17,12 +31,7 @@
                 activeTab: 'agent',
                 copied: false,
                 copyCurrent() {
-                    const snippets = {
-                        agent: './scripts/drophtml deploy ./dist --name \"Marketing Site\" --permanent',
-                        html: './scripts/drophtml deploy --name \"Agent Prototype\" --html \"<!DOCTYPE html><html><body><h1>Instant Preview</h1></body></html>\"',
-                        media: './scripts/drophtml media upload ./assets/banner.webp --driver asset_storage',
-                        curl: 'curl -X POST https://drophtml.de/api/sites \\\n  -H \"Authorization: Bearer $DROPHTML_API_TOKEN\" \\\n  -H \"Content-Type: application/json\" \\\n  -d \'{\"original_name\": \"Demo\", \"html\": \"<h1>Hello</h1>\", \"is_permanent\": true}\''
-                    };
+                    const snippets = {{ json_encode($terminalSnippets) }};
                     navigator.clipboard.writeText(snippets[this.activeTab] || '');
                     this.copied = true;
                     setTimeout(() => { this.copied = false; }, 2000);
