@@ -38,6 +38,11 @@ Route::domain($appDomain)->group(function () {
         ]);
     })->name('home');
 
+    Route::view('/barnading', 'pages.branding', [
+        'title' => 'Branding',
+        'description' => 'Official DropHTML logos, wordmarks, icons, colors, and brand guidelines.',
+    ])->name('branding');
+
     Route::get('/legal/{page}', function ($page) {
         if (! in_array($page, ['privacy', 'terms', 'imprint'])) {
             abort(404);
@@ -58,6 +63,7 @@ Route::domain($appDomain)->group(function () {
     Route::get('/sitemap.xml', function () {
         $pages = [
             ['loc' => route('home'), 'priority' => '1.0'],
+            ['loc' => route('branding'), 'priority' => '0.4'],
             ['loc' => url('/docs/api'), 'priority' => '0.5'],
             ['loc' => url('/docs/agents'), 'priority' => '0.8'],
             ['loc' => route('legal.show', ['page' => 'privacy']), 'priority' => '0.3'],

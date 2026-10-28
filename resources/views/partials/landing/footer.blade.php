@@ -28,6 +28,7 @@
                     <li><a href="#features">Features</a></li>
                     <li><a href="{{ url('/docs/agents') }}">DropHTML for Agents</a></li>
                     <li><a href="{{ url('/docs/api') }}">API Documentation</a></li>
+                    <li><a href="{{ route('branding') }}">Branding</a></li>
                     <li><a href="https://github.com/ternis-edv/drophtml.de" target="_blank" rel="noopener">GitHub Repository</a></li>
                 </ul>
             </nav>
