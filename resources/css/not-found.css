@@ -42,3 +42,5 @@
 .dark .not-found-sun { display: block; }
 .not-found-recovery > a > .error-icon { margin-left: auto; width: 16px; }
 @media(max-width:760px) { .not-found-art .wayfinder { aspect-ratio: 1.2; }.not-found-art .map-number { font-size: 160px; }.not-found-header-actions { gap: 12px; } }
+
+.not-found-theme[hidden] { display: none; }

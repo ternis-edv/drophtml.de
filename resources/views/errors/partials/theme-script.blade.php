@@ -9,6 +9,7 @@
     const apply = () => {
         const theme = preference || (system.matches ? 'dark' : 'light');
         root.dataset.theme = theme;
+        root.classList?.toggle('dark', theme === 'dark');
         const button = document.getElementById('site-theme-toggle');
         if (button) {
             button.hidden = false;

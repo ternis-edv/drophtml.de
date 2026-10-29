@@ -8,7 +8,7 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     @fonts
     @vite(['resources/css/app.css'])
-    @fluxAppearance
+    @include('errors.partials.theme-script')
     <style>@include('errors.partials.wayfinder-styles')</style>
 </head>
 <body class="not-found-page">
@@ -16,7 +16,7 @@
         <a href="{{ route('home') }}" class="not-found-brand" aria-label="DropHTML home"><img src="/favicon.svg" alt="" width="28" height="28">drop<span>html</span></a>
         <div class="not-found-header-actions">
             <a href="{{ route('dashboard') }}" class="not-found-header-link">Dashboard @include('errors.partials.icon', ['name' => 'arrow'])</a>
-            <button type="button" class="not-found-theme" x-data x-on:click="$flux.appearance = $flux.dark ? 'light' : 'dark'" x-bind:aria-label="$flux.dark ? 'Switch to light theme' : 'Switch to dark theme'" aria-label="Switch theme">
+            <button type="button" class="not-found-theme" id="site-theme-toggle" aria-label="Switch theme" hidden>
                 <span class="not-found-sun">@include('errors.partials.icon', ['name' => 'sun'])</span>
                 <span class="not-found-moon">@include('errors.partials.icon', ['name' => 'moon'])</span>
             </button>
@@ -48,6 +48,5 @@
         <a href="{{ route('docs.agents') }}"><span class="not-found-recovery-icon" aria-hidden="true">@include('errors.partials.icon', ['name' => 'code'])</span><span><strong>Find an answer</strong><small>Guides for your next step.</small></span>@include('errors.partials.icon', ['name' => 'arrow'])</a>
     </nav>
     <footer class="not-found-footer"><span>A wrong turn. A fresh start.</span><a href="mailto:support@drophtml.de">Need a hand? Contact support @include('errors.partials.icon', ['name' => 'arrow'])</a></footer>
-    @fluxScripts
 </body>
 </html>
