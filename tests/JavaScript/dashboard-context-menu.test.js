@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { menuIndex, menuPosition } from '../../resources/js/dashboard-context-menu.js';
+import { menuIndex, menuPosition, menuMatch } from '../../resources/js/dashboard-context-menu.js';
 
 test('context menus stay inside the viewport near every edge', () => {
     assert.deepEqual(menuPosition(995, 745, 232, 320, 1000, 750), { x: 760, y: 422 });
@@ -16,4 +16,16 @@ test('menu keyboard navigation wraps, supports home/end and handles empty menus'
     assert.equal(menuIndex('ArrowUp', -1, 4), 3);
     assert.equal(menuIndex('ArrowDown', -1, 4), 0);
     assert.equal(menuIndex('ArrowDown', 0, 0), -1);
+});
+
+
+test('typing finds actions without case or whitespace sensitivity and wraps', () => {
+    const labels = [' Open Code Studio ', 'View live site', 'Copy site URL', 'Site settings', 'Delete site', 'Download ZIP'];
+    assert.equal(menuMatch(labels, 'co'), 2);
+    assert.equal(menuMatch(labels, 'SITE'), 3);
+    assert.equal(menuMatch(labels, 'd', 4), 5);
+    assert.equal(menuMatch(labels, 'd', 5), 4);
+    assert.equal(menuMatch(labels, 'missing', 0), -1);
+    assert.equal(menuMatch(labels, ''), -1);
+    assert.equal(menuMatch([], 'a'), -1);
 });

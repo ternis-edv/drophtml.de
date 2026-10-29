@@ -7,6 +7,7 @@ Right-click a site card, site table row, media asset or Code Studio file row for
 - Shift-right-click keeps the browser menu.
 - Text inputs and editable content keep their native context menu.
 - Focus an item and press Shift+F10 or the Context Menu key to open its menu.
+- Type an action name to focus it; repeat a letter to cycle matching actions. Hidden and disabled actions are skipped.
 - Arrow keys, Home and End move through actions. Escape closes and restores focus; Tab closes and continues normal navigation.
 - Menus stay inside the viewport and close on outside clicks, scrolling, resizing and dashboard navigation.
 
