@@ -3,6 +3,7 @@
 use App\Models\Domain;
 use App\Services\ActivityLogService;
 use App\Services\SiteDeploymentService;
+use App\Services\StorageUsageService;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,8 +13,11 @@ new class extends Component
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = 'all'; // all, active, suspended, permanent, expiring
+
     public $sortBy = 'created_at'; // created_at, original_name, views, expires_at
+
     public $sortDir = 'desc';
 
     private const SORTABLE_COLUMNS = ['created_at', 'original_name', 'views', 'expires_at'];
@@ -87,7 +91,7 @@ new class extends Component
     {
         $days = (int) $days;
 
-        if ( ! in_array($days, [7, 30], true)) {
+        if (! in_array($days, [7, 30], true)) {
             $days = 7;
         }
 
@@ -130,6 +134,11 @@ new class extends Component
         Flux::toast($site->is_permanent ? 'Site marked as permanent.' : 'Site expiry reset to 30 days.');
     }
 
+    public function placeholder()
+    {
+        return view('components.dashboard.overview-placeholder');
+    }
+
     public function render()
     {
         // KPI stats via SQL aggregates — no longer loads every site into memory.
@@ -142,7 +151,7 @@ new class extends Component
             ->where('expires_at', '>=', now())
             ->where('expires_at', '<=', now()->addDays(7))
             ->count();
-        $storageStats = app(\App\Services\StorageUsageService::class)->getUserStorageStats(auth()->user());
+        $storageStats = app(StorageUsageService::class)->getUserStorageStats(auth()->user());
 
         $query = auth()->user()->sites()->with('domains');
 
@@ -150,8 +159,8 @@ new class extends Component
             $s = '%'.trim($this->search).'%';
             $query->where(function ($q) use ($s) {
                 $q->where('slug', 'like', $s)
-                  ->orWhere('original_name', 'like', $s)
-                  ->orWhereHas('domains', fn ($dq) => $dq->where('domain', 'like', $s));
+                    ->orWhere('original_name', 'like', $s)
+                    ->orWhereHas('domains', fn ($dq) => $dq->where('domain', 'like', $s));
             });
         }
 
@@ -163,8 +172,8 @@ new class extends Component
             $query->where('is_permanent', true);
         } elseif ($this->statusFilter === 'expiring') {
             $query->where('is_permanent', false)
-                  ->whereNotNull('expires_at')
-                  ->where('expires_at', '<=', now()->addDays(7));
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now()->addDays(7));
         }
 
         $query->orderBy($this->sortBy, $this->sortDir);
@@ -177,7 +186,24 @@ new class extends Component
             $sites = $query->paginate(12);
         }
 
+        // Cache only the default overview, never a filtered result or a Livewire snapshot.
+        $cachePreview = $this->search === '' && $this->statusFilter === 'all'
+            && $this->sortBy === 'created_at' && $this->sortDir === 'desc' && $sites->currentPage() === 1
+            ? [
+                'stats' => [
+                    ['label' => 'Total sites', 'value' => number_format($totalSites)],
+                    ['label' => 'Page views', 'value' => number_format($totalViews)],
+                    ['label' => 'Custom domains', 'value' => number_format($totalDomains)],
+                    ['label' => 'Storage & quota', 'value' => $storageStats['formatted']['total_used']],
+                ],
+                'sites' => $sites->map(fn ($site) => [
+                    'id' => $site->id, 'name' => $site->original_name ?: $site->slug,
+                    'slug' => $site->slug, 'status' => ucfirst($site->status),
+                ])->values()->all(),
+            ] : null;
+
         return view('components.dashboard.⚡sites-overview', [
+            'cachePreview' => $cachePreview,
             'sites' => $sites,
             'totalSites' => $totalSites,
             'totalViews' => $totalViews,
@@ -244,6 +270,10 @@ new class extends Component
     @drop.prevent.window="handleGlobalDrop($event)"
     class="relative space-y-6"
 >
+    @if($cachePreview !== null)
+        <div hidden wire:key="overview-cache-{{ sha1(json_encode($cachePreview)) }}"
+            x-init="window.drophtmlDashboardCache?.write(@js((string) auth()->id()), @js($cachePreview))"></div>
+    @endif
     <!-- Drag overlay -->
     <div
         x-show="dragging"

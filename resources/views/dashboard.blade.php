@@ -1,5 +1,5 @@
 <x-layouts::app :title="__('Dashboard')">
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
-        <livewire:dashboard.sites-overview />
+        <livewire:dashboard.sites-overview lazy="on-load" />
     </div>
 </x-layouts::app>

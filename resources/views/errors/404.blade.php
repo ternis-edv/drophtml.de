@@ -1,23 +1,46 @@
-@extends('layouts.landing')
-
-@section('content')
-<div class="pt-40 pb-24 flex flex-col items-center justify-center min-h-[70vh] px-4 relative z-10">
-    <div class="panel rise-in p-10 md:p-16 max-w-2xl w-full mx-auto shadow-xl text-center relative overflow-hidden backdrop-blur-sm">
-        <div class="absolute top-[-50%] left-[-10%] w-[60%] h-[60%] rounded-full bg-amber-400/20 dark:bg-amber-500/10 blur-[80px] pointer-events-none" aria-hidden="true"></div>
-        
-        <div class="relative z-10 flex flex-col items-center">
-            <div class="w-20 h-20 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:amber-500 rounded-2xl flex items-center justify-center mb-8 ring-1 ring-amber-500/30">
-                <flux:icon.exclamation-triangle class="w-10 h-10" />
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Page not found · DropHTML</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    @fonts
+    @vite(['resources/css/app.css'])
+    @fluxAppearance
+</head>
+<body class="not-found-page">
+    <header class="not-found-header">
+        <a href="{{ route('home') }}" class="not-found-brand" aria-label="DropHTML home"><img src="/favicon.svg" alt="" width="28" height="28">drop<span>html</span></a>
+        <a href="{{ route('dashboard') }}" class="not-found-header-link">Dashboard <span aria-hidden="true">↗</span></a>
+    </header>
+    <main id="main-content" class="not-found-main">
+        <div class="not-found-copy">
+            <p class="not-found-eyebrow"><span></span>404 / PAGE NOT FOUND</p>
+            <h1>A little off<br>the beaten <em>path.</em></h1>
+            <p class="not-found-description">This link doesn’t lead anywhere. The page may have moved, the site may have expired, or there’s a typo in the address.</p>
+            <div class="not-found-actions">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="not-found-primary">Back to your sites <span aria-hidden="true">→</span></a>
+                @else
+                    <a href="{{ route('home') }}" class="not-found-primary">Take me home <span aria-hidden="true">→</span></a>
+                @endauth
+                <a href="{{ route('docs.agents') }}" class="not-found-secondary">Read the docs <span aria-hidden="true">↗</span></a>
             </div>
-            <h1 class="text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-zinc-800 to-zinc-500 dark:from-white dark:to-zinc-500 mb-4">404</h1>
-            <h2 class="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Page Not Found</h2>
-            <p class="text-zinc-600 dark:text-zinc-400 max-w-md mx-auto mb-10 leading-relaxed">We couldn't find the page or site you were looking for. It might have been deleted, expired, or the URL might be incorrect.</p>
-            
-            <div class="flex flex-col sm:flex-row items-center gap-4 justify-center">
-                <flux:button :href="route('home')" variant="primary" class="rounded-full px-8 shadow-lg shadow-accent/25">Go back home</flux:button>
-                <flux:button href="mailto:support@drophtml.de" variant="ghost" class="rounded-full px-8 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">Contact Support</flux:button>
-            </div>
+            <div class="not-found-hint"><span aria-hidden="true">↳</span><p>Looking for a hosted site? Check the URL with its owner, or open your dashboard to find your latest deployments.</p></div>
         </div>
-    </div>
-</div>
-@endsection
+        <div class="not-found-art" aria-hidden="true">
+            <div class="not-found-orbit"></div>
+            <div class="not-found-window">
+                <div class="not-found-window-bar"><div><i></i><i></i><i></i></div><span>somewhere / over / here</span><span>↗</span></div>
+                <div class="not-found-window-body"><span class="not-found-code-label">HTTP RESPONSE</span><div class="not-found-number">4<span>0</span>4</div><div class="not-found-code"><span>const</span> destination = <em>undefined</em>;<br><span>// Let’s find your way back.</span></div></div>
+                <div class="not-found-window-footer"><span><i></i> No page at this address</span><span>↵ home</span></div>
+            </div>
+            <div class="not-found-floating">&lt;/&gt;<span>Even great sites have dead ends.</span></div>
+        </div>
+    </main>
+    <footer class="not-found-footer"><span>A wrong turn. A fresh start.</span><a href="mailto:support@drophtml.de">Need a hand? Contact support <span aria-hidden="true">↗</span></a></footer>
+    @fluxScripts
+</body>
+</html>
