@@ -1,11 +1,16 @@
 <script>
 (() => {
     const root = document.documentElement;
-    const key = 'drophtml:site-error-theme';
+    const key = 'flux.appearance';
     const system = window.matchMedia('(prefers-color-scheme: dark)');
     let preference;
-    try { preference = localStorage.getItem(key); } catch {}
-    if (!['light', 'dark'].includes(preference)) preference = null;
+    const readPreference = () => {
+        try {
+            const saved = localStorage.getItem(key);
+            preference = ['light', 'dark'].includes(saved) ? saved : null;
+        } catch { /* Keep the in-memory choice when storage is blocked. */ }
+    };
+    readPreference();
     const apply = () => {
         const theme = preference || (system.matches ? 'dark' : 'light');
         root.dataset.theme = theme;
@@ -18,6 +23,12 @@
         }
     };
     apply();
+    window.addEventListener('storage', (event) => {
+        if (event.key !== key && event.key !== null) return;
+        readPreference();
+        apply();
+    });
+    window.addEventListener('pageshow', () => { readPreference(); apply(); });
     system.addEventListener('change', () => { if (!preference) apply(); });
     document.addEventListener('DOMContentLoaded', () => {
         apply();

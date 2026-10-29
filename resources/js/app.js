@@ -7,3 +7,5 @@ import './media-library';
 import './dashboard-cache';
 
 import './dashboard-context-menu';
+
+import './theme-sync';
