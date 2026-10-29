@@ -131,7 +131,7 @@ new class extends Component
                         <div class="space-y-1">
                             @foreach($matchedSites as $site)
                                 <div class="flex items-center justify-between rounded-xl px-3 py-2 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 transition-colors group">
-                                    <a href="{{ route('dashboard.sites.edit', $site) }}" wire:navigate @click="close()" class="flex items-center gap-2.5 flex-1 min-w-0">
+                                    <a href="{{ route('dashboard.sites.edit', $site) }}" @click="close()" class="flex items-center gap-2.5 flex-1 min-w-0">
                                         <div class="size-2 rounded-full {{ $site->status === 'active' ? 'bg-emerald-500' : 'bg-amber-500' }}"></div>
                                         <div class="truncate">
                                             <span class="font-semibold text-sm text-zinc-900 dark:text-zinc-100">{{ $site->original_name ?: $site->slug }}</span>
@@ -143,7 +143,7 @@ new class extends Component
                                         <a href="{{ url('/s/' . $site->slug) }}" target="_blank" rel="noopener" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Live Site" aria-label="{{ __('Open live site') }}">
                                             <flux:icon.arrow-top-right-on-square class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.edit', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Code Editor">
+                                        <a href="{{ route('dashboard.sites.edit', $site) }}" @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Code Editor">
                                             <flux:icon.pencil-square class="size-3.5" />
                                         </a>
                                         <a href="{{ route('dashboard.sites.stats', $site) }}" wire:navigate @click="close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-accent dark:hover:text-brand-300 hover:bg-accent/[0.07] dark:hover:bg-accent/15 transition-colors" title="Analytics">

@@ -1,5 +1,5 @@
 <x-layouts::app :title="__('AI Help')">
-    <div class="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8"
+    <div class="mx-auto w-full max-w-3xl space-y-6"
         x-data="{
             message: '', allowChanges: false, busy: false, error: '', answer: @js(session('assistant_answer', '')),
             usage: @js($usage), available: @js($available), now: Math.floor(Date.now() / 1000),

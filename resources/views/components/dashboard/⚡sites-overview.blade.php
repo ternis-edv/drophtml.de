@@ -276,13 +276,13 @@ new class extends Component
             default => 'Good evening',
         };
     @endphp
-    <div class="rise-in panel relative overflow-hidden p-6 sm:p-8">
+    <div class="site-page-heading">
         <div class="absolute -top-24 -right-16 w-72 h-72 bg-accent/[0.07] rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="space-y-2.5 max-w-2xl">
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/[0.06] border border-accent/20 text-accent dark:text-accent-content text-xs font-semibold">
+                    <span class="site-page-eyebrow !mb-0">
                         <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
                         <span>Edge Cloud Operational</span>
                     </span>
@@ -294,7 +294,7 @@ new class extends Component
                     {{ $greeting }}, {{ auth()->user()->name }}
                 </h1>
                 <p class="page-lede">
-                    Deploy static sites with automated SSL, manage static media with zero-bloat cloud asset storage, and inspect real-time traffic across global Edge CDN nodes.
+                    Manage your sites, publish updates, and keep your media in one place.
                 </p>
             </div>
 
@@ -315,9 +315,9 @@ new class extends Component
                     </flux:modal.trigger>
                 @endif
 
-                <a href="{{ route('dashboard.media') }}" wire:navigate class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md cursor-pointer focus-visible:outline-cyan-600">
+                <a href="{{ route('dashboard.media') }}" wire:navigate class="studio-button">
                     <flux:icon.photo class="size-3.5" aria-hidden="true" />
-                    <span>Media Cloud</span>
+                    <span>Media library</span>
                 </a>
             </div>
         </div>
@@ -670,7 +670,7 @@ new class extends Component
                                         <flux:dropdown>
                                             <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" class="rounded-lg cursor-pointer" aria-label="{{ __('More actions for') }} {{ $site->slug }}" />
                                             <flux:menu class="w-48">
-                                                <flux:menu.item icon="pencil-square" :href="route('dashboard.sites.edit', $site->id)" wire:navigate>Code Studio</flux:menu.item>
+                                                <flux:menu.item icon="pencil-square" :href="route('dashboard.sites.edit', $site->id)">Code Studio</flux:menu.item>
                                                 <flux:menu.item icon="photo" :href="route('dashboard.sites.media', $site->id)" wire:navigate>Media Assets</flux:menu.item>
                                                 <flux:menu.item icon="chart-bar" :href="route('dashboard.sites.stats', $site->id)" wire:navigate>Analytics</flux:menu.item>
                                                 <flux:menu.item icon="archive-box" :href="route('dashboard.sites.deployments', $site->id)" wire:navigate>Deployments</flux:menu.item>
@@ -753,7 +753,7 @@ new class extends Component
                                     Preview
                                 </a>
                                 <div class="flex items-center gap-1">
-                                    <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" aria-label="{{ __('Open Code Studio for') }} {{ $site->slug }}" class="rounded-lg" />
+                                    <flux:button :href="route('dashboard.sites.edit', $site->id)" variant="ghost" size="xs" icon="pencil-square" title="Code Studio" aria-label="{{ __('Open Code Studio for') }} {{ $site->slug }}" class="rounded-lg" />
                                     <flux:button :href="route('dashboard.sites.media', $site->id)" wire:navigate variant="ghost" size="xs" icon="photo" title="Media Assets" aria-label="{{ __('Media assets for') }} {{ $site->slug }}" class="rounded-lg" />
                                     <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" aria-label="{{ __('Analytics for') }} {{ $site->slug }}" class="rounded-lg" />
                                     <flux:button :href="route('dashboard.sites.domains', $site->id)" wire:navigate variant="ghost" size="xs" icon="globe-alt" title="Domains" aria-label="{{ __('Domains for') }} {{ $site->slug }}" class="rounded-lg" />
@@ -863,7 +863,7 @@ new class extends Component
                                     <flux:table.cell class="text-right">
                                         <div class="flex items-center justify-end gap-1">
                                             <flux:button variant="ghost" size="xs" icon="clipboard" @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))" title="Copy URL" aria-label="{{ __('Copy live URL for') }} {{ $site->slug }}" />
-                                            <flux:button :href="route('dashboard.sites.edit', $site->id)" wire:navigate variant="ghost" size="xs" icon="pencil-square" title="Code Studio" aria-label="{{ __('Open Code Studio for') }} {{ $site->slug }}" />
+                                            <flux:button :href="route('dashboard.sites.edit', $site->id)" variant="ghost" size="xs" icon="pencil-square" title="Code Studio" aria-label="{{ __('Open Code Studio for') }} {{ $site->slug }}" />
                                             <flux:button :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" aria-label="{{ __('Analytics for') }} {{ $site->slug }}" />
                                             <flux:dropdown position="bottom" align="end">
                                                 <flux:button variant="ghost" size="xs" icon="ellipsis-horizontal" aria-label="{{ __('More actions for') }} {{ $site->slug }}" />

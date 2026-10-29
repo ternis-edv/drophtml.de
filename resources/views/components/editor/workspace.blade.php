@@ -4,6 +4,23 @@
         <span class="studio-divider"></span>
         <div class="studio-project"><span class="studio-project-name">{{ $site->original_name ?: $site->slug }}</span><span class="studio-label">Code Studio</span></div>
         <div class="studio-header-actions">
+            <flux:dropdown>
+                <button type="button" class="studio-button studio-navigation-trigger" aria-label="Navigate site workspace"><flux:icon.squares-2x2 /> <span>Navigate</span><flux:icon.chevron-down /></button>
+                <flux:menu>
+                    @foreach([
+                        ['dashboard.sites.media', 'photo', 'Media library'],
+                        ['dashboard.sites.stats', 'chart-bar', 'Analytics'],
+                        ['dashboard.sites.deployments', 'archive-box', 'Deployments'],
+                        ['dashboard.sites.domains', 'globe-alt', 'Domains'],
+                        ['dashboard.sites.redirects', 'arrows-right-left', 'Redirects'],
+                        ['dashboard.sites.settings', 'cog-6-tooth', 'Site settings'],
+                    ] as [$destination, $icon, $label])
+                        <flux:menu.item :href="route($destination, $site)" :icon="$icon" @click="if (!canLeave()) $event.preventDefault()">{{ $label }}</flux:menu.item>
+                    @endforeach
+                    <flux:menu.separator />
+                    <flux:menu.item :href="route('dashboard')" icon="arrow-left" @click="if (!canLeave()) $event.preventDefault()">All sites</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
             <span class="studio-save-state" role="status"><i :class="{ 'is-dirty': dirty }"></i><span x-text="saving ? 'Saving…' : (dirty ? 'Unsaved changes' : 'All changes saved')"></span></span>
             <a class="studio-button studio-visit" href="{{ route('dashboard.sites.media', $site) }}" @click="if (!canLeave()) $event.preventDefault()"><flux:icon.photo />Media library</a>
             <a class="studio-button studio-visit" href="{{ url('/s/'.$site->slug.'/') }}" target="_blank" rel="noopener">Visit site <flux:icon.arrow-top-right-on-square /></a>

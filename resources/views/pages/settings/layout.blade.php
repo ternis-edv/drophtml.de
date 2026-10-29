@@ -13,7 +13,7 @@
     </div>
 
     <div class="flex-1 self-stretch min-w-0">
-        <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs p-6 sm:p-8 {{ $maxWidth ?? 'max-w-2xl' }}">
+        <div class="panel p-6 sm:p-8 {{ $maxWidth ?? 'max-w-2xl' }}">
             <flux:heading size="lg" class="tracking-tight">{{ $heading ?? '' }}</flux:heading>
             <flux:subheading class="mt-1">{{ $subheading ?? '' }}</flux:subheading>
 

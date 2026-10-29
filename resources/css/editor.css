@@ -88,3 +88,5 @@
 .studio-embed-details summary { cursor: pointer; }
 .studio-embed-details textarea { display: block; width: 100%; min-height: 100px; margin: 10px 0; padding: 8px; border: 1px solid #ffffff12; border-radius: 4px; resize: vertical; background: #111823; color: #9ed9bb; font-family: var(--font-mono); font-size: 10px; line-height: 1.8; }
 .studio-copy-error { margin-top: 8px; color: #edc08b; font-size: 10px; line-height: 1.7; }
+
+@media (max-width: 760px) { .studio-navigation-trigger > span { display: none; }.studio-header-actions .studio-navigation-trigger svg:first-child { display: block; width: 16px; height: 16px; }.studio .studio-project-name { max-width: min(130px, 29vw); } }

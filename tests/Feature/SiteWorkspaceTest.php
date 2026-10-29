@@ -23,3 +23,14 @@ it('rejects a site workspace owned by another user', function () {
     ]);
     $this->actingAs(User::factory()->create())->get(route('dashboard.sites.media', $site))->assertNotFound();
 });
+
+it('keeps global navigation available across the dashboard', function ($route) {
+    $this->actingAs(User::factory()->create())->get(route($route))
+        ->assertOk()
+        ->assertSee('site-console', false)
+        ->assertSee('dashboard-navigation', false)
+        ->assertSee('All sites')
+        ->assertSee('Deploy site')
+        ->assertSee('Account settings')
+        ->assertSee('Close navigation');
+})->with(['dashboard', 'dashboard.sites.upload', 'dashboard.media', 'dashboard.activity', 'dashboard.help', 'profile.edit', 'settings.storage', 'api-tokens.edit', 'appearance.edit', 'settings.data-export']);

@@ -1,9 +1,4 @@
-<x-layouts::app.sidebar :title="$title ?? null">
-    <flux:main id="main-content" tabindex="-1" class="relative p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-        <!-- Ambient brand glow for dashboard -->
-        <div class="absolute top-0 right-1/4 w-96 h-96 bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-        <div class="absolute bottom-10 left-1/3 w-80 h-80 bg-brand-400/5 dark:bg-brand-400/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-
+<x-layouts::site :title="$title ?? null">
         @if(auth()->user() && !auth()->user()->password_set_at)
             <div class="rise-in mb-6 rounded-2xl border border-accent/20 bg-accent/5 dark:bg-accent/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 backdrop-blur-md" role="status">
                 <div class="flex items-center gap-3 text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-200">
@@ -26,9 +21,4 @@
         @endif
 
         {{ $slot }}
-
-        @auth
-            <livewire:dashboard.command-palette />
-        @endauth
-    </flux:main>
-</x-layouts::app.sidebar>
+</x-layouts::site>
