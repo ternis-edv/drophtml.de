@@ -17,17 +17,24 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="light dark">
     <title>{{ $status }} · {{ $siteName }}</title>
+    @include('errors.partials.theme-script')
     <style>@include('errors.site-styles')</style>
 </head>
 <body>
     <div class="site-error-shell">
         <header>
             @if($site)
-                <a class="site-identity" href="{{ $baseUrl }}" aria-label="{{ $siteName }} home"><span class="site-mark" aria-hidden="true">↗</span><span>{{ $siteName }}</span></a>
+                <a class="site-identity" href="{{ $baseUrl }}" aria-label="{{ $siteName }} home"><span class="site-mark">@include('errors.partials.icon', ['name' => 'arrow'])</span><span>{{ $siteName }}</span></a>
             @else
-                <span class="site-identity"><span class="site-mark" aria-hidden="true">↗</span><span>{{ $siteName }}</span></span>
+                <span class="site-identity"><span class="site-mark">@include('errors.partials.icon', ['name' => 'arrow'])</span><span>{{ $siteName }}</span></span>
             @endif
-            <span class="header-note">A small detour</span>
+            <div class="header-actions">
+                <span class="header-note">A small detour</span>
+                <button id="site-theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme" hidden>
+                    @include('errors.partials.icon', ['name' => 'sun', 'class' => 'theme-sun'])
+                    @include('errors.partials.icon', ['name' => 'moon', 'class' => 'theme-moon'])
+                </button>
+            </div>
         </header>
         <main id="main">
             <section class="error-content" aria-labelledby="error-title">
@@ -36,10 +43,10 @@
                 <p class="description">{{ $description }}</p>
                 <div class="requested-path"><span>Requested address</span><code dir="ltr">{{ $requestedPath }}</code></div>
                 @if($site && $status === 404)
-                    <a class="primary" href="{{ $baseUrl }}">Back to site home <span aria-hidden="true">↗</span></a>
+                    <a class="primary" href="{{ $baseUrl }}">Back to site home @include('errors.partials.icon', ['name' => 'arrow'])</a>
                     <p class="action-note">Your next stop: {{ $siteName }}</p>
                 @elseif(in_array($status, [500, 503], true))
-                    <a class="primary" href="{{ request()->url() }}">Try again <span aria-hidden="true">↻</span></a>
+                    <a class="primary" href="{{ request()->url() }}">Try again @include('errors.partials.icon', ['name' => 'retry'])</a>
                 @else
                     <p class="action-note">Double-check the spelling and try the link again.</p>
                 @endif
@@ -56,11 +63,11 @@
                     <path d="m313 110 5 5 9-10" class="destination-check"/>
                 </svg>
                 <span class="map-tag">{{ $status === 404 ? 'Destination not found' : 'Route interrupted' }}<span>There’s another way forward.</span></span>
-                <span class="map-caption">RECALCULATING THE ROUTE <span>↗</span></span>
+                <span class="map-caption">RECALCULATING THE ROUTE @include('errors.partials.icon', ['name' => 'arrow'])</span>
             </div>
         </main>
-        <aside class="help-note"><span class="help-icon" aria-hidden="true">↳</span><p><strong>{{ $status === 404 ? 'Followed a broken link?' : 'Still having trouble?' }}</strong> {{ $status === 404 ? 'Let the site owner know so they can point it in the right direction.' : 'Please let the site owner know if this keeps happening.' }}</p></aside>
-        <footer><span>{{ $site ? 'You’re still on '.$siteName : 'Every link needs a destination.' }}</span><a href="{{ route('home') }}">Hosted on <strong>drophtml</strong> <span aria-hidden="true">↗</span></a></footer>
+        <aside class="help-note"><span class="help-icon">@include('errors.partials.icon', ['name' => 'turn'])</span><p><strong>{{ $status === 404 ? 'Followed a broken link?' : 'Still having trouble?' }}</strong> {{ $status === 404 ? 'Let the site owner know so they can point it in the right direction.' : 'Please let the site owner know if this keeps happening.' }}</p></aside>
+        <footer><span>{{ $site ? 'You’re still on '.$siteName : 'Every link needs a destination.' }}</span><a href="{{ route('home') }}">Hosted on <strong>drophtml</strong> @include('errors.partials.icon', ['name' => 'arrow'])</a></footer>
     </div>
 </body>
 </html>
