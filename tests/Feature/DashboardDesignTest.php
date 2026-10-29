@@ -23,7 +23,7 @@ it('uses the dashboard design system on every site view including the editor', f
     ]);
     $this->actingAs($user)->get(route('dashboard.sites.'.$section, $site))
         ->assertOk()->assertSee('dashboard-ui', false);
-})->with(['edit', 'media', 'stats', 'deployments', 'domains', 'redirects', 'settings']);
+})->with(['edit', 'media', 'stats', 'deployments', 'domains', 'redirects', 'errors', 'settings']);
 
 it('keeps the dashboard stylesheet out of public and auth pages', function ($route) {
     $this->get(route($route))->assertOk()->assertDontSee('dashboard-ui', false)->assertDontSee('/assets/dashboard-', false);

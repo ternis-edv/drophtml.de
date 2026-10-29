@@ -53,6 +53,12 @@ class User extends Authenticatable implements MustVerifyEmail
             ->implode('');
     }
 
+    // Deliberately excluded from $fillable: users cannot self-assign paid access.
+    public function hasPaidPlan(): bool
+    {
+        return $this->plan === 'paid';
+    }
+
     public function sites()
     {
         return $this->hasMany(Site::class);

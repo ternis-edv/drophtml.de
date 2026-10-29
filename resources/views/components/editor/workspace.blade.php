@@ -13,6 +13,7 @@
                         ['dashboard.sites.deployments', 'archive-box', 'Deployments'],
                         ['dashboard.sites.domains', 'globe-alt', 'Domains'],
                         ['dashboard.sites.redirects', 'arrows-right-left', 'Redirects'],
+                        ['dashboard.sites.errors', 'document-text', 'Error pages'],
                         ['dashboard.sites.settings', 'cog-6-tooth', 'Site settings'],
                     ] as [$destination, $icon, $label])
                         <flux:menu.item :href="route($destination, $site)" :icon="$icon" @click="if (!canLeave()) $event.preventDefault()">{{ $label }}</flux:menu.item>

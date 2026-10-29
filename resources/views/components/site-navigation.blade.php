@@ -8,6 +8,7 @@
             ['dashboard.sites.deployments', 'archive-box', 'Deployments'],
             ['dashboard.sites.domains', 'globe-alt', 'Domains'],
             ['dashboard.sites.redirects', 'arrows-right-left', 'Redirects'],
+            ['dashboard.sites.errors', 'document-text', 'Error pages'],
             ['dashboard.sites.settings', 'cog-6-tooth', 'Settings'],
         ] as [$route, $icon, $label])
             <a @if($route !== 'dashboard.sites.edit') wire:navigate @endif href="{{ route($route, $site) }}" class="site-nav-item {{ request()->routeIs($route) ? 'is-active' : '' }}" @if(request()->routeIs($route)) aria-current="page" @endif><flux:icon :name="$icon" /><span>{{ $label }}</span>@if(request()->routeIs($route))<span class="site-nav-dot"></span>@endif</a>

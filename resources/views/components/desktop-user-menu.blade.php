@@ -15,7 +15,7 @@
             <div class="grid flex-1 text-start text-sm leading-tight min-w-0">
                 <div class="flex items-center justify-between gap-1">
                     <flux:heading class="truncate font-medium dashboard-text">{{ auth()->user()->name }}</flux:heading>
-                    <span class="px-1.5 py-0.2 rounded text-[9px] font-medium dashboard-accent-tint dashboard-accent border dashboard-accent-border">Free</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-medium dashboard-accent-tint dashboard-accent border dashboard-accent-border">{{ auth()->user()->hasPaidPlan() ? 'Paid' : 'Free' }}</span>
                 </div>
                 <flux:text class="truncate text-xs dashboard-muted">{{ auth()->user()->email }}</flux:text>
             </div>

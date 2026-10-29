@@ -87,6 +87,11 @@ class Site extends Model
         return $this->hasMany(MediaAsset::class);
     }
 
+    public function errorPages()
+    {
+        return $this->hasMany(SiteErrorPage::class);
+    }
+
     public function redirects()
     {
         return $this->hasMany(SiteRedirect::class)->orderBy('from_path');

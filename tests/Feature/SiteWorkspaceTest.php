@@ -14,7 +14,7 @@ it('uses the shared site workspace shell across site management', function ($sec
     ]);
     $this->actingAs($user)->get(route('dashboard.sites.'.$section, $site))
         ->assertOk()->assertSee('Site workspace')->assertSee('Open Code Studio')->assertSee('Site sections');
-})->with(['media', 'stats', 'deployments', 'domains', 'redirects', 'settings']);
+})->with(['media', 'stats', 'deployments', 'domains', 'redirects', 'errors', 'settings']);
 
 it('rejects a site workspace owned by another user', function () {
     $owner = User::factory()->create();

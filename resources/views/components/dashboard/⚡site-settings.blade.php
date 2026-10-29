@@ -177,6 +177,10 @@ new class extends Component
     <x-site-subnav :site="$site" current="settings" />
 
     <div class="max-w-3xl space-y-6">
+        <div class="dashboard-panel p-5 flex flex-wrap items-center justify-between gap-4">
+            <div><h2 class="dashboard-section-title">Custom error pages</h2><p class="dashboard-lede mt-1">Design the 404 and error pages your visitors see.</p></div>
+            <a href="{{ route('dashboard.sites.errors', $site) }}" wire:navigate class="dashboard-button">Manage error pages <flux:icon.arrow-right class="size-4" /></a>
+        </div>
         <!-- Main Settings Form -->
         <div class="dashboard-panel p-6 sm:p-8">
             <form wire:submit="save" class="space-y-8">

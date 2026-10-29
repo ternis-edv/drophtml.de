@@ -194,16 +194,10 @@ class SiteServingService
 
         $siteRoot = $disk->path($site->path);
 
-        $isCustom404 = false;
-
         if ($resolvedPath === null) {
-            if ($disk->fileExists("{$site->path}/404.html")) {
-                $resolvedPath = '404.html';
-                $isCustom404 = true;
-            } else {
-                $this->recordAnalytics($site, $request, $requestPath, false, 404);
-                abort(404, 'File not found.');
-            }
+            $this->recordAnalytics($site, $request, $requestPath, false, 404);
+
+            return app(SiteErrorPageService::class)->response($request, $site, 404, $baseUrl);
         }
 
         $fullPath = $disk->path("{$site->path}/{$resolvedPath}");
@@ -212,22 +206,17 @@ class SiteServingService
         $realSiteRoot = realpath($siteRoot);
         $realFilePath = realpath($fullPath);
 
-        if ($realSiteRoot === false || $realFilePath === false || ! str_starts_with($realFilePath, $realSiteRoot)) {
-            if (! $isCustom404 && $disk->fileExists("{$site->path}/404.html")) {
-                $resolvedPath = '404.html';
-                $realFilePath = realpath($disk->path("{$site->path}/404.html"));
-                $isCustom404 = true;
-            } else {
-                $this->recordAnalytics($site, $request, $requestPath, false, 404);
-                abort(404, 'File not found.');
-            }
+        if ($realSiteRoot === false || $realFilePath === false || ! str_starts_with($realFilePath, $realSiteRoot.DIRECTORY_SEPARATOR)) {
+            $this->recordAnalytics($site, $request, $requestPath, false, 404);
+
+            return app(SiteErrorPageService::class)->response($request, $site, 404, $baseUrl);
         }
 
         $extension = strtolower(pathinfo($resolvedPath, PATHINFO_EXTENSION));
         $isHtml = in_array($extension, ['html', 'htm'], true);
 
         // Record visitor analytics
-        $statusCode = $isCustom404 ? 404 : 200;
+        $statusCode = 200;
         $this->recordAnalytics($site, $request, $path ?? $resolvedPath, $isHtml, $statusCode);
 
         $lastModified = filemtime($realFilePath);
@@ -253,7 +242,7 @@ class SiteServingService
             }
         }
 
-        if (! $isCustom404 && $request->header('If-None-Match') === $etag) {
+        if ($request->header('If-None-Match') === $etag) {
             return response('', 304, [
                 'ETag' => $etag,
                 'Cache-Control' => $responseHeaders['Cache-Control'],
@@ -266,7 +255,7 @@ class SiteServingService
             $fileContent = $this->injectBaseTag($fileContent, $baseUrl);
         }
 
-        $statusCode = $isCustom404 ? 404 : 200;
+        $statusCode = 200;
 
         return response($fileContent, $statusCode, $responseHeaders);
     }

@@ -315,6 +315,7 @@ class SiteDeploymentService
         }
 
         $site->mediaAssets()->forceDelete();
+        $site->errorPages()->delete();
         $site->redirects()->delete();
         $site->domains()->delete();
         $site->deployments()->delete();
@@ -486,6 +487,10 @@ class SiteDeploymentService
             'expires_at' => now()->addDays(30),
             'views' => 0,
         ]);
+
+        foreach ($site->errorPages as $errorPage) {
+            $clonedSite->errorPages()->create($errorPage->only(['status_code', 'html', 'enabled']));
+        }
 
         // Duplicate media assets associated with the site
         foreach ($site->mediaAssets as $mediaAsset) {

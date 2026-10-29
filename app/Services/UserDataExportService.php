@@ -27,6 +27,7 @@ class UserDataExportService
             ->with([
                 'domains' => fn ($query) => $query->withTrashed(),
                 'deployments' => fn ($query) => $query->withTrashed(),
+                'errorPages',
                 'redirects' => fn ($query) => $query->withTrashed(),
             ])
             ->orderBy('created_at')
@@ -209,6 +210,7 @@ class UserDataExportService
                 ])
                 ->values()
                 ->all(),
+            'error_pages' => $site->errorPages->map(fn ($page) => $page->only(['status_code', 'html', 'enabled']))->values()->all(),
             'redirects' => $site->redirects
                 ->map(fn ($redirect) => [
                     'id' => $redirect->id,
