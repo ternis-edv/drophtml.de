@@ -68,3 +68,33 @@ it('enforces the shared daily cap', function () {
     DB::table('assistant_budgets')->insert(['key' => 'global:'.now('UTC')->format('Y-m-d'), 'used' => 100]);
     expect(fn () => (new Budget)->reserve('new-user'))->toThrow(HttpException::class);
 });
+
+it('renders the help page with safe defaults and remaining allowance', function () {
+    $user = User::factory()->create();
+    (new Budget)->reserve($user->id);
+    $this->actingAs($user)->get(route('dashboard.help'))
+        ->assertOk()->assertViewHas('available', false)
+        ->assertViewHas('usage', fn ($usage) => $usage['remaining'] === 9 && $usage['retry_at'] > now()->timestamp)
+        ->assertSee('Allow site renaming for this request')->assertSee('Your question');
+});
+
+it('provides JSON answers and quota feedback without reloading the page', function () {
+    config(['assistant.enabled' => true, 'ai.providers.xai.key' => 'fake']);
+    HelpAgent::fake(['Use the settings page.']);
+    $this->actingAs(User::factory()->create());
+    $this->postJson(route('dashboard.help.ask'), ['message' => 'Help'])->assertOk()
+        ->assertJsonPath('answer', 'Use the settings page.')->assertJsonPath('usage.remaining', 9);
+    $this->postJson(route('dashboard.help.ask'), ['message' => 'Again'])->assertStatus(429)
+        ->assertJsonPath('usage.remaining', 9);
+    expect(DB::table('assistant_audits')->where('kind', 'request')->where('status', '429')->count())->toBe(1);
+});
+
+it('keeps the tool budget when tools are resolved repeatedly', function () {
+    $agent = new HelpAgent(User::factory()->create());
+    expect($agent->tools()[0])->toBe($agent->tools()[0]);
+    $tool = $agent->tools()[0];
+    for ($i = 0; $i < 3; $i++) {
+        $tool->handle(new Request(['action' => 'list']));
+    }
+    expect($agent->tools()[0]->handle(new Request(['action' => 'list'])))->toContain('permission denied');
+});

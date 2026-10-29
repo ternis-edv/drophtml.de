@@ -96,7 +96,7 @@ Route::domain($appDomain)->group(function () {
     Route::post('/webhooks/github', [GithubWebhookController::class, 'handle'])->middleware('throttle:webhooks')->name('webhooks.github');
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::view('dashboard/help', 'dashboard.help')->name('dashboard.help');
+        Route::get('dashboard/help', [AssistantController::class, 'show'])->name('dashboard.help');
         Route::post('dashboard/help', AssistantController::class)->middleware(AuditAssistant::class)->name('dashboard.help.ask');
         Route::view('dashboard', 'dashboard')->name('dashboard');
         Route::view('dashboard/sites/upload', 'dashboard.sites-upload')->name('dashboard.sites.upload');
