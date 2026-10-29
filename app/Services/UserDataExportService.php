@@ -139,6 +139,8 @@ class UserDataExportService
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'password_set_at' => $user->password_set_at?->toIso8601String(),
             'storage_limit_bytes' => $user->storage_limit_bytes,
+            'avatar_url' => $user->avatar_url,
+            'avatar_provider' => $user->avatar_provider,
             'connected_providers' => [
                 'email' => filled($user->password_set_at),
                 'github' => filled($user->github_id),

@@ -53,6 +53,39 @@ class User extends Authenticatable implements MustVerifyEmail
             ->implode('');
     }
 
+    public function avatarUrl(): ?string
+    {
+        if ($this->validAvatarUrl($this->avatar_url)) {
+            return $this->avatar_url;
+        }
+
+        // Existing GitHub accounts get an avatar without another OAuth sign-in.
+        return $this->github_id && ctype_digit((string) $this->github_id)
+            ? 'https://avatars.githubusercontent.com/u/'.$this->github_id.'?s=128&v=4'
+            : null;
+    }
+
+    public function setProviderAvatar(string $provider, ?string $url): void
+    {
+        if (! in_array($provider, ['github', 'ternis'], true) || ! $this->validAvatarUrl($url)) {
+            return;
+        }
+        if ($provider === 'github' && ! in_array(parse_url($url, PHP_URL_HOST), ['avatars.githubusercontent.com', 'github.com'], true)) {
+            return;
+        }
+        $this->forceFill(['avatar_url' => $url, 'avatar_provider' => $provider])->save();
+    }
+
+    private function validAvatarUrl(?string $url): bool
+    {
+        if (! $url || strlen($url) > 2048 || ! filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+        $parts = parse_url($url);
+
+        return ($parts['scheme'] ?? null) === 'https' && ! isset($parts['user']) && ! isset($parts['pass']);
+    }
+
     // Deliberately excluded from $fillable: users cannot self-assign paid access.
     public function hasPaidPlan(): bool
     {

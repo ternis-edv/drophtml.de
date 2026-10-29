@@ -27,6 +27,7 @@ test('github user without public email is created with fallback email', function
     $abstractUser->shouldReceive('getId')->andReturn('555444');
     $abstractUser->shouldReceive('getName')->andReturn(null);
     $abstractUser->shouldReceive('getNickname')->andReturn('ghostdev');
+    $abstractUser->shouldReceive('getAvatar')->andReturn('https://avatars.githubusercontent.com/u/123456?v=4');
     $abstractUser->shouldReceive('getEmail')->andReturn(null);
 
     $provider = Mockery::mock('Laravel\Socialite\Two\GithubProvider');
@@ -65,6 +66,7 @@ test('subsequent github login updates token and refreshes user session', functio
     $abstractUser->shouldReceive('getId')->andReturn('777888');
     $abstractUser->shouldReceive('getName')->andReturn('Returning Dev');
     $abstractUser->shouldReceive('getNickname')->andReturn('returningdev');
+    $abstractUser->shouldReceive('getAvatar')->andReturn('https://avatars.githubusercontent.com/u/123456?v=4');
     $abstractUser->shouldReceive('getEmail')->andReturn('returning@example.com');
 
     $provider = Mockery::mock('Laravel\Socialite\Two\GithubProvider');

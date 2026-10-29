@@ -12,6 +12,8 @@ Use these building blocks for dashboard additions:
 - `dashboard-button` / `dashboard-button-primary` for native links and buttons. Flux buttons carry `data-dashboard-variant` for their visual role.
 - `dashboard-tabs` / `dashboard-tab` for compact filters and segmented navigation.
 - `dashboard-text`, `dashboard-muted`, `dashboard-accent` and the success/warning/danger color, tint and border classes for semantic states.
+- `x-dashboard.context-menu` and `dashboardContextMenu` for item-specific right-click actions; preserve native controls and confirmations.
+- `x-user-avatar` for provider photos with an initials fallback.
 - `x-dashboard.badge` for status and category badges; its colors map to semantic status tones.
 - `dashboard-code`, `dashboard-meter`, `dashboard-skeleton` for snippets, usage and loading states.
 

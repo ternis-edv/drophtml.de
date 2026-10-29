@@ -51,7 +51,13 @@
                 <div class="studio-file-list">
                     @forelse($filteredFiles as $file)
                         @php($ext = strtolower(pathinfo($file, PATHINFO_EXTENSION)))
-                        <div wire:key="file-{{ $file }}" class="studio-file-row {{ $currentFile === $file ? 'is-active' : '' }}">
+                        <div x-data="dashboardContextMenu" tabindex="0" aria-haspopup="menu" x-on:contextmenu="showContext($event)" x-on:keydown="if ($event.key === 'ContextMenu' || ($event.shiftKey && $event.key === 'F10')) showContext($event)" wire:key="file-{{ $file }}" class="studio-file-row {{ $currentFile === $file ? 'is-active' : '' }}">
+                            <x-dashboard.context-menu :label="$file">
+                                <button type="button" role="menuitem" tabindex="-1" @click="selectFile({{ \Illuminate\Support\Js::from($file) }})"><flux:icon.document-text />Open file</button>
+                                <button type="button" role="menuitem" tabindex="-1" @click="if (canLeave()) $wire.startRename({{ \Illuminate\Support\Js::from($file) }})"><flux:icon.pencil-square />Rename file</button>
+                                <hr role="separator">
+                                <button type="button" role="menuitem" tabindex="-1" class="dashboard-context-danger" @click="if (canLeave() && confirm('Delete this file permanently?')) $wire.deleteFile({{ \Illuminate\Support\Js::from($file) }})"><flux:icon.trash />Delete file</button>
+                            </x-dashboard.context-menu>
                             <button class="studio-file" @click="selectFile({{ \Illuminate\Support\Js::from($file) }})" title="{{ $file }}" @if($currentFile === $file) aria-current="true" @endif>
                                 <span class="studio-file-type type-{{ $ext }}">{{ match($ext) { 'html', 'htm' => '<>', 'css' => '#', 'js', 'mjs' => 'JS', 'json' => '{}', default => '·' } }}</span><span>{{ $file }}</span>
                             </button>

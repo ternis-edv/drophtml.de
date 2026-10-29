@@ -272,7 +272,7 @@ new class extends Component
 >
     @if($cachePreview !== null)
         <div hidden wire:key="overview-cache-{{ sha1(json_encode($cachePreview)) }}"
-            x-init="window.drophtmlDashboardCache?.write(@js((string) auth()->id()), @js($cachePreview))"></div>
+            x-init="window.drophtmlDashboardCache?.write({{ \Illuminate\Support\Js::from((string) auth()->id()) }}, {{ \Illuminate\Support\Js::from($cachePreview) }})"></div>
     @endif
     <!-- Drag overlay -->
     <div
@@ -631,9 +631,11 @@ new class extends Component
                         @endphp
                         <div
                             wire:key="site-card-{{ $site->id }}"
+                            x-data="dashboardContextMenu" tabindex="0" aria-haspopup="menu" x-on:contextmenu="showContext($event)" x-on:keydown="if ($event.key === 'ContextMenu' || ($event.shiftKey && $event.key === 'F10')) showContext($event)"
 
                             class="group dashboard-panel dashboard-panel-interactive dashboard-surface p-5 flex flex-col justify-between relative overflow-hidden"
                         >
+                            <x-dashboard.site-context-actions :site="$site" />
                             <div>
                                 <!-- Header Row -->
                                 <div class="flex items-start justify-between gap-3 mb-3">
@@ -656,13 +658,13 @@ new class extends Component
                                             </a>
                                             <button
                                                 type="button"
-                                                @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))"
+                                                @click="copyText({{ \Illuminate\Support\Js::from(url('/s/' . $site->slug)) }}, {{ \Illuminate\Support\Js::from($site->id) }})"
                                                 class="dashboard-muted dashboard-hover-text p-0.5 rounded transition-colors duration-150 cursor-pointer"
                                                 title="Copy live URL"
                                                 aria-label="{{ __('Copy live URL for') }} {{ $site->slug }}"
                                             >
-                                                <flux:icon.clipboard x-show="copiedId !== @js($site->id)" class="size-3.5" />
-                                                <flux:icon.check x-show="copiedId === @js($site->id)" x-cloak class="size-3.5 dashboard-success" />
+                                                <flux:icon.clipboard x-show="copiedId !== {{ \Illuminate\Support\Js::from($site->id) }}" class="size-3.5" />
+                                                <flux:icon.check x-show="copiedId === {{ \Illuminate\Support\Js::from($site->id) }}" x-cloak class="size-3.5 dashboard-success" />
                                             </button>
                                         </div>
                                     </div>
@@ -693,7 +695,7 @@ new class extends Component
                                                     <flux:menu.item wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set 30d Expiry' : 'Make Permanent' }}</flux:menu.item>
                                                 </flux:menu.submenu>
                                                 <flux:menu.separator />
-                                                <flux:menu.item icon="trash" @click="askDelete(@js($site->id), @js($site->original_name ?: $site->slug))" class="dashboard-danger">Delete Site</flux:menu.item>
+                                                <flux:menu.item icon="trash" @click="askDelete({{ \Illuminate\Support\Js::from($site->id) }}, {{ \Illuminate\Support\Js::from($site->original_name ?: $site->slug) }})" class="dashboard-danger">Delete Site</flux:menu.item>
                                             </flux:menu>
                                         </flux:dropdown>
                                     </div>
@@ -824,7 +826,7 @@ new class extends Component
 
                         <flux:table.rows>
                             @foreach ($sites as $site)
-                                <flux:table.row wire:key="site-row-{{ $site->id }}" class="dashboard-hover-surface transition-colors duration-150">
+                                <flux:table.row x-data="dashboardContextMenu" tabindex="0" aria-haspopup="menu" x-on:contextmenu="showContext($event)" x-on:keydown="if ($event.key === 'ContextMenu' || ($event.shiftKey && $event.key === 'F10')) showContext($event)" wire:key="site-row-{{ $site->id }}" class="dashboard-hover-surface transition-colors duration-150">
                                     <flux:table.cell>
                                         <div class="font-medium flex items-center gap-2 dashboard-text">
                                             {{ $site->original_name ?: 'Unnamed Site' }}
@@ -868,9 +870,10 @@ new class extends Component
                                     </flux:table.cell>
                                     <flux:table.cell class="text-right">
                                         <div class="flex items-center justify-end gap-1">
-                                            <flux:button data-dashboard-variant="ghost" variant="ghost" size="xs" icon="clipboard" @click="copyText(@js(url('/s/' . $site->slug)), @js($site->id))" title="Copy URL" aria-label="{{ __('Copy live URL for') }} {{ $site->slug }}" />
+                                            <flux:button data-dashboard-variant="ghost" variant="ghost" size="xs" icon="clipboard" @click="copyText({{ \Illuminate\Support\Js::from(url('/s/' . $site->slug)) }}, {{ \Illuminate\Support\Js::from($site->id) }})" title="Copy URL" aria-label="{{ __('Copy live URL for') }} {{ $site->slug }}" />
                                             <flux:button data-dashboard-variant="outline" :href="route('dashboard.sites.edit', $site->id)" variant="ghost" size="xs" icon="pencil-square" title="Code Studio" aria-label="{{ __('Open Code Studio for') }} {{ $site->slug }}" />
                                             <flux:button data-dashboard-variant="outline" :href="route('dashboard.sites.stats', $site->id)" wire:navigate variant="ghost" size="xs" icon="chart-bar" title="Analytics" aria-label="{{ __('Analytics for') }} {{ $site->slug }}" />
+                                            <x-dashboard.site-context-actions :site="$site" />
                                             <flux:dropdown position="bottom" align="end">
                                                 <flux:button data-dashboard-variant="ghost" variant="ghost" size="xs" icon="ellipsis-horizontal" aria-label="{{ __('More actions for') }} {{ $site->slug }}" />
                                                 <flux:menu>
@@ -885,7 +888,7 @@ new class extends Component
                                                     <flux:menu.item icon="clock" wire:click="extendExpiry('{{ $site->id }}', 7)">+7 Days Expiry</flux:menu.item>
                                                     <flux:menu.item icon="sparkles" wire:click="togglePermanent('{{ $site->id }}')">{{ $site->is_permanent ? 'Set Expiry (30d)' : 'Make Permanent' }}</flux:menu.item>
                                                     <flux:menu.separator />
-                                                    <flux:menu.item icon="trash" @click="askDelete(@js($site->id), @js($site->original_name ?: $site->slug))" class="dashboard-danger">Delete</flux:menu.item>
+                                                    <flux:menu.item icon="trash" @click="askDelete({{ \Illuminate\Support\Js::from($site->id) }}, {{ \Illuminate\Support\Js::from($site->original_name ?: $site->slug) }})" class="dashboard-danger">Delete</flux:menu.item>
                                                 </flux:menu>
                                             </flux:dropdown>
                                         </div>

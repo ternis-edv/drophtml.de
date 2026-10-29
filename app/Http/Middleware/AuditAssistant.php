@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Ai\Audit;
+use App\Ai\Budget;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -10,6 +11,8 @@ class AuditAssistant
 {
     public function handle(Request $request, Closure $next)
     {
+        abort_unless(app(Budget::class)->isReady(), 503, 'AI help is temporarily unavailable.');
+
         // Never persist arbitrary headers, credentials, or unbounded request bodies.
         $id = Audit::record($request->user()?->id, 'request', [
             'message' => is_string($request->input('message')) ? mb_substr($request->input('message'), 0, 2000) : '[invalid message type]',

@@ -7,6 +7,7 @@ use App\Models\Site;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Ai\Tools\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -98,3 +99,15 @@ it('keeps the tool budget when tools are resolved repeatedly', function () {
     }
     expect($agent->tools()[0]->handle(new Request(['action' => 'list'])))->toContain('permission denied');
 });
+
+it('keeps help usable and fails closed when assistant migrations are missing', function ($table) {
+    Schema::drop($table);
+    config(['assistant.enabled' => true, 'ai.providers.xai.key' => 'fake']);
+    HelpAgent::fake()->preventStrayPrompts();
+    $this->actingAs(User::factory()->create())->get(route('dashboard.help'))
+        ->assertOk()->assertViewHas('available', false)
+        ->assertViewHas('usage', fn ($usage) => $usage['remaining'] === 0 && ! $usage['shared_available']);
+    $this->postJson(route('dashboard.help.ask'), ['message' => 'Help'])->assertStatus(503)
+        ->assertDontSee('SQLSTATE')->assertDontSee('no such table');
+    HelpAgent::assertNeverPrompted();
+})->with(['assistant_budgets', 'assistant_audits']);

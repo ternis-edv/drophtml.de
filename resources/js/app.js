@@ -5,3 +5,5 @@ window.Chart = Chart;
 import './media-library';
 
 import './dashboard-cache';
+
+import './dashboard-context-menu';

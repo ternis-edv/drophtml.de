@@ -1,17 +1,13 @@
 <flux:dropdown position="bottom" align="start" {{ $attributes }}>
     <button type="button" class="dashboard-account-trigger" data-test="sidebar-menu-button" aria-label="Open account menu">
-        <span class="dashboard-account-avatar">{{ auth()->user()->initials() }}</span>
+        <x-user-avatar :user="auth()->user()" />
         <span class="min-w-0 flex-1 truncate text-left">{{ auth()->user()->name }}</span>
         <flux:icon.chevrons-up-down class="size-4" />
     </button>
 
     <flux:menu class="w-64 p-1.5">
         <div class="flex items-center gap-3 p-2 text-start text-sm dashboard-surface dashboard-control-rounded mb-1 border dashboard-border">
-            <flux:avatar
-                :name="auth()->user()->name"
-                :initials="auth()->user()->initials()"
-                class="size-9 "
-            />
+            <x-user-avatar :user="auth()->user()" size="md" />
             <div class="grid flex-1 text-start text-sm leading-tight min-w-0">
                 <div class="flex items-center justify-between gap-1">
                     <flux:heading class="truncate font-medium dashboard-text">{{ auth()->user()->name }}</flux:heading>

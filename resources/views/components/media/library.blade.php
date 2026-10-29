@@ -29,7 +29,14 @@
             <div class="media-results-heading"><span>{{ $assets->total() }} {{ $assets->total() === 1 ? 'asset' : 'assets' }}{{ $search || $typeFilter !== 'all' || $driverFilter !== 'all' ? ' matching your filters' : ' in your library' }}</span><span>SELECT AN ASSET TO PREVIEW & EMBED</span></div>
             <div class="media-grid {{ $viewMode === 'list' ? 'media-list' : '' }}">
                 @forelse($assets as $asset)
-                    <article class="media-card {{ $previewAssetId === $asset->id ? 'is-selected' : '' }}" wire:key="media-{{ $asset->id }}">
+                    <article x-data="dashboardContextMenu" tabindex="0" aria-haspopup="menu" x-on:contextmenu="showContext($event)" x-on:keydown="if ($event.key === 'ContextMenu' || ($event.shiftKey && $event.key === 'F10')) showContext($event)" class="media-card {{ $previewAssetId === $asset->id ? 'is-selected' : '' }}" wire:key="media-{{ $asset->id }}">
+                        <x-dashboard.context-menu :label="$asset->original_name">
+                            <button type="button" role="menuitem" tabindex="-1" wire:click="showPreview('{{ $asset->id }}')"><flux:icon.eye />Preview &amp; embed</button>
+                            <button type="button" role="menuitem" data-context-restore tabindex="-1" data-url="{{ $asset->resolved_url }}" @click="copy($el.dataset.url, 'context-url')"><flux:icon.link />Copy asset URL</button>
+                            <a role="menuitem" tabindex="-1" href="{{ $asset->resolved_url }}" target="_blank" rel="noopener" download="{{ $asset->original_name }}"><flux:icon.arrow-down-tray />Download asset</a>
+                            <hr role="separator">
+                            <button type="button" role="menuitem" tabindex="-1" class="dashboard-context-danger" wire:click="deleteAsset('{{ $asset->id }}')" wire:confirm="Delete this asset permanently? Existing embeds will stop working."><flux:icon.trash />Delete asset</button>
+                        </x-dashboard.context-menu>
                         <button class="media-thumbnail" wire:click="showPreview('{{ $asset->id }}')" aria-label="Preview {{ $asset->original_name }}" aria-pressed="{{ $previewAssetId === $asset->id ? 'true' : 'false' }}">
                             @if($asset->isImage())
                                 <img src="{{ $asset->resolved_url }}" alt="" loading="lazy" />

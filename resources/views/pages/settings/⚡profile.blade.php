@@ -93,6 +93,10 @@ new #[Title('Profile settings')] class extends Component {
             </div>
         @endif
 
+        <div class="flex items-center gap-4 mb-6">
+            <x-user-avatar :user="auth()->user()" size="lg" />
+            <div><p class="dashboard-section-title">{{ auth()->user()->name }}</p><p class="dashboard-lede mt-1">{{ auth()->user()->avatarUrl() ? 'Profile photo from '.(auth()->user()->avatar_provider === 'ternis' ? 'TernisAuth.' : 'GitHub.') : 'Your initials are shown until a profile photo is connected.' }}</p></div>
+        </div>
         <form wire:submit="updateProfileInformation" class="w-full space-y-6">
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 

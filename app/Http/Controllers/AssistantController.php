@@ -13,14 +13,14 @@ class AssistantController extends Controller
     public function show(Request $request, Budget $budget)
     {
         return view('dashboard.help', [
-            'available' => (bool) (config('assistant.enabled') && config('ai.providers.xai.key')),
+            'available' => (bool) (config('assistant.enabled') && config('ai.providers.xai.key') && $budget->isReady()),
             'usage' => $budget->status($request->user()->id),
         ]);
     }
 
     public function __invoke(Request $request, Budget $budget)
     {
-        abort_unless(config('assistant.enabled') && config('ai.providers.xai.key'), 503, 'AI help is unavailable.');
+        abort_unless(config('assistant.enabled') && config('ai.providers.xai.key') && $budget->isReady(), 503, 'AI help is unavailable.');
         $data = $request->validate(['message' => 'required|string|max:2000', 'allow_changes' => 'sometimes|boolean']);
         try {
             $budget->reserve($request->user()->id);

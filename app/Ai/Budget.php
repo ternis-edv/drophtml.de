@@ -3,12 +3,22 @@
 namespace App\Ai;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Budget
 {
+    public function isReady(): bool
+    {
+        return Schema::hasTable('assistant_budgets') && Schema::hasTable('assistant_audits');
+    }
+
     public function status(string $user): array
     {
         $now = now('UTC');
+        if (! $this->isReady()) {
+            return ['remaining' => 0, 'shared_available' => false, 'retry_at' => 0,
+                'resets_at' => $now->copy()->addDay()->startOfDay()->toIso8601String()];
+        }
         $used = (int) DB::table('assistant_budgets')->where('key', 'user:'.$user.':'.$now->format('Y-m-d'))->value('used');
         $global = (int) DB::table('assistant_budgets')->where('key', 'global:'.$now->format('Y-m-d'))->value('used');
         $minute = (int) DB::table('assistant_budgets')->where('key', 'minute:'.$user.':'.$now->format('Y-m-d-H-i'))->value('used');
@@ -20,6 +30,8 @@ class Budget
 
     public function reserve(string $user): void
     {
+        abort_unless($this->isReady(), 503, 'AI help is temporarily unavailable.');
+
         // Conditional SQL increments serialize concurrent requests across all web workers.
         DB::transaction(function () use ($user) {
             $now = now('UTC');

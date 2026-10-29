@@ -73,6 +73,8 @@ class SocialiteController extends Controller
             ]);
         }
 
+        $user->setProviderAvatar('github', $socialUser->getAvatar());
+
         Auth::login($user);
 
         $this->activityLogService->log(
