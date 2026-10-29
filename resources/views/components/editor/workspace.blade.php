@@ -58,7 +58,7 @@
                                 <button class="studio-file-menu studio-icon-button" aria-label="Actions for {{ $file }}"><flux:icon.ellipsis-horizontal /></button>
                                 <flux:menu>
                                     <flux:menu.item icon="pencil-square" @click="renamePath = {{ \Illuminate\Support\Js::from($file) }}; $wire.startRename(renamePath)">Rename</flux:menu.item>
-                                    <flux:menu.item icon="trash" @click="if (canLeave() && confirm('Delete this file permanently?')) $wire.deleteFile({{ \Illuminate\Support\Js::from($file) }})" variant="danger">Delete</flux:menu.item>
+                                    <flux:menu.item data-dashboard-tone="danger" icon="trash" @click="if (canLeave() && confirm('Delete this file permanently?')) $wire.deleteFile({{ \Illuminate\Support\Js::from($file) }})" variant="danger">Delete</flux:menu.item>
                                 </flux:menu>
                             </flux:dropdown>
                         </div>
@@ -144,9 +144,9 @@
 
             <div class="flex gap-2 justify-end">
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button data-dashboard-variant="ghost" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary">Create File</flux:button>
+                <flux:button data-dashboard-variant="primary" type="submit" variant="primary">Create File</flux:button>
             </div>
         </form>
     </flux:modal>
@@ -162,9 +162,9 @@
 
             <div class="flex gap-2 justify-end">
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button data-dashboard-variant="ghost" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary">Rename</flux:button>
+                <flux:button data-dashboard-variant="primary" type="submit" variant="primary">Rename</flux:button>
             </div>
         </form>
     </flux:modal>

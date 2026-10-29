@@ -2,9 +2,9 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
-        @vite(['resources/css/editor.css', 'resources/js/editor.js'])
+        @vite(['resources/css/editor.css', 'resources/css/dashboard.css', 'resources/js/editor.js'])
     </head>
-    <body class="studio-body antialiased">
+    <body class="dashboard-ui dashboard-editor studio-body antialiased">
         <a href="#studio-workspace" class="studio-skip">Skip to code editor</a>
         {{ $slot }}
         <flux:toast />

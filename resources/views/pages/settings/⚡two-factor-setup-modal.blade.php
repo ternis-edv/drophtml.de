@@ -159,21 +159,21 @@ new class extends Component {
 >
         <div class="space-y-6">
             <div class="flex flex-col items-center space-y-4">
-                <div class="p-0.5 w-auto rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xs">
-                    <div class="p-2.5 rounded-full border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
-                        <div class="flex items-stretch absolute inset-0 w-full h-full divide-x [&>div]:flex-1 divide-zinc-200 dark:divide-zinc-700 justify-around opacity-50">
+                <div class="p-0.5 w-auto rounded-full border dashboard-border dashboard-surface">
+                    <div class="p-2.5 rounded-full border dashboard-border overflow-hidden dashboard-raised relative">
+                        <div class="flex items-stretch absolute inset-0 w-full h-full divide-x [&>div]:flex-1 dashboard-divide justify-around opacity-50">
                             @for ($i = 1; $i <= 5; $i++)
                                 <div></div>
                             @endfor
                         </div>
 
-                        <div class="flex flex-col items-stretch absolute w-full h-full divide-y [&>div]:flex-1 inset-0 divide-zinc-200 dark:divide-zinc-700 justify-around opacity-50">
+                        <div class="flex flex-col items-stretch absolute w-full h-full divide-y [&>div]:flex-1 inset-0 dashboard-divide justify-around opacity-50">
                             @for ($i = 1; $i <= 5; $i++)
                                 <div></div>
                             @endfor
                         </div>
 
-                        <flux:icon.qr-code class="relative z-20 text-accent dark:text-accent-content"/>
+                        <flux:icon.qr-code class="relative z-20 dashboard-accent "/>
                     </div>
                 </div>
 
@@ -201,7 +201,7 @@ new class extends Component {
                     </div>
 
                     <div class="flex items-center space-x-3">
-                        <flux:button
+                        <flux:button data-dashboard-variant="outline"
                             variant="outline"
                             class="flex-1"
                             wire:click="resetVerification"
@@ -209,7 +209,7 @@ new class extends Component {
                             {{ __('Back') }}
                         </flux:button>
 
-                        <flux:button
+                        <flux:button data-dashboard-variant="primary"
                             variant="primary"
                             class="flex-1"
                             wire:click="confirmTwoFactor"
@@ -225,15 +225,15 @@ new class extends Component {
                 @enderror
 
                 <div class="flex justify-center">
-                    <div class="relative w-64 overflow-hidden border rounded-xl border-zinc-200 dark:border-zinc-800 aspect-square">
+                    <div class="relative w-64 overflow-hidden border dashboard-control-rounded dashboard-border aspect-square">
                         @empty($qrCodeSvg)
-                            <div class="absolute inset-0 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 animate-pulse">
+                            <div class="absolute inset-0 flex items-center justify-center dashboard-raised">
                                 <flux:icon.loading/>
                             </div>
                         @else
                             <div x-data class="flex items-center justify-center h-full p-4">
                                 <div
-                                    class="bg-white p-3 rounded"
+                                    class="dashboard-surface p-3 rounded"
                                     :style="($flux.appearance === 'dark' || ($flux.appearance === 'system' && $flux.dark)) ? 'filter: invert(1) brightness(1.5)' : ''"
                                 >
                                     {!! $qrCodeSvg !!}
@@ -244,7 +244,7 @@ new class extends Component {
                 </div>
 
                 <div>
-                    <flux:button
+                    <flux:button data-dashboard-variant="outline"
                         :disabled="$errors->has('setupData')"
                         variant="primary"
                         class="w-full"
@@ -256,8 +256,8 @@ new class extends Component {
 
                 <div class="space-y-4">
                     <div class="relative flex items-center justify-center w-full">
-                        <div class="absolute inset-0 w-full h-px top-1/2 bg-zinc-200 dark:bg-zinc-700"></div>
-                        <span class="relative px-2 text-sm bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400">
+                        <div class="absolute inset-0 w-full h-px top-1/2 dashboard-surface"></div>
+                        <span class="relative px-2 text-sm dashboard-surface dashboard-muted">
                             {{ __('or, enter the code manually') }}
                         </span>
                     </div>
@@ -277,9 +277,9 @@ new class extends Component {
                             }
                         }"
                     >
-                        <div class="flex items-stretch w-full border rounded-xl border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                        <div class="flex items-stretch w-full border dashboard-control-rounded dashboard-border overflow-hidden">
                             @empty($manualSetupKey)
-                                <div class="flex items-center justify-center w-full p-3 bg-zinc-100 dark:bg-zinc-800">
+                                <div class="flex items-center justify-center w-full p-3 dashboard-raised">
                                     <flux:icon.loading variant="mini"/>
                                 </div>
                             @else
@@ -287,18 +287,18 @@ new class extends Component {
                                     type="text"
                                     readonly
                                     value="{{ $manualSetupKey }}"
-                                    class="w-full p-3 bg-transparent outline-none font-mono text-sm text-zinc-900 dark:text-zinc-100"
+                                    class="w-full p-3 bg-transparent outline-none font-mono text-sm dashboard-text"
                                 />
 
                                 <button
                                     @click="copy()"
-                                    class="px-3 transition-colors border-l cursor-pointer border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+                                    class="px-3 transition-colors border-l cursor-pointer dashboard-border dashboard-hover-surface dashboard-muted"
                                 >
                                     <flux:icon.document-duplicate x-show="!copied" variant="outline"></flux:icon>
                                     <flux:icon.check
                                         x-show="copied"
                                         variant="solid"
-                                        class="text-emerald-500"
+                                        class="dashboard-success"
                                     ></flux:icon>
                                 </button>
                             @endempty

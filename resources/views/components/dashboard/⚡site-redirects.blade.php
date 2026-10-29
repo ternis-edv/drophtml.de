@@ -275,81 +275,81 @@ new class extends Component
     <!-- Top KPI Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total Rules -->
-        <div class="panel panel-interactive p-5 rise-in" style="--i: 0">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span>Configured Rules</span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium dashboard-accent ">
                     <flux:icon.arrows-right-left class="size-3.5" />
                     Routing
                 </span>
             </div>
-            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <div class="dashboard-stat-value">
                 {{ number_format($totalRedirects) }}
             </div>
-            <div class="text-xs text-zinc-400 dark:text-zinc-500 mt-2 font-mono">
+            <div class="text-xs dashboard-muted mt-2 font-mono">
                 {{ $activeRedirects }} active &bull; {{ $totalRedirects - $activeRedirects }} paused
             </div>
         </div>
 
         <!-- Lifetime Redirect Hits -->
-        <div class="panel panel-interactive p-5 rise-in" style="--i: 1">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span>Total Redirect Hits</span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium dashboard-accent ">
                     <flux:icon.arrow-trending-up class="size-3.5" />
                     Traffic
                 </span>
             </div>
-            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <div class="dashboard-stat-value">
                 {{ number_format($totalHits) }}
             </div>
-            <div class="text-xs text-zinc-400 dark:text-zinc-500 mt-2 font-mono">
+            <div class="text-xs dashboard-muted mt-2 font-mono">
                 Telemetry tracked per visit
             </div>
         </div>
 
         <!-- Most Active Rule -->
-        <div class="panel panel-interactive p-5 rise-in" style="--i: 2">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span>Top Performing Rule</span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium dashboard-accent ">
                     <flux:icon.sparkles class="size-3.5" />
                     Popular
                 </span>
             </div>
             @if($topRule)
-                <div class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate font-mono" title="{{ $topRule->from_path }}">
+                <div class="text-lg font-medium tracking-tight dashboard-text truncate font-mono" title="{{ $topRule->from_path }}">
                     {{ $topRule->from_path }}
                 </div>
-                <div class="text-xs text-zinc-400 dark:text-zinc-500 mt-2 font-mono">
+                <div class="text-xs dashboard-muted mt-2 font-mono">
                     {{ number_format($topRule->hit_count) }} hits recorded
                 </div>
             @else
-                <div class="text-base font-medium text-zinc-400 mt-1">No rules yet</div>
-                <div class="text-xs text-zinc-400 mt-2 font-mono">&mdash;</div>
+                <div class="text-base font-medium dashboard-muted mt-1">No rules yet</div>
+                <div class="text-xs dashboard-muted mt-2 font-mono">&mdash;</div>
             @endif
         </div>
 
         <!-- Direct Serving Status -->
-        <div class="panel panel-interactive p-5 rise-in" style="--i: 3">
-            <div class="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span>Engine Integration</span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-accent dark:text-accent-content">
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium dashboard-accent ">
                     <flux:icon.bolt class="size-3.5" />
                     Instant
                 </span>
             </div>
-            <div class="text-2xl font-bold tracking-tight text-accent dark:text-accent-content">
+            <div class="text-2xl font-medium tracking-tight dashboard-accent ">
                 Edge Ready
             </div>
-            <div class="text-xs text-zinc-400 dark:text-zinc-500 mt-2 font-mono">
+            <div class="text-xs dashboard-muted mt-2 font-mono">
                 301, 302, 307, 308 &amp; 200 rewrites
             </div>
         </div>
     </div>
 
     <!-- Actions & Filter Controls Bar -->
-    <div class="panel p-4 rise-in flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4" style="--i: 4">
+    <div class="dashboard-panel p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         <!-- Left: Search and Filters -->
         <div class="flex flex-wrap items-center gap-3 flex-1">
             <div class="relative w-full sm:w-64">
@@ -362,13 +362,13 @@ new class extends Component
                 />
             </div>
 
-            <div class="pill-group" role="group" aria-label="Filter redirects by status">
+            <div class="dashboard-tabs" role="group" aria-label="Filter redirects by status">
                 @foreach (['all' => 'All', 'active' => 'Active', '301' => '301', '302' => '302', '200' => '200 Rewrite'] as $fKey => $fLabel)
                     <button
                         type="button"
                         wire:click="$set('statusFilter', '{{ $fKey }}')"
                         aria-pressed="{{ $statusFilter === $fKey ? 'true' : 'false' }}"
-                        @class(['pill', 'is-active' => $statusFilter === $fKey])
+                        @class(['dashboard-tab', 'is-active' => $statusFilter === $fKey])
                     >{{ $fLabel }}</button>
                 @endforeach
             </div>
@@ -381,7 +381,7 @@ new class extends Component
                     type="button"
                     wire:click="importFromFile"
                     wire:confirm="Import existing rules from your _redirects file into the dashboard?"
-                    class="btn-secondary px-3 py-1.5 text-xs"
+                    class="dashboard-button px-3 py-1.5 text-xs"
                     title="Import rules from static _redirects file into database"
                 >
                     <flux:icon.arrow-down-tray class="size-3.5" />
@@ -390,7 +390,7 @@ new class extends Component
             @endif
 
             <flux:dropdown>
-                <flux:button size="sm" variant="filled">
+                <flux:button data-dashboard-variant="filled" size="sm" variant="filled">
                     <flux:icon.plus class="size-3.5 mr-1" />
                     <span>New Redirect</span>
                 </flux:button>
@@ -407,11 +407,11 @@ new class extends Component
     </div>
 
     <!-- Redirects Table -->
-    <div class="panel rise-in overflow-hidden" style="--i: 5">
+    <div class="dashboard-panel overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead>
-                    <tr class="border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-50 dark:bg-zinc-950/40">
+                    <tr class="border-b dashboard-border text-xs font-medium dashboard-muted uppercase tracking-wider dashboard-surface">
                         <th class="py-3.5 px-5">Source Path</th>
                         <th class="py-3.5 px-4">Status</th>
                         <th class="py-3.5 px-4">Destination Target</th>
@@ -421,32 +421,32 @@ new class extends Component
                         <th class="py-3.5 px-5 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                <tbody class="divide-y dashboard-divide">
                     @forelse($redirects as $redirect)
-                        <tr class="group hover:bg-zinc-50/70 dark:hover:bg-zinc-800/30 transition-colors {{ ! $redirect->is_active ? 'opacity-60' : '' }}">
+                        <tr class="group dashboard-hover-surface  transition-colors {{ ! $redirect->is_active ? 'opacity-60' : '' }}">
                             <!-- Source Path -->
                             <td class="py-3 px-5">
                                 <div class="flex items-center gap-2">
-                                    <span class="font-mono font-semibold text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
+                                    <span class="font-mono font-medium text-xs dashboard-text dashboard-raised px-2 py-0.5 rounded-md border dashboard-border">
                                         {{ $redirect->from_path }}
                                     </span>
                                     <button
                                         type="button"
                                         @click="navigator.clipboard.writeText('{{ url('/s/' . $site->slug . $redirect->from_path) }}'); Flux.toast('Full redirect URL copied!')"
-                                        class="text-zinc-400 hover:text-accent dark:hover:text-accent-content opacity-0 group-hover:opacity-100 transition-opacity p-0.5"
+                                        class="dashboard-muted dashboard-accent  opacity-0 group-hover:opacity-100 transition-opacity p-0.5"
                                         title="Copy live redirect link"
                                     >
                                         <flux:icon.clipboard class="size-3.5" />
                                     </button>
                                 </div>
                                 @if($redirect->description)
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 truncate max-w-xs">{{ $redirect->description }}</p>
+                                    <p class="text-[11px] dashboard-muted mt-1 truncate max-w-xs">{{ $redirect->description }}</p>
                                 @endif
                             </td>
 
                             <!-- HTTP Status Code -->
                             <td class="py-3 px-4">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium font-mono dashboard-raised dashboard-text border dashboard-border">
                                     @if($redirect->status_code === 301)
                                         301 Perm
                                     @elseif($redirect->status_code === 302)
@@ -462,16 +462,16 @@ new class extends Component
                             <!-- Destination Target -->
                             <td class="py-3 px-4">
                                 <div class="flex items-center gap-2 max-w-xs sm:max-w-md">
-                                    <flux:icon.arrow-right class="size-3.5 text-zinc-400 shrink-0" />
-                                    <span class="font-mono text-xs text-zinc-700 dark:text-zinc-300 truncate" title="{{ $redirect->to_url }}">
+                                    <flux:icon.arrow-right class="size-3.5 dashboard-muted shrink-0" />
+                                    <span class="font-mono text-xs dashboard-text truncate" title="{{ $redirect->to_url }}">
                                         {{ $redirect->to_url }}
                                     </span>
                                     @if(str_starts_with($redirect->to_url, 'http://') || str_starts_with($redirect->to_url, 'https://'))
-                                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-accent/10 text-accent dark:text-accent-content border border-accent/20 shrink-0">
+                                        <span class="text-[9px] font-medium uppercase px-1.5 py-0.5 rounded dashboard-accent-tint dashboard-accent  border dashboard-accent-border shrink-0">
                                             External
                                         </span>
                                     @else
-                                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 shrink-0">
+                                        <span class="text-[9px] font-medium uppercase px-1.5 py-0.5 rounded dashboard-raised dashboard-muted shrink-0">
                                             Internal
                                         </span>
                                     @endif
@@ -480,13 +480,13 @@ new class extends Component
 
                             <!-- Hits -->
                             <td class="py-3 px-4 text-center">
-                                <span class="font-mono text-xs font-semibold px-2 py-0.5 rounded-full {{ $redirect->hit_count > 0 ? 'bg-accent/10 text-accent dark:text-accent-content' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400' }}">
+                                <span class="font-mono text-xs font-medium px-2 py-0.5 rounded-full {{ $redirect->hit_count > 0 ? 'dashboard-accent-tint dashboard-accent ' : 'dashboard-raised dashboard-muted  ' }}">
                                     {{ number_format($redirect->hit_count) }}
                                 </span>
                             </td>
 
                             <!-- Last Triggered -->
-                            <td class="py-3 px-4 text-xs font-mono text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                            <td class="py-3 px-4 text-xs font-mono dashboard-muted whitespace-nowrap">
                                 {{ $redirect->last_accessed_at ? $redirect->last_accessed_at->diffForHumans() : 'Never' }}
                             </td>
 
@@ -495,10 +495,10 @@ new class extends Component
                                 <button
                                     type="button"
                                     wire:click="toggleActive('{{ $redirect->id }}')"
-                                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden {{ $redirect->is_active ? 'bg-accent' : 'bg-zinc-300 dark:bg-zinc-700' }}"
+                                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden {{ $redirect->is_active ? 'dashboard-accent-tint' : 'dashboard-surface ' }}"
                                     title="{{ $redirect->is_active ? 'Click to pause' : 'Click to enable' }}"
                                 >
-                                    <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out {{ $redirect->is_active ? 'translate-x-4' : 'translate-x-0' }}"></span>
+                                    <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full dashboard-surface  ring-0 transition duration-200 ease-in-out {{ $redirect->is_active ? 'translate-x-4' : 'translate-x-0' }}"></span>
                                 </button>
                             </td>
 
@@ -509,7 +509,7 @@ new class extends Component
                                     <a
                                         href="{{ url('/s/' . $site->slug . $redirect->from_path) }}"
                                         target="_blank"
-                                        class="p-1.5 text-zinc-400 hover:text-accent dark:hover:text-accent-content rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                        class="p-1.5 dashboard-muted dashboard-accent  dashboard-control-rounded dashboard-hover-surface transition-colors"
                                         title="Test redirect rule live"
                                     >
                                         <flux:icon.arrow-top-right-on-square class="size-4" />
@@ -519,7 +519,7 @@ new class extends Component
                                     <button
                                         type="button"
                                         wire:click="editRedirect('{{ $redirect->id }}')"
-                                        class="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                        class="p-1.5 dashboard-muted dashboard-hover-text dashboard-control-rounded dashboard-hover-surface transition-colors cursor-pointer"
                                         title="Edit rule"
                                     >
                                         <flux:icon.pencil-square class="size-4" />
@@ -530,7 +530,7 @@ new class extends Component
                                         type="button"
                                         wire:click="deleteRedirect('{{ $redirect->id }}')"
                                         wire:confirm="Are you sure you want to remove this redirect rule?"
-                                        class="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                                        class="p-1.5 dashboard-muted dashboard-danger dashboard-control-rounded dashboard-danger-tint transition-colors cursor-pointer"
                                         title="Delete rule"
                                     >
                                         <flux:icon.trash class="size-4" />
@@ -540,15 +540,15 @@ new class extends Component
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-12 text-center text-zinc-400 text-xs">
+                            <td colspan="7" class="py-12 text-center dashboard-muted text-xs">
                                 <div class="flex flex-col items-center justify-center gap-2">
-                                    <flux:icon.arrows-right-left class="size-8 text-zinc-300 dark:text-zinc-700" />
-                                    <p class="font-medium text-zinc-600 dark:text-zinc-300">No redirect rules found.</p>
-                                    <p class="text-zinc-500">Create your first redirect URL or import existing rules from your code bundle.</p>
+                                    <flux:icon.arrows-right-left class="size-8 dashboard-text" />
+                                    <p class="font-medium dashboard-muted">No redirect rules found.</p>
+                                    <p class="dashboard-muted">Create your first redirect URL or import existing rules from your code bundle.</p>
                                     <button
                                         type="button"
                                         wire:click="openCreateModal()"
-                                        class="btn-primary mt-2 px-3.5 py-1.5 text-xs"
+                                        class="dashboard-button dashboard-button-primary mt-2 px-3.5 py-1.5 text-xs"
                                     >
                                         <flux:icon.plus class="size-3.5" />
                                         <span>Create First Redirect</span>
@@ -565,43 +565,43 @@ new class extends Component
     <!-- Create Redirect Modal -->
     <flux:modal wire:model="showCreateModal" class="space-y-6 max-w-lg">
         <div>
-            <h3 class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <flux:icon.arrows-right-left class="size-5 text-accent dark:text-accent-content" />
+            <h3 class="dashboard-section-title     flex items-center gap-2">
+                <flux:icon.arrows-right-left class="size-5 dashboard-accent " />
                 Add Redirect Rule
             </h3>
-            <p class="text-xs text-zinc-500 mt-1">Configure an instant HTTP redirect or internal rewrite for this site.</p>
+            <p class="text-xs dashboard-muted mt-1">Configure an instant HTTP redirect or internal rewrite for this site.</p>
         </div>
 
         <form wire:submit="createRedirect" class="space-y-4">
             <!-- Source Path -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Source Path (From)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Source Path (From)</label>
                 <flux:input
                     wire:model="fromPath"
                     placeholder="/old-path or /blog/*"
                     icon="link"
                     required
                 />
-                <p class="text-[11px] text-zinc-500 mt-1">Leading slash is automatically added. Wildcards (<code class="font-mono text-zinc-700 dark:text-zinc-300">*</code>) and parameters (<code class="font-mono text-zinc-700 dark:text-zinc-300">:slug</code>) supported.</p>
-                @error('fromPath') <span class="text-red-600 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                <p class="text-[11px] dashboard-muted mt-1">Leading slash is automatically added. Wildcards (<code class="font-mono dashboard-text">*</code>) and parameters (<code class="font-mono dashboard-text">:slug</code>) supported.</p>
+                @error('fromPath') <span class="dashboard-danger text-xs mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <!-- Destination Target -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Destination Target (To)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Destination Target (To)</label>
                 <flux:input
                     wire:model="toUrl"
                     placeholder="/new-path, /posts/:splat, or https://example.com"
                     icon="arrow-top-right-on-square"
                     required
                 />
-                <p class="text-[11px] text-zinc-500 mt-1">Can be an internal relative path or an external URL (<code class="font-mono text-zinc-700 dark:text-zinc-300">https://...</code>).</p>
-                @error('toUrl') <span class="text-red-600 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                <p class="text-[11px] dashboard-muted mt-1">Can be an internal relative path or an external URL (<code class="font-mono dashboard-text">https://...</code>).</p>
+                @error('toUrl') <span class="dashboard-danger text-xs mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <!-- HTTP Status Code -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Redirect Type (HTTP Status)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Redirect Type (HTTP Status)</label>
                 <flux:select wire:model="statusCode">
                     <flux:select.option :value="301">301 - Moved Permanently (Default, SEO Recommended)</flux:select.option>
                     <flux:select.option :value="302">302 - Found / Temporary</flux:select.option>
@@ -609,21 +609,21 @@ new class extends Component
                     <flux:select.option :value="308">308 - Permanent Redirect (Preserves HTTP Method)</flux:select.option>
                     <flux:select.option :value="200">200 - Internal Rewrite (SPA / Proxy Fallback)</flux:select.option>
                 </flux:select>
-                @error('statusCode') <span class="text-red-600 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                @error('statusCode') <span class="dashboard-danger text-xs mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <!-- Description -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Description (Optional)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Description (Optional)</label>
                 <flux:input
                     wire:model="description"
                     placeholder="e.g. Marketing promo link or renamed blog section"
                 />
             </div>
 
-            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-                <flux:button type="button" variant="ghost" wire:click="$set('showCreateModal', false)">Cancel</flux:button>
-                <flux:button type="submit" variant="filled">Save Redirect Rule</flux:button>
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t dashboard-border">
+                <flux:button data-dashboard-variant="ghost" type="button" variant="ghost" wire:click="$set('showCreateModal', false)">Cancel</flux:button>
+                <flux:button data-dashboard-variant="filled" type="submit" variant="filled">Save Redirect Rule</flux:button>
             </div>
         </form>
     </flux:modal>
@@ -631,41 +631,41 @@ new class extends Component
     <!-- Edit Redirect Modal -->
     <flux:modal wire:model="showEditModal" class="space-y-6 max-w-lg">
         <div>
-            <h3 class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <flux:icon.pencil-square class="size-5 text-accent dark:text-accent-content" />
+            <h3 class="dashboard-section-title     flex items-center gap-2">
+                <flux:icon.pencil-square class="size-5 dashboard-accent " />
                 Edit Redirect Rule
             </h3>
-            <p class="text-xs text-zinc-500 mt-1">Modify target destination, status code, or rule status.</p>
+            <p class="text-xs dashboard-muted mt-1">Modify target destination, status code, or rule status.</p>
         </div>
 
         <form wire:submit="updateRedirect" class="space-y-4">
             <!-- Source Path -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Source Path (From)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Source Path (From)</label>
                 <flux:input
                     wire:model="fromPath"
                     placeholder="/old-path"
                     icon="link"
                     required
                 />
-                @error('fromPath') <span class="text-red-600 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                @error('fromPath') <span class="dashboard-danger text-xs mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <!-- Destination Target -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Destination Target (To)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Destination Target (To)</label>
                 <flux:input
                     wire:model="toUrl"
                     placeholder="/new-path or https://example.com"
                     icon="arrow-top-right-on-square"
                     required
                 />
-                @error('toUrl') <span class="text-red-600 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                @error('toUrl') <span class="dashboard-danger text-xs mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <!-- HTTP Status Code -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Redirect Type (HTTP Status)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Redirect Type (HTTP Status)</label>
                 <flux:select wire:model="statusCode">
                     <flux:select.option :value="301">301 - Moved Permanently (Default, SEO Recommended)</flux:select.option>
                     <flux:select.option :value="302">302 - Found / Temporary</flux:select.option>
@@ -676,26 +676,26 @@ new class extends Component
             </div>
 
             <!-- Status Toggle -->
-            <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800">
+            <div class="flex items-center justify-between p-3 dashboard-control-rounded dashboard-surface border dashboard-border">
                 <div>
-                    <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">Rule Enabled</span>
-                    <span class="text-[11px] text-zinc-500">Temporarily pause or activate this redirect.</span>
+                    <span class="text-xs font-medium dashboard-text block">Rule Enabled</span>
+                    <span class="text-[11px] dashboard-muted">Temporarily pause or activate this redirect.</span>
                 </div>
                 <flux:switch wire:model="isActive" />
             </div>
 
             <!-- Description -->
             <div>
-                <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Description (Optional)</label>
+                <label class="block text-xs font-medium dashboard-text mb-1.5">Description (Optional)</label>
                 <flux:input
                     wire:model="description"
                     placeholder="Notes or campaign details"
                 />
             </div>
 
-            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-                <flux:button type="button" variant="ghost" wire:click="$set('showEditModal', false)">Cancel</flux:button>
-                <flux:button type="submit" variant="filled">Save Changes</flux:button>
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t dashboard-border">
+                <flux:button data-dashboard-variant="ghost" type="button" variant="ghost" wire:click="$set('showEditModal', false)">Cancel</flux:button>
+                <flux:button data-dashboard-variant="filled" type="submit" variant="filled">Save Changes</flux:button>
             </div>
         </form>
     </flux:modal>

@@ -7,9 +7,9 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
-        @vite(['resources/css/editor.css', 'resources/css/site-workspace.css'])
+        @vite(['resources/css/editor.css', 'resources/css/site-workspace.css', 'resources/css/dashboard.css'])
     </head>
-    <body class="site-console-body antialiased">
+    <body class="dashboard-ui site-console-body antialiased">
         <a href="#site-content" class="studio-skip">Skip to workspace</a>
         <div class="site-console" x-data="{ navigationOpen: false }" @keydown.escape.window="if (navigationOpen) { navigationOpen = false; $refs.navToggle.focus() }" x-on:livewire:navigating.window="navigationOpen = false">
             <header class="studio-header">

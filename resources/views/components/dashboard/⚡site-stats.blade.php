@@ -80,6 +80,7 @@ new class extends Component
 ?>
 
 <div x-data="{
+    themeObserver: null,
     trafficChart: null,
     deviceChart: null,
     hourlyChart: null,
@@ -94,6 +95,7 @@ new class extends Component
         const observer = new MutationObserver(() => {
             this.buildCharts();
         });
+        this.themeObserver = observer;
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
         this.$watch('$wire.chartData', (val) => {
@@ -127,17 +129,27 @@ new class extends Component
             }
         });
     },
+    destroy() {
+        this.themeObserver?.disconnect();
+        this.trafficChart?.destroy();
+        this.deviceChart?.destroy();
+        this.hourlyChart?.destroy();
+    },
     buildCharts() {
         if (typeof Chart === 'undefined') return;
         const dark = this.isDark();
-        const tickColor = dark ? '#9aa1b2' : '#6e7587';
+        const tokens = getComputedStyle(this.$el);
+        const tickColor = tokens.getPropertyValue('--dashboard-muted').trim();
+        const surfaceColor = tokens.getPropertyValue('--dashboard-panel').trim();
+        const textColor = tokens.getPropertyValue('--dashboard-text').trim();
+        const borderColor = tokens.getPropertyValue('--dashboard-line').trim();
         const gridColor = dark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(23, 25, 35, 0.05)';
 
         // Traffic Line Chart
         if (this.$refs.trafficChart) {
             if (this.trafficChart) this.trafficChart.destroy();
             const ctx = this.$refs.trafficChart.getContext('2d');
-            
+
             const indigoGradient = ctx.createLinearGradient(0, 0, 0, 260);
             indigoGradient.addColorStop(0, dark ? 'rgba(99, 102, 241, 0.35)' : 'rgba(79, 70, 229, 0.18)');
             indigoGradient.addColorStop(1, 'rgba(99, 102, 241, 0.00)');
@@ -160,7 +172,7 @@ new class extends Component
                             tension: 0.35,
                             borderWidth: 2.5,
                             pointBackgroundColor: dark ? '#6366f1' : '#4f46e5',
-                            pointBorderColor: dark ? '#171923' : '#ffffff',
+                            pointBorderColor: surfaceColor,
                             pointBorderWidth: 2,
                             pointRadius: 3.5,
                             pointHoverRadius: 6
@@ -174,7 +186,7 @@ new class extends Component
                             tension: 0.35,
                             borderWidth: 2.5,
                             pointBackgroundColor: dark ? '#a5b4fc' : '#818cf8',
-                            pointBorderColor: dark ? '#171923' : '#ffffff',
+                            pointBorderColor: surfaceColor,
                             pointBorderWidth: 2,
                             pointRadius: 3.5,
                             pointHoverRadius: 6
@@ -206,10 +218,10 @@ new class extends Component
                             padding: 10,
                             boxPadding: 4,
                             usePointStyle: true,
-                            backgroundColor: dark ? '#171923' : '#ffffff',
-                            titleColor: dark ? '#ffffff' : '#171923',
-                            bodyColor: dark ? '#c9ccd8' : '#3f4553',
-                            borderColor: dark ? '#282c38' : '#e3e5ec',
+                            backgroundColor: surfaceColor,
+                            titleColor: textColor,
+                            bodyColor: tickColor,
+                            borderColor: borderColor,
                             borderWidth: 1
                         }
                     },
@@ -239,7 +251,7 @@ new class extends Component
                         data: this.$wire.deviceData.data || [],
                         backgroundColor: ['#4f46e5', '#818cf8', '#a5b4fc', '#c7d2fe'],
                         borderWidth: 2,
-                        borderColor: dark ? '#171923' : '#ffffff',
+                        borderColor: surfaceColor,
                         hoverOffset: 6
                     }]
                 },
@@ -311,36 +323,36 @@ new class extends Component
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <!-- Live Real-Time Presence Indicator -->
         <div class="flex items-center gap-2.5 flex-wrap">
-            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 shadow-xs">
+            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium dashboard-success-tint dashboard-success border dashboard-success-border">
                 <span class="relative flex size-2.5">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full size-2.5 bg-emerald-500"></span>
+                    <span class="absolute inline-flex h-full w-full rounded-full dashboard-success-solid opacity-75"></span>
+                    <span class="relative inline-flex rounded-full size-2.5 dashboard-success-solid"></span>
                 </span>
                 <span>{{ $overview['active_now'] }} {{ Str::plural('Active Visitor', $overview['active_now']) }} Online Now</span>
             </span>
 
-            <span class="text-xs text-zinc-400 hidden sm:inline">&bull;</span>
-            <span class="text-xs text-zinc-500 font-mono hidden sm:inline">Active in last 15 min</span>
+            <span class="text-xs dashboard-muted hidden sm:inline">&bull;</span>
+            <span class="text-xs dashboard-muted font-mono hidden sm:inline">Active in last 15 min</span>
         </div>
 
         <div class="flex flex-wrap items-center gap-2.5">
             <!-- Period Filters -->
-            <div class="pill-group" role="group" aria-label="Time period">
+            <div class="dashboard-tabs" role="group" aria-label="Time period">
                 @foreach ([1 => '24h', 7 => '7d', 14 => '14d', 30 => '30d', 90 => '90d'] as $days => $label)
                     <button
                         type="button"
                         wire:click="setPeriod({{ $days }})"
                         aria-pressed="{{ $period === $days ? 'true' : 'false' }}"
-                        @class(['pill', 'is-active' => $period === $days])
+                        @class(['dashboard-tab', 'is-active' => $period === $days])
                     >{{ $label }}</button>
                 @endforeach
             </div>
 
             <!-- Bot Filter Toggle -->
-            <button 
+            <button
                 type="button"
-                wire:click="toggleBots" 
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition-colors duration-150 cursor-pointer {{ $includeBots ? 'bg-accent/[0.08] border-accent/30 text-accent' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700' }}"
+                wire:click="toggleBots"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium dashboard-control-rounded border transition-colors duration-150 cursor-pointer {{ $includeBots ? 'dashboard-accent-tint dashboard-accent-border dashboard-accent' : 'dashboard-surface  dashboard-border  dashboard-muted  dashboard-hover-text  dashboard-hover-border ' }}"
                 title="Toggle crawler bot requests"
             >
                 <flux:icon.cpu-chip class="size-3.5" />
@@ -348,11 +360,11 @@ new class extends Component
             </button>
 
             <!-- Export CSV -->
-            <a 
-                href="{{ route('dashboard.sites.stats.export', ['site' => $site->id, 'days' => $period]) }}" 
-                target="_blank" 
-                download 
-                class="btn-secondary px-3 py-1.5 text-xs"
+            <a
+                href="{{ route('dashboard.sites.stats.export', ['site' => $site->id, 'days' => $period]) }}"
+                target="_blank"
+                download
+                class="dashboard-button px-3 py-1.5 text-xs"
             >
                 <flux:icon.arrow-down-tray class="size-3.5" />
                 <span>Export CSV</span>
@@ -363,137 +375,137 @@ new class extends Component
     <!-- Quick Stats Metric Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <!-- Total Page Views -->
-        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 0">
-            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span class="uppercase tracking-wider">Total Page Views</span>
-                <span class="inline-flex items-center gap-0.5 text-xs font-semibold normal-case tracking-normal {{ $overview['views_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['views_growth'] < 0 ? 'rotate-180 text-red-500' : '' }}" />
+                <span class="inline-flex items-center gap-0.5 text-xs font-medium normal-case tracking-normal {{ $overview['views_growth'] >= 0 ? 'dashboard-success ' : 'dashboard-danger ' }}">
+                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['views_growth'] < 0 ? 'rotate-180 dashboard-danger' : '' }}" />
                     {{ $overview['views_growth'] >= 0 ? '+' : '' }}{{ $overview['views_growth'] }}%
                 </span>
             </div>
-            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <div class="dashboard-stat-value">
                 {{ number_format($overview['total_views']) }}
             </div>
-            <div class="text-xs text-zinc-400 mt-2 font-mono">
+            <div class="text-xs dashboard-muted mt-2 font-mono">
                 {{ number_format($overview['avg_daily_views'], 1) }} daily avg ({{ $period }}d)
             </div>
         </div>
 
         <!-- Unique Visitors -->
-        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 1">
-            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span class="uppercase tracking-wider">Unique Visitors</span>
-                <span class="inline-flex items-center gap-0.5 text-xs font-semibold normal-case tracking-normal {{ $overview['visitors_growth'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['visitors_growth'] < 0 ? 'rotate-180 text-red-500' : '' }}" />
+                <span class="inline-flex items-center gap-0.5 text-xs font-medium normal-case tracking-normal {{ $overview['visitors_growth'] >= 0 ? 'dashboard-success ' : 'dashboard-danger ' }}">
+                    <flux:icon.arrow-trending-up class="size-3 {{ $overview['visitors_growth'] < 0 ? 'rotate-180 dashboard-danger' : '' }}" />
                     {{ $overview['visitors_growth'] >= 0 ? '+' : '' }}{{ $overview['visitors_growth'] }}%
                 </span>
             </div>
-            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <div class="dashboard-stat-value">
                 {{ number_format($overview['unique_visitors']) }}
             </div>
-            <div class="text-xs text-zinc-400 mt-2 font-mono">
+            <div class="text-xs dashboard-muted mt-2 font-mono">
                 Distinct visitor fingerprints
             </div>
         </div>
 
         <!-- Views Per Visitor -->
-        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 2">
-            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span class="uppercase tracking-wider">Views / Visitor</span>
-                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">Depth</span>
+                <span class="text-[10px] font-medium uppercase px-2 py-0.5 rounded-full dashboard-raised dashboard-muted">Depth</span>
             </div>
-            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <div class="dashboard-stat-value">
                 {{ $overview['views_per_visitor'] }}
             </div>
-            <div class="text-xs text-zinc-400 mt-2 font-mono">
+            <div class="text-xs dashboard-muted mt-2 font-mono">
                 Average engagement density
             </div>
         </div>
 
         <!-- Redirect Hits & Conversion -->
-        <div class="panel panel-interactive p-5 relative overflow-hidden rise-in" style="--i: 3">
-            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
+        <div class="dashboard-panel dashboard-panel-interactive p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-xs font-medium dashboard-muted mb-2">
                 <span class="uppercase tracking-wider">Redirect Hits</span>
-                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">Routing</span>
+                <span class="text-[10px] font-medium uppercase px-2 py-0.5 rounded-full dashboard-raised dashboard-muted">Routing</span>
             </div>
-            <div class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <div class="dashboard-stat-value">
                 {{ number_format($overview['redirect_hits'] ?? 0) }}
             </div>
-            <div class="text-xs text-zinc-400 mt-2 font-mono">
+            <div class="text-xs dashboard-muted mt-2 font-mono">
                 {{ $overview['not_found_hits'] ?? 0 }} 404 errors recorded
             </div>
         </div>
     </div>
 
     <!-- Tabbed Navigation -->
-    <div class="pill-group mb-6" role="tablist" aria-label="Analytics views">
-        <button 
+    <div class="dashboard-tabs mb-6" role="tablist" aria-label="Analytics views">
+        <button
             type="button"
             role="tab"
-            wire:click="setTab('traffic')" 
+            wire:click="setTab('traffic')"
             aria-selected="{{ $activeTab === 'traffic' ? 'true' : 'false' }}"
-            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'traffic'])
+            @class(['dashboard-tab inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'traffic'])
         >
             <flux:icon.chart-bar class="size-3.5" />
             <span>Traffic &amp; Trends</span>
         </button>
 
-        <button 
+        <button
             type="button"
             role="tab"
-            wire:click="setTab('pages')" 
+            wire:click="setTab('pages')"
             aria-selected="{{ $activeTab === 'pages' ? 'true' : 'false' }}"
-            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'pages'])
+            @class(['dashboard-tab inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'pages'])
         >
             <flux:icon.document-text class="size-3.5" />
             <span>Pages &amp; Broken Links</span>
             @if(($overview['not_found_hits'] ?? 0) > 0)
-                <span class="size-1.5 rounded-full bg-red-500" aria-label="Broken links detected"></span>
+                <span class="size-1.5 rounded-full dashboard-danger-solid" aria-label="Broken links detected"></span>
             @endif
         </button>
 
-        <button 
+        <button
             type="button"
             role="tab"
-            wire:click="setTab('sources')" 
+            wire:click="setTab('sources')"
             aria-selected="{{ $activeTab === 'sources' ? 'true' : 'false' }}"
-            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'sources'])
+            @class(['dashboard-tab inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'sources'])
         >
             <flux:icon.arrow-path-rounded-square class="size-3.5" />
             <span>Sources &amp; Campaigns</span>
         </button>
 
-        <button 
+        <button
             type="button"
             role="tab"
-            wire:click="setTab('locations')" 
+            wire:click="setTab('locations')"
             aria-selected="{{ $activeTab === 'locations' ? 'true' : 'false' }}"
-            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'locations'])
+            @class(['dashboard-tab inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'locations'])
         >
             <flux:icon.globe-alt class="size-3.5" />
             <span>Locations &amp; Tech</span>
         </button>
 
-        <button 
+        <button
             type="button"
             role="tab"
-            wire:click="setTab('redirects')" 
+            wire:click="setTab('redirects')"
             aria-selected="{{ $activeTab === 'redirects' ? 'true' : 'false' }}"
-            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'redirects'])
+            @class(['dashboard-tab inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'redirects'])
         >
             <flux:icon.arrows-right-left class="size-3.5" />
             <span>Redirects Telemetry</span>
-            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-200">
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-medium dashboard-surface dashboard-text">
                 {{ $overview['redirect_hits'] ?? 0 }}
             </span>
         </button>
 
-        <button 
+        <button
             type="button"
             role="tab"
-            wire:click="setTab('activity')" 
+            wire:click="setTab('activity')"
             aria-selected="{{ $activeTab === 'activity' ? 'true' : 'false' }}"
-            @class(['pill inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'activity'])
+            @class(['dashboard-tab inline-flex items-center gap-1.5', 'is-active' => $activeTab === 'activity'])
         >
             <flux:icon.bolt class="size-3.5" />
             <span>Live Stream</span>
@@ -505,14 +517,14 @@ new class extends Component
         <div class="space-y-6">
             <!-- Line & Doughnut Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="panel p-5 rise-in lg:col-span-2" style="--i: 4">
+                <div class="dashboard-panel p-5 lg:col-span-2">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                <flux:icon.chart-bar class="size-4 text-accent" />
+                            <h3 class="dashboard-section-title    flex items-center gap-2">
+                                <flux:icon.chart-bar class="size-4 dashboard-accent" />
                                 Traffic Timeline
                             </h3>
-                            <p class="text-xs text-zinc-500 mt-0.5">Page views and unique visitors over the last {{ $period === 1 ? '24 hours' : "{$period} days" }}</p>
+                            <p class="text-xs dashboard-muted mt-0.5">Page views and unique visitors over the last {{ $period === 1 ? '24 hours' : "{$period} days" }}</p>
                         </div>
                     </div>
                     <div class="h-68">
@@ -520,14 +532,14 @@ new class extends Component
                     </div>
                 </div>
 
-                <div class="panel p-5 rise-in">
+                <div class="dashboard-panel p-5">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                <flux:icon.computer-desktop class="size-4 text-accent" />
+                            <h3 class="dashboard-section-title    flex items-center gap-2">
+                                <flux:icon.computer-desktop class="size-4 dashboard-accent" />
                                 Device Breakdown
                             </h3>
-                            <p class="text-xs text-zinc-500 mt-0.5">Distribution across hardware types</p>
+                            <p class="text-xs dashboard-muted mt-0.5">Distribution across hardware types</p>
                         </div>
                     </div>
                     <div class="h-68">
@@ -537,14 +549,14 @@ new class extends Component
             </div>
 
             <!-- Peak Activity Hours Bar Chart -->
-            <div class="panel p-5 rise-in">
+            <div class="dashboard-panel p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.clock class="size-4 text-accent" />
+                        <h3 class="dashboard-section-title    flex items-center gap-2">
+                            <flux:icon.clock class="size-4 dashboard-accent" />
                             Visitor Peak Timing (24-Hour Distribution)
                         </h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">Traffic pattern by hour of the day (UTC)</p>
+                        <p class="text-xs dashboard-muted mt-0.5">Traffic pattern by hour of the day (UTC)</p>
                     </div>
                 </div>
                 <div class="h-48">
@@ -558,51 +570,51 @@ new class extends Component
     @if($activeTab === 'pages')
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Top Visited Pages -->
-            <div class="panel p-5 rise-in">
+            <div class="dashboard-panel p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.document-text class="size-4 text-accent" />
+                        <h3 class="dashboard-section-title    flex items-center gap-2">
+                            <flux:icon.document-text class="size-4 dashboard-accent" />
                             Top Visited Pages
                         </h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">Most frequented paths and documents</p>
+                        <p class="text-xs dashboard-muted mt-0.5">Most frequented paths and documents</p>
                     </div>
-                    <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">{{ count($topPages) }} Pages</span>
+                    <span class="text-xs font-mono font-medium px-2 py-0.5 dashboard-control-rounded dashboard-raised dashboard-muted">{{ count($topPages) }} Pages</span>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="border-b border-zinc-100 dark:border-zinc-800 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                            <tr class="border-b dashboard-border text-xs font-medium dashboard-muted uppercase tracking-wider">
                                 <th class="pb-2.5">Path</th>
                                 <th class="pb-2.5 text-right">Views</th>
                                 <th class="pb-2.5 text-right">Uniques</th>
                                 <th class="pb-2.5 text-right w-24">Share</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                        <tbody class="divide-y dashboard-divide">
                             @forelse($topPages as $page)
-                                <tr class="group hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                    <td class="py-2.5 font-mono text-xs text-zinc-900 dark:text-zinc-100 truncate max-w-xs">
-                                        <a href="{{ url('/s/'.$site->slug.($page['path'] === '/' ? '' : $page['path'])) }}" target="_blank" class="hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline inline-flex items-center gap-1.5">
+                                <tr class="group dashboard-hover-surface transition-colors">
+                                    <td class="py-2.5 font-mono text-xs dashboard-text truncate max-w-xs">
+                                        <a href="{{ url('/s/'.$site->slug.($page['path'] === '/' ? '' : $page['path'])) }}" target="_blank" class="dashboard-accent hover:underline inline-flex items-center gap-1.5">
                                             <span>{{ $page['path'] }}</span>
-                                            <flux:icon.arrow-top-right-on-square class="size-3 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <flux:icon.arrow-top-right-on-square class="size-3 dashboard-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </a>
                                     </td>
-                                    <td class="py-2.5 text-right font-semibold text-zinc-700 dark:text-zinc-300">{{ number_format($page['views']) }}</td>
-                                    <td class="py-2.5 text-right text-zinc-500 text-xs font-mono">{{ number_format($page['unique_visitors']) }}</td>
+                                    <td class="py-2.5 text-right font-medium dashboard-text">{{ number_format($page['views']) }}</td>
+                                    <td class="py-2.5 text-right dashboard-muted text-xs font-mono">{{ number_format($page['unique_visitors']) }}</td>
                                     <td class="py-2.5 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 font-mono">{{ $page['percentage'] }}%</span>
-                                            <div class="w-12 bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                                <div class="bg-indigo-600 h-1.5 rounded-full" style="width: {{ min($page['percentage'], 100) }}%"></div>
+                                            <span class="text-xs font-medium dashboard-muted font-mono">{{ $page['percentage'] }}%</span>
+                                            <div class="w-12 dashboard-raised rounded-full h-1.5 overflow-hidden">
+                                                <div class="dashboard-accent-solid h-1.5 rounded-full" style="width: {{ min($page['percentage'], 100) }}%"></div>
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-8 text-center text-zinc-400 text-xs">No page traffic recorded in this period.</td>
+                                    <td colspan="4" class="py-8 text-center dashboard-muted text-xs">No page traffic recorded in this period.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -611,16 +623,16 @@ new class extends Component
             </div>
 
             <!-- Broken Links / 404 Requests with 1-Click Redirect -->
-            <div class="panel p-5 rise-in">
+            <div class="dashboard-panel p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.exclamation-triangle class="size-4 text-red-500" />
+                        <h3 class="dashboard-section-title    flex items-center gap-2">
+                            <flux:icon.exclamation-triangle class="size-4 dashboard-danger" />
                             Broken Links (404s Detected)
                         </h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">Missing paths requested by visitors; create a redirect to fix them</p>
+                        <p class="text-xs dashboard-muted mt-0.5">Missing paths requested by visitors; create a redirect to fix them</p>
                     </div>
-                    <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg {{ count($brokenLinks) > 0 ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }}">
+                    <span class="text-xs font-mono font-medium px-2 py-0.5 dashboard-control-rounded {{ count($brokenLinks) > 0 ? 'dashboard-danger-tint dashboard-danger  ' : 'dashboard-raised  dashboard-muted' }}">
                         {{ count($brokenLinks) }} Missing
                     </span>
                 </div>
@@ -628,29 +640,29 @@ new class extends Component
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="border-b border-zinc-100 dark:border-zinc-800 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                            <tr class="border-b dashboard-border text-xs font-medium dashboard-muted uppercase tracking-wider">
                                 <th class="pb-2.5">Missing Path</th>
                                 <th class="pb-2.5 text-right">404 Hits</th>
                                 <th class="pb-2.5 text-right">Last Seen</th>
                                 <th class="pb-2.5 text-right">Quick Fix</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                        <tbody class="divide-y dashboard-divide">
                             @forelse($brokenLinks as $link)
-                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                    <td class="py-2.5 font-mono text-xs text-red-600 dark:text-red-400 truncate max-w-xs">
+                                <tr class="dashboard-hover-surface transition-colors">
+                                    <td class="py-2.5 font-mono text-xs dashboard-danger truncate max-w-xs">
                                         {{ $link['path'] }}
                                     </td>
-                                    <td class="py-2.5 text-right font-semibold text-zinc-700 dark:text-zinc-300 font-mono">
+                                    <td class="py-2.5 text-right font-medium dashboard-text font-mono">
                                         {{ number_format($link['count']) }}
                                     </td>
-                                    <td class="py-2.5 text-right text-zinc-500 text-xs font-mono whitespace-nowrap">
+                                    <td class="py-2.5 text-right dashboard-muted text-xs font-mono whitespace-nowrap">
                                         {{ $link['last_seen'] ? $link['last_seen']->diffForHumans() : '—' }}
                                     </td>
                                     <td class="py-2.5 text-right">
-                                        <a 
-                                            href="{{ route('dashboard.sites.redirects', $site) }}" 
-                                            class="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 bg-accent/[0.08] border border-accent/20 px-2 py-0.5 rounded-md transition-opacity duration-150 cursor-pointer"
+                                        <a
+                                            href="{{ route('dashboard.sites.redirects', $site) }}"
+                                            class="inline-flex items-center gap-1 text-[11px] font-medium dashboard-accent hover:opacity-80 dashboard-accent-tint border dashboard-accent-border px-2 py-0.5 rounded-md transition-opacity duration-150 cursor-pointer"
                                         >
                                             <flux:icon.plus class="size-3" />
                                             <span>Redirect</span>
@@ -659,10 +671,10 @@ new class extends Component
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-8 text-center text-zinc-400 text-xs">
+                                    <td colspan="4" class="py-8 text-center dashboard-muted text-xs">
                                         <div class="flex flex-col items-center justify-center gap-1">
-                                            <flux:icon.check-circle class="size-6 text-emerald-500 mb-1" />
-                                            <span class="font-medium text-zinc-700 dark:text-zinc-300">Clean Health! No 404 errors detected.</span>
+                                            <flux:icon.check-circle class="size-6 dashboard-success mb-1" />
+                                            <span class="font-medium dashboard-text">Clean Health! No 404 errors detected.</span>
                                             <span>All requested URLs resolved successfully.</span>
                                         </div>
                                     </td>
@@ -679,51 +691,51 @@ new class extends Component
     @if($activeTab === 'sources')
         <div class="space-y-6">
             <!-- Top Referrers -->
-            <div class="panel p-5 rise-in">
+            <div class="dashboard-panel p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.arrow-path-rounded-square class="size-4 text-accent" />
+                        <h3 class="dashboard-section-title    flex items-center gap-2">
+                            <flux:icon.arrow-path-rounded-square class="size-4 dashboard-accent" />
                             Inbound Traffic Sources & Channels
                         </h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">Where your visitors originate from</p>
+                        <p class="text-xs dashboard-muted mt-0.5">Where your visitors originate from</p>
                     </div>
-                    <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">{{ count($topReferrers) }} Sources</span>
+                    <span class="text-xs font-mono font-medium px-2 py-0.5 dashboard-control-rounded dashboard-raised dashboard-muted">{{ count($topReferrers) }} Sources</span>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="border-b border-zinc-100 dark:border-zinc-800 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                            <tr class="border-b dashboard-border text-xs font-medium dashboard-muted uppercase tracking-wider">
                                 <th class="pb-2.5">Domain / Channel</th>
                                 <th class="pb-2.5 text-right">Views</th>
                                 <th class="pb-2.5 text-right">Uniques</th>
                                 <th class="pb-2.5 text-right w-28">Share</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                        <tbody class="divide-y dashboard-divide">
                             @forelse($topReferrers as $ref)
-                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                                <tr class="dashboard-hover-surface transition-colors">
                                     <td class="py-2.5">
                                         <div class="flex items-center gap-2">
-                                            <span class="font-medium text-xs text-zinc-900 dark:text-zinc-100 truncate max-w-xs">{{ $ref['domain'] }}</span>
-                                            <flux:badge size="sm" :color="$ref['channel_color']">{{ $ref['channel'] }}</flux:badge>
+                                            <span class="font-medium text-xs dashboard-text truncate max-w-xs">{{ $ref['domain'] }}</span>
+                                            <x-dashboard.badge size="sm" :color="$ref['channel_color']">{{ $ref['channel'] }}</x-dashboard.badge>
                                         </div>
                                     </td>
-                                    <td class="py-2.5 text-right font-semibold text-zinc-700 dark:text-zinc-300">{{ number_format($ref['views']) }}</td>
-                                    <td class="py-2.5 text-right text-zinc-500 text-xs font-mono">{{ number_format($ref['unique_visitors']) }}</td>
+                                    <td class="py-2.5 text-right font-medium dashboard-text">{{ number_format($ref['views']) }}</td>
+                                    <td class="py-2.5 text-right dashboard-muted text-xs font-mono">{{ number_format($ref['unique_visitors']) }}</td>
                                     <td class="py-2.5 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 font-mono">{{ $ref['percentage'] }}%</span>
-                                            <div class="w-14 bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                                <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($ref['percentage'], 100) }}%"></div>
+                                            <span class="text-xs font-medium dashboard-muted font-mono">{{ $ref['percentage'] }}%</span>
+                                            <div class="w-14 dashboard-raised rounded-full h-1.5 overflow-hidden">
+                                                <div class="dashboard-accent-tint h-1.5 rounded-full" style="width: {{ min($ref['percentage'], 100) }}%"></div>
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-8 text-center text-zinc-400 text-xs">No referral traffic recorded in this period.</td>
+                                    <td colspan="4" class="py-8 text-center dashboard-muted text-xs">No referral traffic recorded in this period.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -733,22 +745,22 @@ new class extends Component
 
             <!-- UTM Campaigns -->
             @if($campaigns->isNotEmpty())
-                <div class="panel p-5 rise-in">
+                <div class="dashboard-panel p-5">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                <flux:icon.tag class="size-4 text-accent" />
+                            <h3 class="dashboard-section-title    flex items-center gap-2">
+                                <flux:icon.tag class="size-4 dashboard-accent" />
                                 UTM Marketing Campaigns
                             </h3>
-                            <p class="text-xs text-zinc-500 mt-0.5">Campaign performance tracked through query parameters</p>
+                            <p class="text-xs dashboard-muted mt-0.5">Campaign performance tracked through query parameters</p>
                         </div>
-                        <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">{{ count($campaigns) }} Campaigns</span>
+                        <span class="text-xs font-mono font-medium px-2 py-0.5 dashboard-control-rounded dashboard-warning-tint dashboard-warning">{{ count($campaigns) }} Campaigns</span>
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead>
-                                <tr class="border-b border-zinc-100 dark:border-zinc-800 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                <tr class="border-b dashboard-border text-xs font-medium dashboard-muted uppercase tracking-wider">
                                     <th class="pb-2.5">Campaign</th>
                                     <th class="pb-2.5">Source</th>
                                     <th class="pb-2.5">Medium</th>
@@ -757,15 +769,15 @@ new class extends Component
                                     <th class="pb-2.5 text-right w-24">Share</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                            <tbody class="divide-y dashboard-divide">
                                 @foreach($campaigns as $camp)
-                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                        <td class="py-2.5 font-medium text-xs text-zinc-900 dark:text-zinc-100">{{ $camp['campaign'] }}</td>
-                                        <td class="py-2.5 text-xs text-zinc-600 dark:text-zinc-400">{{ $camp['source'] }}</td>
-                                        <td class="py-2.5 text-xs text-zinc-500 font-mono">{{ $camp['medium'] }}</td>
-                                        <td class="py-2.5 text-right font-semibold text-zinc-700 dark:text-zinc-300">{{ number_format($camp['views']) }}</td>
-                                        <td class="py-2.5 text-right text-zinc-500 text-xs font-mono">{{ number_format($camp['unique_visitors']) }}</td>
-                                        <td class="py-2.5 text-right text-xs text-zinc-500 font-mono">{{ $camp['percentage'] }}%</td>
+                                    <tr class="dashboard-hover-surface transition-colors">
+                                        <td class="py-2.5 font-medium text-xs dashboard-text">{{ $camp['campaign'] }}</td>
+                                        <td class="py-2.5 text-xs dashboard-muted">{{ $camp['source'] }}</td>
+                                        <td class="py-2.5 text-xs dashboard-muted font-mono">{{ $camp['medium'] }}</td>
+                                        <td class="py-2.5 text-right font-medium dashboard-text">{{ number_format($camp['views']) }}</td>
+                                        <td class="py-2.5 text-right dashboard-muted text-xs font-mono">{{ number_format($camp['unique_visitors']) }}</td>
+                                        <td class="py-2.5 text-right text-xs dashboard-muted font-mono">{{ $camp['percentage'] }}%</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -780,16 +792,16 @@ new class extends Component
     @if($activeTab === 'locations')
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Countries Breakdown -->
-            <div class="panel p-5 rise-in">
+            <div class="dashboard-panel p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <flux:icon.globe-alt class="size-4 text-accent" />
+                        <h3 class="dashboard-section-title    flex items-center gap-2">
+                            <flux:icon.globe-alt class="size-4 dashboard-accent" />
                             Geographic Distribution
                         </h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">Visitor traffic by country of origin</p>
+                        <p class="text-xs dashboard-muted mt-0.5">Visitor traffic by country of origin</p>
                     </div>
-                    <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">{{ count($topCountries) }} Countries</span>
+                    <span class="text-xs font-mono font-medium px-2 py-0.5 dashboard-control-rounded dashboard-raised dashboard-muted">{{ count($topCountries) }} Countries</span>
                 </div>
 
                 <div class="space-y-3">
@@ -797,70 +809,70 @@ new class extends Component
                         <div class="flex items-center justify-between gap-4 text-sm">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <span class="text-base">{{ $country['flag'] }}</span>
-                                <span class="font-medium text-xs text-zinc-900 dark:text-zinc-100 truncate">{{ $country['name'] }}</span>
-                                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase font-semibold">{{ $country['code'] }}</span>
+                                <span class="font-medium text-xs dashboard-text truncate">{{ $country['name'] }}</span>
+                                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded dashboard-raised dashboard-muted uppercase font-medium">{{ $country['code'] }}</span>
                             </div>
                             <div class="flex items-center gap-3 shrink-0">
-                                <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 font-mono">{{ number_format($country['views']) }}</span>
-                                <div class="w-20 bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                    <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($country['percentage'], 100) }}%"></div>
+                                <span class="text-xs font-medium dashboard-text font-mono">{{ number_format($country['views']) }}</span>
+                                <div class="w-20 dashboard-raised rounded-full h-1.5 overflow-hidden">
+                                    <div class="dashboard-accent-tint h-1.5 rounded-full" style="width: {{ min($country['percentage'], 100) }}%"></div>
                                 </div>
-                                <span class="text-xs text-zinc-400 w-10 text-right font-mono">{{ $country['percentage'] }}%</span>
+                                <span class="text-xs dashboard-muted w-10 text-right font-mono">{{ $country['percentage'] }}%</span>
                             </div>
                         </div>
                     @empty
-                        <div class="py-8 text-center text-zinc-400 text-xs">No geographic data detected for this period.</div>
+                        <div class="py-8 text-center dashboard-muted text-xs">No geographic data detected for this period.</div>
                     @endforelse
                 </div>
             </div>
 
             <!-- Software Platforms & Browsers -->
-            <div class="panel p-5 rise-in">
+            <div class="dashboard-panel p-5">
                 <div class="mb-4">
-                    <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <flux:icon.window class="size-4 text-accent" />
+                    <h3 class="dashboard-section-title    flex items-center gap-2">
+                        <flux:icon.window class="size-4 dashboard-accent" />
                         Software Environments
                     </h3>
-                    <p class="text-xs text-zinc-500 mt-0.5">Browsers and operating systems used by visitors</p>
+                    <p class="text-xs dashboard-muted mt-0.5">Browsers and operating systems used by visitors</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <!-- Browsers -->
                     <div>
-                        <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Top Browsers</div>
+                        <div class="text-xs font-medium dashboard-muted uppercase tracking-wider mb-3">Top Browsers</div>
                         <div class="space-y-2.5">
                             @forelse($browsers as $b)
                                 <div>
                                     <div class="flex items-center justify-between text-xs mb-1 font-medium">
-                                        <span class="text-zinc-800 dark:text-zinc-200">{{ $b['name'] }}</span>
-                                        <span class="text-zinc-500 font-mono">{{ $b['percentage'] }}%</span>
+                                        <span class="dashboard-text">{{ $b['name'] }}</span>
+                                        <span class="dashboard-muted font-mono">{{ $b['percentage'] }}%</span>
                                     </div>
-                                    <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($b['percentage'], 100) }}%"></div>
+                                    <div class="w-full dashboard-raised rounded-full h-1.5 overflow-hidden">
+                                        <div class="dashboard-accent-tint h-1.5 rounded-full" style="width: {{ min($b['percentage'], 100) }}%"></div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="text-xs text-zinc-400 py-3">No browser data.</div>
+                                <div class="text-xs dashboard-muted py-3">No browser data.</div>
                             @endforelse
                         </div>
                     </div>
 
                     <!-- Operating Systems -->
                     <div>
-                        <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Operating Systems</div>
+                        <div class="text-xs font-medium dashboard-muted uppercase tracking-wider mb-3">Operating Systems</div>
                         <div class="space-y-2.5">
                             @forelse($operatingSystems as $os)
                                 <div>
                                     <div class="flex items-center justify-between text-xs mb-1 font-medium">
-                                        <span class="text-zinc-800 dark:text-zinc-200">{{ $os['name'] }}</span>
-                                        <span class="text-zinc-500 font-mono">{{ $os['percentage'] }}%</span>
+                                        <span class="dashboard-text">{{ $os['name'] }}</span>
+                                        <span class="dashboard-muted font-mono">{{ $os['percentage'] }}%</span>
                                     </div>
-                                    <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-accent h-1.5 rounded-full" style="width: {{ min($os['percentage'], 100) }}%"></div>
+                                    <div class="w-full dashboard-raised rounded-full h-1.5 overflow-hidden">
+                                        <div class="dashboard-accent-tint h-1.5 rounded-full" style="width: {{ min($os['percentage'], 100) }}%"></div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="text-xs text-zinc-400 py-3">No OS data.</div>
+                                <div class="text-xs dashboard-muted py-3">No OS data.</div>
                             @endforelse
                         </div>
                     </div>
@@ -871,18 +883,18 @@ new class extends Component
 
     <!-- TAB 5: REDIRECTS TELEMETRY -->
     @if($activeTab === 'redirects')
-        <div class="panel p-5 rise-in">
+        <div class="dashboard-panel p-5">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <flux:icon.arrows-right-left class="size-4 text-accent" />
+                    <h3 class="dashboard-section-title    flex items-center gap-2">
+                        <flux:icon.arrows-right-left class="size-4 dashboard-accent" />
                         Redirect URL Performance &amp; Conversion
                     </h3>
-                    <p class="text-xs text-zinc-500 mt-0.5">Traffic routed through configured redirect rules</p>
+                    <p class="text-xs dashboard-muted mt-0.5">Traffic routed through configured redirect rules</p>
                 </div>
-                <a 
-                    href="{{ route('dashboard.sites.redirects', $site) }}" 
-                    class="btn-primary px-3 py-1.5 text-xs"
+                <a
+                    href="{{ route('dashboard.sites.redirects', $site) }}"
+                    class="dashboard-button dashboard-button-primary px-3 py-1.5 text-xs"
                 >
                     <flux:icon.plus class="size-3.5" />
                     <span>Manage Redirect Rules</span>
@@ -892,7 +904,7 @@ new class extends Component
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-100 dark:border-zinc-800 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                        <tr class="border-b dashboard-border text-xs font-medium dashboard-muted uppercase tracking-wider">
                             <th class="pb-2.5">From Path</th>
                             <th class="pb-2.5">Status</th>
                             <th class="pb-2.5">Target Destination</th>
@@ -902,36 +914,36 @@ new class extends Component
                             <th class="pb-2.5 text-right">Last Triggered</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                    <tbody class="divide-y dashboard-divide">
                         @forelse($redirectPerformance as $rp)
-                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                <td class="py-2.5 font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                            <tr class="dashboard-hover-surface transition-colors">
+                                <td class="py-2.5 font-mono text-xs font-medium dashboard-text">
                                     {{ $rp['from_path'] }}
                                 </td>
                                 <td class="py-2.5">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-accent/[0.08] text-accent border border-accent/20">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium dashboard-accent-tint dashboard-accent border dashboard-accent-border">
                                         {{ $rp['status_code'] }}
                                     </span>
                                 </td>
-                                <td class="py-2.5 font-mono text-xs text-zinc-600 dark:text-zinc-400 truncate max-w-xs" title="{{ $rp['to_url'] }}">
+                                <td class="py-2.5 font-mono text-xs dashboard-muted truncate max-w-xs" title="{{ $rp['to_url'] }}">
                                     {{ $rp['to_url'] }}
                                 </td>
-                                <td class="py-2.5 text-right font-semibold text-zinc-800 dark:text-zinc-200 font-mono">
+                                <td class="py-2.5 text-right font-medium dashboard-text font-mono">
                                     {{ number_format($rp['period_hits']) }}
                                 </td>
-                                <td class="py-2.5 text-right text-zinc-500 font-mono text-xs">
+                                <td class="py-2.5 text-right dashboard-muted font-mono text-xs">
                                     {{ number_format($rp['uniques']) }}
                                 </td>
-                                <td class="py-2.5 text-right font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                <td class="py-2.5 text-right font-mono text-xs font-medium dashboard-accent">
                                     {{ number_format($rp['total_hits']) }}
                                 </td>
-                                <td class="py-2.5 text-right text-zinc-500 text-xs font-mono whitespace-nowrap">
+                                <td class="py-2.5 text-right dashboard-muted text-xs font-mono whitespace-nowrap">
                                     {{ $rp['last_accessed_at'] ? \Carbon\Carbon::parse($rp['last_accessed_at'])->diffForHumans() : 'Never' }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-8 text-center text-zinc-400 text-xs">
+                                <td colspan="7" class="py-8 text-center dashboard-muted text-xs">
                                     No custom redirects configured yet for this site.
                                 </td>
                             </tr>
@@ -944,16 +956,16 @@ new class extends Component
 
     <!-- TAB 6: LIVE REQUEST STREAM -->
     @if($activeTab === 'activity')
-        <div class="panel p-5 rise-in">
+        <div class="dashboard-panel p-5">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <flux:icon.bolt class="size-4 text-accent" />
+                    <h3 class="dashboard-section-title    flex items-center gap-2">
+                        <flux:icon.bolt class="size-4 dashboard-accent" />
                         Live Request Activity Stream
                     </h3>
-                    <p class="text-xs text-zinc-500 mt-0.5">Real-time incoming visits, redirects, and 404 errors</p>
+                    <p class="text-xs dashboard-muted mt-0.5">Real-time incoming visits, redirects, and 404 errors</p>
                 </div>
-                <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">Latest 25 Events</span>
+                <span class="text-xs font-mono font-medium px-2 py-0.5 dashboard-control-rounded dashboard-raised dashboard-muted">Latest 25 Events</span>
             </div>
 
             <div class="overflow-x-auto">
@@ -972,48 +984,48 @@ new class extends Component
                             <flux:table.row>
                                 <flux:table.cell>
                                     @if($view->is_redirect)
-                                        <flux:badge size="sm" color="cyan">Redirect ({{ $view->status_code }})</flux:badge>
+                                        <x-dashboard.badge size="sm" color="cyan">Redirect ({{ $view->status_code }})</x-dashboard.badge>
                                     @elseif($view->status_code === 404)
-                                        <flux:badge size="sm" color="red">404 Error</flux:badge>
+                                        <x-dashboard.badge size="sm" color="red">404 Error</x-dashboard.badge>
                                     @elseif($view->is_bot)
-                                        <flux:badge size="sm" color="amber">Bot</flux:badge>
+                                        <x-dashboard.badge size="sm" color="amber">Bot</x-dashboard.badge>
                                     @elseif($view->is_quiet)
-                                        <flux:badge size="sm" color="zinc">Asset</flux:badge>
+                                        <x-dashboard.badge size="sm" color="zinc">Asset</x-dashboard.badge>
                                     @else
-                                        <flux:badge size="sm" color="indigo">Page View</flux:badge>
+                                        <x-dashboard.badge size="sm" color="indigo">Page View</x-dashboard.badge>
                                     @endif
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <span class="font-mono text-xs text-zinc-800 dark:text-zinc-200 truncate max-w-[220px] block" title="{{ $view->path }}">
+                                    <span class="font-mono text-xs dashboard-text truncate max-w-[220px] block" title="{{ $view->path }}">
                                         {{ $view->path ?: '/' }}
                                     </span>
                                 </flux:table.cell>
                                 <flux:table.cell>
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-base">{{ app(\App\Services\AnalyticsService::class)->getCountryFlag($view->country_code) }}</span>
-                                        <span class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-medium">{{ $view->country_code ?: '—' }}</span>
+                                        <span class="text-xs font-mono dashboard-muted font-medium">{{ $view->country_code ?: '—' }}</span>
                                     </div>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <div class="text-xs text-zinc-700 dark:text-zinc-300">
+                                    <div class="text-xs dashboard-text">
                                         <span class="font-medium">{{ $view->browser ?: 'Unknown' }}</span>
-                                        <span class="text-zinc-400">on</span>
+                                        <span class="dashboard-muted">on</span>
                                         <span>{{ $view->os ?: 'OS' }}</span>
                                     </div>
-                                    <div class="text-[11px] text-zinc-400 font-mono">{{ $view->device ?: 'Desktop' }}</div>
+                                    <div class="text-[11px] dashboard-muted font-mono">{{ $view->device ?: 'Desktop' }}</div>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <div class="text-xs truncate max-w-[160px] text-zinc-600 dark:text-zinc-400" title="{{ $view->referer ?: 'Direct' }}">
+                                    <div class="text-xs truncate max-w-[160px] dashboard-muted" title="{{ $view->referer ?: 'Direct' }}">
                                         {{ $view->referer_domain ?: 'Direct' }}
                                     </div>
                                 </flux:table.cell>
-                                <flux:table.cell class="text-xs text-zinc-500 whitespace-nowrap font-mono">
+                                <flux:table.cell class="text-xs dashboard-muted whitespace-nowrap font-mono">
                                     {{ $view->created_at?->diffForHumans() }}
                                 </flux:table.cell>
                             </flux:table.row>
                         @empty
                             <flux:table.row>
-                                <flux:table.cell colspan="6" class="text-center py-8 text-zinc-400 text-xs">No traffic activity recorded yet.</flux:table.cell>
+                                <flux:table.cell colspan="6" class="text-center py-8 dashboard-muted text-xs">No traffic activity recorded yet.</flux:table.cell>
                             </flux:table.row>
                         @endforelse
                     </flux:table.rows>

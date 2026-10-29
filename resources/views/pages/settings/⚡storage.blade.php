@@ -45,24 +45,24 @@ new #[Title('Storage & Usage')] class extends Component {
         <div class="space-y-8 my-4">
             <!-- Quota Status Banner -->
             @if($stats['is_over_quota'])
-                <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-800 dark:text-red-200 flex items-center justify-between gap-3">
+                <div class="p-4 dashboard-rounded dashboard-danger-tint border dashboard-danger-border dashboard-danger flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <flux:icon.exclamation-triangle class="size-5 text-red-600 dark:text-red-400 shrink-0" />
+                        <flux:icon.exclamation-triangle class="size-5 dashboard-danger shrink-0" />
                         <div>
-                            <p class="font-bold text-sm tracking-tight">Storage Quota Exceeded</p>
-                            <p class="text-xs text-red-700/80 dark:text-red-300/80 mt-0.5">
+                            <p class="font-medium text-sm tracking-tight">Storage Quota Exceeded</p>
+                            <p class="text-xs dashboard-danger mt-0.5">
                                 Your account is currently using {{ $stats['formatted']['total_used'] }} of your {{ $stats['formatted']['quota'] }} quota. New uploads and site deployments will be blocked until space is freed.
                             </p>
                         </div>
                     </div>
                 </div>
             @elseif($stats['is_near_quota'])
-                <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
+                <div class="p-4 dashboard-rounded dashboard-warning-tint border dashboard-warning-border dashboard-warning flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <flux:icon.exclamation-circle class="size-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <flux:icon.exclamation-circle class="size-5 dashboard-warning shrink-0" />
                         <div>
-                            <p class="font-bold text-sm tracking-tight">Approaching Storage Limit</p>
-                            <p class="text-xs text-amber-700/80 dark:text-amber-300/80 mt-0.5">
+                            <p class="font-medium text-sm tracking-tight">Approaching Storage Limit</p>
+                            <p class="text-xs dashboard-warning mt-0.5">
                                 You have consumed {{ $stats['used_percentage'] }}% of your available storage quota. Consider deleting unused deployments or assets.
                             </p>
                         </div>
@@ -71,13 +71,13 @@ new #[Title('Storage & Usage')] class extends Component {
             @endif
 
             <!-- Storage Overview Meter Card -->
-            <div class="panel p-5 sm:p-6 space-y-5 rise-in" style="--i: 0">
+            <div class="dashboard-panel p-5 sm:p-6 space-y-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Account Storage Capacity</div>
+                        <div class="text-xs font-medium uppercase tracking-wider dashboard-muted">Account Storage Capacity</div>
                         <div class="flex items-baseline gap-2 mt-1">
-                            <span class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono">{{ $stats['formatted']['total_used'] }}</span>
-                            <span class="text-sm font-medium text-zinc-500">/ {{ $stats['formatted']['quota'] }} ({{ $stats['used_percentage'] }}% used)</span>
+                            <span class="text-2xl sm:dashboard-stat-value font-mono">{{ $stats['formatted']['total_used'] }}</span>
+                            <span class="text-sm font-medium dashboard-muted">/ {{ $stats['formatted']['quota'] }} ({{ $stats['used_percentage'] }}% used)</span>
                         </div>
                     </div>
 
@@ -86,7 +86,7 @@ new #[Title('Storage & Usage')] class extends Component {
                             type="button"
                             wire:click="recalculateAll"
                             wire:loading.attr="disabled"
-                            class="btn-secondary px-3 py-1.5 text-xs"
+                            class="dashboard-button px-3 py-1.5 text-xs"
                         >
                             <flux:icon.arrow-path wire:loading.class="animate-spin" class="size-3.5" />
                             <span>Recalculate Storage</span>
@@ -101,31 +101,31 @@ new #[Title('Storage & Usage')] class extends Component {
                     $snapPct = $stats['quota_bytes'] > 0 ? ($stats['breakdown']['snapshots_bytes'] / $stats['quota_bytes']) * 100 : 0;
                 @endphp
                 <div class="space-y-2">
-                    <div class="h-3.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden flex shadow-inner">
-                        <div style="width: {{ $mediaPct }}%" class="bg-accent transition-all duration-500" title="Cloud Media: {{ $stats['formatted']['cloud_media'] }}"></div>
-                        <div style="width: {{ $codePct }}%" class="bg-accent/60 transition-all duration-500" title="Hosted Code: {{ $stats['formatted']['site_code'] }}"></div>
-                        <div style="width: {{ $snapPct }}%" class="bg-accent/30 transition-all duration-500" title="Snapshots: {{ $stats['formatted']['snapshots'] }}"></div>
+                    <div class="h-3.5 w-full rounded-full dashboard-surface overflow-hidden flex ">
+                        <div style="width: {{ $mediaPct }}%" class="dashboard-accent-tint transition-all duration-500" title="Cloud Media: {{ $stats['formatted']['cloud_media'] }}"></div>
+                        <div style="width: {{ $codePct }}%" class="dashboard-accent-tint transition-all duration-500" title="Hosted Code: {{ $stats['formatted']['site_code'] }}"></div>
+                        <div style="width: {{ $snapPct }}%" class="dashboard-accent-tint transition-all duration-500" title="Snapshots: {{ $stats['formatted']['snapshots'] }}"></div>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-4 text-xs font-medium pt-1">
                         <div class="flex items-center gap-1.5">
-                            <span class="size-2.5 rounded-full bg-accent"></span>
-                            <span class="text-zinc-600 dark:text-zinc-400">Cloud Media:</span>
-                            <span class="font-bold text-zinc-900 dark:text-zinc-100 font-mono">{{ $stats['formatted']['cloud_media'] }}</span>
+                            <span class="size-2.5 rounded-full dashboard-accent-tint"></span>
+                            <span class="dashboard-muted">Cloud Media:</span>
+                            <span class="font-medium dashboard-text font-mono">{{ $stats['formatted']['cloud_media'] }}</span>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <span class="size-2.5 rounded-full bg-accent/60"></span>
-                            <span class="text-zinc-600 dark:text-zinc-400">Hosted Code:</span>
-                            <span class="font-bold text-zinc-900 dark:text-zinc-100 font-mono">{{ $stats['formatted']['site_code'] }}</span>
+                            <span class="size-2.5 rounded-full dashboard-accent-tint"></span>
+                            <span class="dashboard-muted">Hosted Code:</span>
+                            <span class="font-medium dashboard-text font-mono">{{ $stats['formatted']['site_code'] }}</span>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <span class="size-2.5 rounded-full bg-accent/30 ring-1 ring-accent/40"></span>
-                            <span class="text-zinc-600 dark:text-zinc-400">Snapshots:</span>
-                            <span class="font-bold text-zinc-900 dark:text-zinc-100 font-mono">{{ $stats['formatted']['snapshots'] }}</span>
+                            <span class="size-2.5 rounded-full dashboard-accent-tint "></span>
+                            <span class="dashboard-muted">Snapshots:</span>
+                            <span class="font-medium dashboard-text font-mono">{{ $stats['formatted']['snapshots'] }}</span>
                         </div>
-                        <div class="flex items-center gap-1.5 ml-auto text-zinc-500 dark:text-zinc-400">
+                        <div class="flex items-center gap-1.5 ml-auto dashboard-muted">
                             <span>Available:</span>
-                            <span class="font-bold text-zinc-700 dark:text-zinc-300 font-mono">{{ $stats['formatted']['remaining'] }}</span>
+                            <span class="font-medium dashboard-text font-mono">{{ $stats['formatted']['remaining'] }}</span>
                         </div>
                     </div>
                 </div>
@@ -133,17 +133,17 @@ new #[Title('Storage & Usage')] class extends Component {
 
             <!-- File Type Distribution Grid -->
             <div>
-                <div class="flex items-center gap-2 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                    <flux:icon.chart-pie class="size-4.5 text-accent dark:text-accent-content" />
-                    <h3 class="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">Storage Distribution by File Category</h3>
+                <div class="flex items-center gap-2 pb-3 mb-4 border-b dashboard-border">
+                    <flux:icon.chart-pie class="size-4.5 dashboard-accent " />
+                    <h3 class="dashboard-section-title  text-sm  ">Storage Distribution by File Category</h3>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     @foreach($stats['file_types'] as $key => $ft)
-                        <div class="panel p-3.5 flex flex-col justify-between">
-                            <div class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide truncate">{{ $ft['label'] }}</div>
-                            <div class="mt-2 font-mono font-bold text-base text-zinc-900 dark:text-zinc-100">{{ $ft['formatted'] }}</div>
-                            <div class="text-[10px] text-zinc-400 mt-0.5">{{ $ft['count'] }} {{ Str::plural('item', $ft['count']) }}</div>
+                        <div class="dashboard-panel p-3.5 flex flex-col justify-between">
+                            <div class="text-[11px] font-medium dashboard-muted uppercase tracking-wide truncate">{{ $ft['label'] }}</div>
+                            <div class="mt-2 font-mono font-medium text-base dashboard-text">{{ $ft['formatted'] }}</div>
+                            <div class="text-[10px] dashboard-muted mt-0.5">{{ $ft['count'] }} {{ Str::plural('item', $ft['count']) }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -151,24 +151,24 @@ new #[Title('Storage & Usage')] class extends Component {
 
             <!-- Per-Site Storage Consumption Table -->
             <div>
-                <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b dashboard-border">
                     <div class="flex items-center gap-2">
-                        <flux:icon.squares-2x2 class="size-4.5 text-accent dark:text-accent-content" />
-                        <h3 class="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">Site Storage Breakdown</h3>
+                        <flux:icon.squares-2x2 class="size-4.5 dashboard-accent " />
+                        <h3 class="dashboard-section-title  text-sm  ">Site Storage Breakdown</h3>
                     </div>
-                    <span class="text-xs text-zinc-500">{{ count($stats['sites']) }} {{ Str::plural('site', count($stats['sites'])) }} total</span>
+                    <span class="text-xs dashboard-muted">{{ count($stats['sites']) }} {{ Str::plural('site', count($stats['sites'])) }} total</span>
                 </div>
 
                 @if(empty($stats['sites']))
-                    <div class="p-8 text-center rounded-2xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800">
-                        <flux:icon.globe-alt class="size-8 mx-auto text-zinc-400 mb-2" />
-                        <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">No sites deployed yet</p>
-                        <p class="text-xs text-zinc-500 mt-1">Deploy a site to begin tracking site code and cloud media usage.</p>
+                    <div class="p-8 text-center dashboard-rounded dashboard-surface border dashboard-border">
+                        <flux:icon.globe-alt class="size-8 mx-auto dashboard-muted mb-2" />
+                        <p class="text-sm font-medium dashboard-text">No sites deployed yet</p>
+                        <p class="text-xs dashboard-muted mt-1">Deploy a site to begin tracking site code and cloud media usage.</p>
                     </div>
                 @else
-                    <div class="panel overflow-x-auto">
+                    <div class="dashboard-panel overflow-x-auto">
                         <table class="w-full text-left text-xs">
-                            <thead class="bg-zinc-50/80 dark:bg-zinc-800/60 text-zinc-500 uppercase font-semibold text-[10px] tracking-wider border-b border-zinc-200/70 dark:border-zinc-800">
+                            <thead class="dashboard-surface dashboard-muted uppercase font-medium text-[10px] tracking-wider border-b dashboard-border">
                                 <tr>
                                     <th class="px-4 py-3">Site</th>
                                     <th class="px-3 py-3">Code Bundle</th>
@@ -179,32 +179,32 @@ new #[Title('Storage & Usage')] class extends Component {
                                     <th class="px-4 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200/60 dark:divide-zinc-800/60 font-medium">
+                            <tbody class="divide-y dashboard-divide font-medium">
                                 @foreach($stats['sites'] as $s)
-                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                                    <tr class="dashboard-hover-surface transition-colors">
                                         <td class="px-4 py-3">
-                                            <div class="font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                                            <div class="font-medium tracking-tight dashboard-text flex items-center gap-1.5">
                                                 <span>{{ $s['original_name'] }}</span>
-                                                <span class="text-[10px] font-mono text-zinc-400">({{ $s['slug'] }})</span>
+                                                <span class="text-[10px] font-mono dashboard-muted">({{ $s['slug'] }})</span>
                                             </div>
                                         </td>
-                                        <td class="px-3 py-3 font-mono text-zinc-700 dark:text-zinc-300">{{ $s['formatted_code'] }}</td>
-                                        <td class="px-3 py-3 font-mono text-accent dark:text-accent-content font-semibold">{{ $s['formatted_media'] }}</td>
-                                        <td class="px-3 py-3 font-mono text-zinc-700 dark:text-zinc-300">{{ $s['formatted_snapshots'] }}</td>
-                                        <td class="px-3 py-3 font-mono font-bold text-zinc-900 dark:text-zinc-100">{{ $s['formatted_total'] }}</td>
-                                        <td class="px-3 py-3 font-mono text-zinc-500">{{ $s['percentage_of_used'] }}%</td>
+                                        <td class="px-3 py-3 font-mono dashboard-text">{{ $s['formatted_code'] }}</td>
+                                        <td class="px-3 py-3 font-mono dashboard-accent  font-medium">{{ $s['formatted_media'] }}</td>
+                                        <td class="px-3 py-3 font-mono dashboard-text">{{ $s['formatted_snapshots'] }}</td>
+                                        <td class="px-3 py-3 font-mono font-medium dashboard-text">{{ $s['formatted_total'] }}</td>
+                                        <td class="px-3 py-3 font-mono dashboard-muted">{{ $s['percentage_of_used'] }}%</td>
                                         <td class="px-4 py-3 text-right">
                                             <div class="inline-flex items-center gap-1.5">
-                                                <a 
-                                                    href="{{ route('dashboard.sites.media', $s['id']) }}" 
-                                                    class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                                                <a
+                                                    href="{{ route('dashboard.sites.media', $s['id']) }}"
+                                                    class="p-1 dashboard-control-rounded dashboard-hover-surface dashboard-muted dashboard-hover-text transition-colors"
                                                     title="View Media"
                                                 >
                                                     <flux:icon.photo class="size-3.5" />
                                                 </a>
-                                                <a 
-                                                    href="{{ route('dashboard.sites.settings', $s['id']) }}" 
-                                                    class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                                                <a
+                                                    href="{{ route('dashboard.sites.settings', $s['id']) }}"
+                                                    class="p-1 dashboard-control-rounded dashboard-hover-surface dashboard-muted dashboard-hover-text transition-colors"
                                                     title="Site Settings"
                                                 >
                                                     <flux:icon.cog-6-tooth class="size-3.5" />
@@ -212,7 +212,7 @@ new #[Title('Storage & Usage')] class extends Component {
                                                 <button
                                                     type="button"
                                                     wire:click="recalculateSite('{{ $s['id'] }}')"
-                                                    class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+                                                    class="p-1 dashboard-control-rounded dashboard-hover-surface dashboard-muted dashboard-hover-text transition-colors cursor-pointer"
                                                     title="Recalculate site files"
                                                 >
                                                     <flux:icon.arrow-path class="size-3.5" />
@@ -230,27 +230,27 @@ new #[Title('Storage & Usage')] class extends Component {
             <!-- Top Largest Files -->
             @if(!empty($largestFiles))
                 <div>
-                    <div class="flex items-center gap-2 pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
-                        <flux:icon.document class="size-4.5 text-accent dark:text-accent-content" />
-                        <h3 class="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">Top Storage Consumers</h3>
+                    <div class="flex items-center gap-2 pb-3 mb-4 border-b dashboard-border">
+                        <flux:icon.document class="size-4.5 dashboard-accent " />
+                        <h3 class="dashboard-section-title  text-sm  ">Top Storage Consumers</h3>
                     </div>
 
                     <div class="space-y-2">
                         @foreach($largestFiles as $f)
-                            <div class="panel p-3 flex items-center justify-between gap-3 text-xs">
+                            <div class="dashboard-panel p-3 flex items-center justify-between gap-3 text-xs">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <div class="size-7 rounded-lg bg-zinc-200/60 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                                        <flux:icon.document class="size-3.5 text-zinc-500" />
+                                    <div class="size-7 dashboard-control-rounded dashboard-surface flex items-center justify-center shrink-0">
+                                        <flux:icon.document class="size-3.5 dashboard-muted" />
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ $f['name'] }}</div>
-                                        <div class="text-[10px] text-zinc-400 truncate">{{ $f['location'] }} &bull; {{ $f['type'] }}</div>
+                                        <div class="font-medium dashboard-text truncate">{{ $f['name'] }}</div>
+                                        <div class="text-[10px] dashboard-muted truncate">{{ $f['location'] }} &bull; {{ $f['type'] }}</div>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3 shrink-0">
-                                    <span class="font-mono font-bold text-zinc-900 dark:text-zinc-100">{{ $f['formatted_size'] }}</span>
+                                    <span class="font-mono font-medium dashboard-text">{{ $f['formatted_size'] }}</span>
                                     @if(!empty($f['url']))
-                                        <a href="{{ $f['url'] }}" target="_blank" class="p-1 rounded text-zinc-400 hover:text-accent dark:hover:text-accent-content transition-colors">
+                                        <a href="{{ $f['url'] }}" target="_blank" class="p-1 rounded dashboard-muted dashboard-accent  transition-colors">
                                             <flux:icon.arrow-top-right-on-square class="size-3.5" />
                                         </a>
                                     @endif

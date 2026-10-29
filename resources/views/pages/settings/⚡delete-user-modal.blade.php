@@ -44,7 +44,7 @@ new class extends Component {
     <form method="POST" wire:submit="deleteUser" class="space-y-6">
         <div class="space-y-4">
             <div class="flex items-start gap-3">
-                <span class="size-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center ring-1 ring-red-500/20 shrink-0">
+                <span class="size-9 dashboard-control-rounded dashboard-danger-tint dashboard-danger flex items-center justify-center  shrink-0">
                     <flux:icon.exclamation-triangle class="size-4.5" />
                 </span>
                 <div>
@@ -66,10 +66,10 @@ new class extends Component {
 
         <div class="flex justify-end space-x-2 rtl:space-x-reverse">
             <flux:modal.close>
-                <flux:button variant="outline">{{ __('Cancel') }}</flux:button>
+                <flux:button data-dashboard-variant="outline" variant="outline">{{ __('Cancel') }}</flux:button>
             </flux:modal.close>
 
-            <flux:button variant="danger" type="submit" data-test="confirm-delete-user-button">
+            <flux:button data-dashboard-variant="danger" variant="danger" type="submit" data-test="confirm-delete-user-button">
                 {{ __('Delete account') }}
             </flux:button>
         </div>

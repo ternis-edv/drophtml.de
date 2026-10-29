@@ -82,12 +82,12 @@ new #[Title('Profile settings')] class extends Component {
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         @if (!auth()->user()->password_set_at)
-            <div class="mb-6 p-4 rounded-2xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3 shadow-xs">
+            <div class="mb-6 p-4 dashboard-rounded border dashboard-warning-border dashboard-warning-tint dashboard-warning flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <flux:icon.shield-exclamation class="w-5 h-5 shrink-0" />
                     <p class="text-sm font-medium">{{ __('You haven\'t set a password for your account yet.') }}</p>
                 </div>
-                <flux:button :href="route('security.edit')" variant="ghost" size="sm" wire:navigate class="shrink-0">
+                <flux:button data-dashboard-variant="ghost" :href="route('security.edit')" variant="ghost" size="sm" wire:navigate class="shrink-0">
                     {{ __('Set password') }}
                 </flux:button>
             </div>
@@ -114,7 +114,7 @@ new #[Title('Profile settings')] class extends Component {
             </div>
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-profile-button">
+                <flux:button data-dashboard-variant="primary" variant="primary" type="submit" data-test="update-profile-button">
                     {{ __('Save') }}
                 </flux:button>
             </div>

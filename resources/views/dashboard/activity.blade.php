@@ -1,5 +1,5 @@
 <x-layouts::app :title="__('Activity Log')">
-    <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+    <div class="flex h-full w-full flex-1 flex-col gap-6 dashboard-control-rounded">
         <livewire:dashboard.activity-log />
     </div>
 </x-layouts::app>

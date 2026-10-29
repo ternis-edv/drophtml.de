@@ -133,7 +133,7 @@ new class extends Component
 
 <div class="space-y-4">
     @if ($error)
-        <div class="p-4 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 rounded-xl border border-red-200/80 dark:border-red-900/60 text-sm shadow-xs">
+        <div class="p-4 dashboard-danger-tint dashboard-danger dashboard-control-rounded border dashboard-danger-border text-sm">
             {{ $error }}
         </div>
     @endif
@@ -149,21 +149,21 @@ new class extends Component
     <div class="max-h-[400px] overflow-y-auto space-y-2 pr-1">
         @if ($loading)
             <div class="flex items-center justify-center py-12">
-                <flux:icon.arrow-path class="w-8 h-8 animate-spin text-accent" />
+                <flux:icon.arrow-path class="w-8 h-8 animate-spin dashboard-accent" />
             </div>
         @else
             @forelse($filteredRepos as $repo)
-                <div class="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:border-accent/30 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors duration-150">
+                <div class="flex items-center justify-between p-3 border dashboard-border dashboard-control-rounded dashboard-accent-border dashboard-hover-surface transition-colors duration-150">
                     <div class="flex items-center gap-3 truncate mr-4">
-                        <flux:icon.folder class="w-5 h-5 text-zinc-400 shrink-0" />
+                        <flux:icon.folder class="w-5 h-5 dashboard-muted shrink-0" />
                         <div class="truncate">
-                            <div class="font-medium text-sm text-zinc-900 dark:text-white truncate">{{ $repo['full_name'] }}</div>
-                            <div class="text-xs text-zinc-500 truncate">{{ $repo['description'] ?? 'Branch: ' . ($repo['default_branch'] ?? 'main') }}</div>
+                            <div class="font-medium text-sm dashboard-text truncate">{{ $repo['full_name'] }}</div>
+                            <div class="text-xs dashboard-muted truncate">{{ $repo['description'] ?? 'Branch: ' . ($repo['default_branch'] ?? 'main') }}</div>
                         </div>
                     </div>
-                    <flux:button 
-                        wire:click="deploy('{{ $repo['full_name'] }}')" 
-                        size="sm" 
+                    <flux:button data-dashboard-variant="primary"
+                        wire:click="deploy('{{ $repo['full_name'] }}')"
+                        size="sm"
                         variant="primary"
                         :disabled="$deploying"
                         class="shrink-0"
@@ -172,7 +172,7 @@ new class extends Component
                     </flux:button>
                 </div>
             @empty
-                <div class="text-center py-12 text-zinc-500 text-sm">
+                <div class="text-center py-12 dashboard-muted text-sm">
                     No repositories found matching your search.
                 </div>
             @endforelse
@@ -180,10 +180,10 @@ new class extends Component
     </div>
 
     @if ($deploying)
-        <div class="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-4 text-white">
-            <flux:icon.arrow-path class="w-12 h-12 animate-spin text-brand-300" />
-            <p class="font-bold text-lg">Deploying repository...</p>
-            <p class="text-sm text-zinc-400">Downloading archive, extracting files, and configuring site</p>
+        <div class="fixed inset-0 dashboard-inset z-50 flex items-center justify-center flex-col gap-4 dashboard-text">
+            <flux:icon.arrow-path class="w-12 h-12 animate-spin dashboard-accent" />
+            <p class="font-medium text-lg">Deploying repository...</p>
+            <p class="text-sm dashboard-muted">Downloading archive, extracting files, and configuring site</p>
         </div>
     @endif
 </div>

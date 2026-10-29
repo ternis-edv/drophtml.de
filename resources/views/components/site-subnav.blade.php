@@ -10,8 +10,4 @@
         default => ['Code Studio', 'A workspace for your next idea.'],
     };
 @endphp
-<div class="site-page-heading">
-    <div class="site-page-eyebrow"><span>SITE WORKSPACE</span><span>/</span><span>{{ $site->slug }}</span></div>
-    <h1>{{ $heading }}</h1>
-    <p>{{ $description }}</p>
-</div>
+<x-dashboard.page-heading :title="$heading" :description="$description" :eyebrow="'SITE WORKSPACE / '.$site->slug" />

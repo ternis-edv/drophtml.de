@@ -20,7 +20,7 @@ new #[Title('Appearance settings')] class extends Component {
         </flux:radio.group>
 
         <flux:text variant="subtle" class="mt-4 block text-xs">
-            {{ __('System follows your operating system preference. Your choice is synced across every device you sign in on.') }}
+            {{ __('System follows your operating system preference. Your choice is saved in this browser.') }}
         </flux:text>
     </x-pages::settings.layout>
 </section>

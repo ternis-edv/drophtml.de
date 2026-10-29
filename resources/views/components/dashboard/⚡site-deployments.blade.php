@@ -81,23 +81,23 @@ new class extends Component
 
     <div class="space-y-6">
         <!-- Top Info / Action Banner -->
-        <div class="panel p-6 sm:p-7 rise-in flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="--i: 0">
+        <div class="dashboard-panel p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h2 class="section-title flex items-center gap-2.5">
-                    <span class="icon-tile" aria-hidden="true">
+                <h2 class="dashboard-section-title dashboard-section-title flex items-center gap-2.5">
+                    <span class="dashboard-icon" aria-hidden="true">
                         <flux:icon.archive-box class="size-4.5" />
                     </span>
                     <span>Deployment Snapshots &amp; Rollback History</span>
                 </h2>
-                <p class="page-lede mt-1.5 max-w-xl">
+                <p class="dashboard-lede mt-1.5 max-w-xl">
                     Every deployment automatically captures an immutable file archive. You can instantly restore your site to any previous point in time with zero downtime.
                 </p>
             </div>
 
-            <button 
-                type="button" 
-                wire:click="createManualSnapshot" 
-                class="btn-primary px-4 py-2 text-xs shrink-0"
+            <button
+                type="button"
+                wire:click="createManualSnapshot"
+                class="dashboard-button dashboard-button-primary px-4 py-2 text-xs shrink-0"
                 aria-label="{{ __('Take snapshot now') }}"
             >
                 <flux:icon.camera class="size-4" />
@@ -107,19 +107,19 @@ new class extends Component
 
         <!-- Deployments List -->
         @if($deployments->isEmpty())
-            <div class="panel text-center py-16 px-4 rise-in" style="--i: 1">
-                <div class="icon-tile-lg mx-auto mb-3.5" aria-hidden="true">
+            <div class="dashboard-panel text-center py-16 px-4">
+                <div class="dashboard-icon-lg mx-auto mb-3.5" aria-hidden="true">
                     <flux:icon.archive-box class="size-6" />
                 </div>
-                <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">No Deployment Snapshots Yet</h3>
-                <p class="page-lede mt-1 max-w-md mx-auto">
+                <h3 class="dashboard-section-title   ">No Deployment Snapshots Yet</h3>
+                <p class="dashboard-lede mt-1 max-w-md mx-auto">
                     Take a manual snapshot of your active files now to start recording deployment history and enable instant rollbacks.
                 </p>
                 <div class="mt-5">
-                    <button 
-                        type="button" 
-                        wire:click="createManualSnapshot" 
-                        class="btn-primary px-4 py-2 text-xs"
+                    <button
+                        type="button"
+                        wire:click="createManualSnapshot"
+                        class="dashboard-button dashboard-button-primary px-4 py-2 text-xs"
                     >
                         <flux:icon.camera class="size-4" />
                         <span>Create Initial Snapshot</span>
@@ -137,80 +137,80 @@ new class extends Component
                         $source = $deployment->source ?: 'manual';
                     @endphp
                     <div
-                        class="panel panel-interactive rise-in p-5 {{ $isActive ? 'ring-2 ring-emerald-500/30 dark:ring-emerald-500/40 border-emerald-500/40 bg-emerald-50/10 dark:bg-emerald-950/10' : '' }}"
-                        style="--i: {{ min($index + 1, 8) }}"
+                        class="dashboard-panel dashboard-panel-interactive  p-5 {{ $isActive ? '   dashboard-success-border dashboard-success-tint ' : '' }}"
+
                     >
                         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <!-- Left: Status, Info, Message -->
                             <div class="space-y-2.5 flex-1 min-w-0">
                                 <div class="flex items-center gap-2.5 flex-wrap">
                                     @if($isActive)
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 shadow-xs">
-                                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-medium dashboard-success-tint dashboard-success border dashboard-success-border">
+                                            <span class="size-2 rounded-full dashboard-success-solid" aria-hidden="true"></span>
                                             Active Release
                                         </span>
                                     @endif
 
                                     <!-- Source Badge -->
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 dashboard-control-rounded text-xs font-medium dashboard-raised dashboard-text">
                                         @if($source === 'github_webhook')
-                                            <flux:icon.folder-git-2 class="size-3.5 text-zinc-500" />
+                                            <flux:icon.folder-git-2 class="size-3.5 dashboard-muted" />
                                             GitHub Push
                                         @elseif($source === 'upload')
-                                            <flux:icon.arrow-up-tray class="size-3.5 text-accent" />
+                                            <flux:icon.arrow-up-tray class="size-3.5 dashboard-accent" />
                                             ZIP Upload
                                         @elseif($source === 'editor')
-                                            <flux:icon.pencil-square class="size-3.5 text-amber-500" />
+                                            <flux:icon.pencil-square class="size-3.5 dashboard-warning" />
                                             Code Studio
                                         @elseif($source === 'rollback')
-                                            <flux:icon.arrow-path class="size-3.5 text-purple-500" />
+                                            <flux:icon.arrow-path class="size-3.5 dashboard-accent" />
                                             Rollback
                                         @elseif($source === 'api')
-                                            <flux:icon.command-line class="size-3.5 text-blue-500" />
+                                            <flux:icon.command-line class="size-3.5 dashboard-accent" />
                                             CLI / API
                                         @else
-                                            <flux:icon.camera class="size-3.5 text-zinc-500" />
+                                            <flux:icon.camera class="size-3.5 dashboard-muted" />
                                             Manual Snapshot
                                         @endif
                                     </span>
 
                                     <!-- Deployment Status -->
-                                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded-md {{ $deployment->status === 'success' ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' : 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40' }}">
+                                    <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-md {{ $deployment->status === 'success' ? 'dashboard-success  dashboard-success-tint ' : 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40' }}">
                                         {{ ucfirst($deployment->status) }}
                                     </span>
 
                                     <!-- Deployment ID -->
-                                    <span class="text-xs font-mono text-zinc-400 dark:text-zinc-500">
+                                    <span class="text-xs font-mono dashboard-muted">
                                         #{{ substr($deployment->id, 0, 8) }}
                                     </span>
                                 </div>
 
-                                <div class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                                <div class="text-sm font-medium dashboard-text truncate">
                                     {{ $deployment->commit_message ?: 'Deployment #' . substr($deployment->id, 0, 8) }}
                                 </div>
 
-                                <div class="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 flex-wrap font-mono">
+                                <div class="flex items-center gap-4 text-xs dashboard-muted flex-wrap font-mono">
                                     <span class="flex items-center gap-1.5" title="{{ $deployment->created_at->format('Y-m-d H:i:s T') }}">
-                                        <flux:icon.clock class="size-3.5 text-zinc-400" />
+                                        <flux:icon.clock class="size-3.5 dashboard-muted" />
                                         {{ $deployment->created_at->diffForHumans() }}
                                     </span>
 
                                     @if($fileCount !== null)
                                         <span class="flex items-center gap-1.5">
-                                            <flux:icon.document-duplicate class="size-3.5 text-zinc-400" />
+                                            <flux:icon.document-duplicate class="size-3.5 dashboard-muted" />
                                             {{ $fileCount }} {{ Str::plural('file', $fileCount) }}
                                         </span>
                                     @endif
 
                                     @if($totalBytes !== null)
                                         <span class="flex items-center gap-1.5">
-                                            <flux:icon.circle-stack class="size-3.5 text-zinc-400" />
+                                            <flux:icon.circle-stack class="size-3.5 dashboard-muted" />
                                             {{ $this->formatBytes($totalBytes) }}
                                         </span>
                                     @endif
 
                                     @if($deployment->commit_hash)
-                                        <span class="text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                        <span class="text-[11px] dashboard-raised px-1.5 py-0.5 rounded border dashboard-border">
                                             {{ substr($deployment->commit_hash, 0, 7) }}
                                         </span>
                                     @endif
@@ -218,13 +218,13 @@ new class extends Component
                             </div>
 
                             <!-- Right: Actions -->
-                            <div class="flex items-center gap-2 pt-3 lg:pt-0 border-t lg:border-t-0 border-zinc-100 dark:border-zinc-800">
+                            <div class="flex items-center gap-2 pt-3 lg:pt-0 border-t lg:border-t-0 dashboard-border">
                                 @if(!$isActive && $deployment->status === 'success')
-                                    <button 
-                                        type="button" 
-                                        wire:click="rollback('{{ $deployment->id }}')" 
+                                    <button
+                                        type="button"
+                                        wire:click="rollback('{{ $deployment->id }}')"
                                         wire:confirm="Are you sure you want to rollback to deployment #{{ substr($deployment->id, 0, 8) }}? This will restore your active site files to this snapshot."
-                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 transition-colors cursor-pointer shadow-xs"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium dashboard-control-rounded dashboard-accent-tint dashboard-accent border dashboard-accent-border transition-colors cursor-pointer"
                                         title="Restore site files to this version"
                                         aria-label="{{ __('Rollback to deployment') }} #{{ substr($deployment->id, 0, 8) }}"
                                     >
@@ -234,9 +234,9 @@ new class extends Component
                                 @endif
 
                                 @if(!empty($metadata['snapshot_path']))
-                                    <a 
-                                        href="{{ route('dashboard.sites.deployments.download', [$site, $deployment]) }}" 
-                                        class="btn-secondary px-3.5 py-1.5 text-xs"
+                                    <a
+                                        href="{{ route('dashboard.sites.deployments.download', [$site, $deployment]) }}"
+                                        class="dashboard-button px-3.5 py-1.5 text-xs"
                                         title="Download snapshot ZIP archive"
                                         aria-label="{{ __('Download snapshot ZIP for') }} #{{ substr($deployment->id, 0, 8) }}"
                                     >

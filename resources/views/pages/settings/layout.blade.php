@@ -1,25 +1,21 @@
-<div class="flex items-start max-md:flex-col gap-6 md:gap-8">
-    <div class="w-full md:w-56 shrink-0">
-        <div class="panel p-2.5 rise-in" style="--i: 0">
-            <flux:navlist aria-label="{{ __('Settings') }}">
-                <flux:navlist.item icon="user" :href="route('profile.edit')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
-                <flux:navlist.item icon="shield-check" :href="route('security.edit')" wire:navigate>{{ __('Security') }}</flux:navlist.item>
-                <flux:navlist.item icon="circle-stack" :href="route('settings.storage')" :current="request()->routeIs('settings.storage')" wire:navigate>{{ __('Storage & Usage') }}</flux:navlist.item>
-                <flux:navlist.item icon="key" :href="route('api-tokens.edit')" wire:navigate>{{ __('API Tokens') }}</flux:navlist.item>
-                <flux:navlist.item icon="document-arrow-down" :href="route('settings.data-export')" :current="request()->routeIs('settings.data-export')" wire:navigate>{{ __('Data export') }}</flux:navlist.item>
-                <flux:navlist.item icon="paint-brush" :href="route('appearance.edit')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
-            </flux:navlist>
-        </div>
-    </div>
-
-    <div class="flex-1 self-stretch min-w-0">
-        <div class="panel p-6 sm:p-8 {{ $maxWidth ?? 'max-w-2xl' }}">
-            <flux:heading size="lg" class="tracking-tight">{{ $heading ?? '' }}</flux:heading>
-            <flux:subheading class="mt-1">{{ $subheading ?? '' }}</flux:subheading>
-
-            <div class="mt-6 w-full">
-                {{ $slot }}
-            </div>
+<div class="dashboard-settings-grid">
+    <nav class="dashboard-settings-nav" aria-label="{{ __('Account settings sections') }}">
+        @foreach([
+            ['profile.edit', 'user', 'Profile'],
+            ['security.edit', 'shield-check', 'Security'],
+            ['settings.storage', 'circle-stack', 'Storage & usage'],
+            ['api-tokens.edit', 'key', 'API tokens'],
+            ['settings.data-export', 'document-arrow-down', 'Data export'],
+            ['appearance.edit', 'paint-brush', 'Appearance'],
+        ] as [$route, $icon, $label])
+            <a href="{{ route($route) }}" wire:navigate @if(request()->routeIs($route)) aria-current="page" @endif><flux:icon :name="$icon" /><span>{{ __($label) }}</span></a>
+        @endforeach
+    </nav>
+    <div class="dashboard-settings-content {{ $maxWidth ?? '' }}">
+        <div class="dashboard-panel p-5 sm:p-6">
+            <h2 class="dashboard-section-title dashboard-section-title">{{ $heading ?? '' }}</h2>
+            <p class="dashboard-lede mt-1">{{ $subheading ?? '' }}</p>
+            <div class="mt-6 w-full">{{ $slot }}</div>
         </div>
     </div>
 </div>

@@ -2,7 +2,8 @@
     @if($site)
         <x-site-subnav :site="$site" current="media" />
     @else
-        <div class="site-page-heading"><div class="site-page-eyebrow">YOUR CREATIVE TOOLKIT</div><h1>Media library</h1><p>All your images, videos, audio, and documents. Ready for their next appearance.</p><span class="sr-only">Static Media Hosting</span></div>
+        <x-dashboard.page-heading title="Media library" description="All your images, videos, audio, and documents. Ready for their next appearance." eyebrow="YOUR CREATIVE TOOLKIT" />
+        <span class="sr-only">Static Media Hosting</span>
     @endif
     <div class="media-summary">
         <div><span class="media-summary-label">TOTAL ASSETS</span><strong>{{ $stats['total_count'] }}<small>files</small></strong></div>
@@ -77,7 +78,7 @@
                             <flux:dropdown><button class="studio-button" aria-label="Asset actions">More<flux:icon.chevron-down /></button><flux:menu>
                                 @if($previewAsset->storage_driver === 'code')<flux:menu.item icon="cloud-arrow-up" wire:click="migrateAsset('{{ $previewAsset->id }}', 'asset_storage', null)" wire:confirm="Move this asset to cloud storage? Its public URL will change; update existing embeds after moving.">Move to cloud storage</flux:menu.item>
                                 @elseif($previewAsset->site_id)<flux:menu.item icon="code-bracket" wire:click="migrateAsset('{{ $previewAsset->id }}', 'code', '{{ $previewAsset->site_id }}')" wire:confirm="Move this asset into the site bundle? Its public URL will change; update existing embeds after moving.">Move to site bundle</flux:menu.item>@endif
-                                <flux:menu.item icon="trash" variant="danger" wire:click="deleteAsset('{{ $previewAsset->id }}')" wire:confirm="Delete this asset permanently? Existing embeds will stop working.">Delete asset</flux:menu.item>
+                                <flux:menu.item data-dashboard-tone="danger" icon="trash" variant="danger" wire:click="deleteAsset('{{ $previewAsset->id }}')" wire:confirm="Delete this asset permanently? Existing embeds will stop working.">Delete asset</flux:menu.item>
                             </flux:menu></flux:dropdown>
                         </div>
                     </div>
@@ -99,7 +100,7 @@
             <div class="space-y-2">
                 <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Choose Storage Destination</label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-colors {{ $storageDestination === 'asset_storage' ? 'border-accent bg-accent/[0.04] dark:bg-accent/10 ring-1 ring-accent' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
+                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-colors {{ $storageDestination === 'asset_storage' ? 'border-accent bg-accent/[0.04] dark:bg-accent/10  ring-accent' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                                 <flux:icon.cloud-arrow-up class="size-4 text-cyan-600 dark:text-cyan-400" aria-hidden="true" />
@@ -110,7 +111,7 @@
                         <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Zero bundle bloat, global CDN, optimized for video streaming & high-res images.</p>
                     </label>
 
-                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-colors {{ $storageDestination === 'code' ? 'border-accent bg-accent/[0.04] dark:bg-accent/10 ring-1 ring-accent' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
+                    <label class="relative flex flex-col p-3 rounded-xl border cursor-pointer transition-colors {{ $storageDestination === 'code' ? 'border-accent bg-accent/[0.04] dark:bg-accent/10  ring-accent' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900' }}">
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                                 <flux:icon.code-bracket class="size-4 text-zinc-500 dark:text-zinc-400" aria-hidden="true" />
@@ -132,7 +133,7 @@
                     <select
                         wire:model="selectedSiteId"
                         aria-label="{{ __('Link to site') }}"
-                        class="w-full text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 py-2 px-3 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-accent/40"
+                        class="w-full text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 py-2 px-3 text-zinc-800 dark:text-zinc-200 focus:outline-none focus: focus:ring-accent/40"
                         {{ $storageDestination === 'code' ? 'required' : '' }}
                     >
                         <option value="">-- No specific site (Global Asset) --</option>
@@ -191,9 +192,9 @@
 
             <div class="flex flex-wrap gap-2 justify-end pt-2">
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button data-dashboard-variant="ghost" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="uploadMedia,uploadFiles" class="cursor-pointer">
+                <flux:button data-dashboard-variant="primary" type="submit" variant="primary" wire:loading.attr="disabled" wire:target="uploadMedia,uploadFiles" class="cursor-pointer">
                     <span wire:loading.remove wire:target="uploadMedia,uploadFiles">Upload Media</span>
                     <span wire:loading wire:target="uploadMedia,uploadFiles" class="inline-flex items-center gap-2">
                         <flux:icon.arrow-path class="size-4 animate-spin" aria-hidden="true" />

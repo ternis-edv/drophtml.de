@@ -48,34 +48,23 @@ new class extends Component
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Dashboard</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>Activity Log</flux:breadcrumbs.item>
-            </flux:breadcrumbs>
-            <h1 class="page-title mt-1.5 flex items-center gap-3">
-                <span class="icon-tile" aria-hidden="true">
-                    <flux:icon.clipboard-document-list class="size-4.5" />
-                </span>
-                <span>Audit &amp; Activity Log</span>
-            </h1>
-        </div>
+        <x-dashboard.page-heading title="Activity log" description="A timeline of deployments, file changes, and account activity." eyebrow="YOUR WORKSPACE" class="!mb-0" />
 
         <!-- Filter Pills -->
-        <div class="pill-group shrink-0" role="group" aria-label="Filter activity by type">
+        <div class="dashboard-tabs shrink-0" role="group" aria-label="Filter activity by type">
             @foreach (['all' => 'All', 'deploys' => 'Deploys', 'files' => 'Files', 'media' => 'Media', 'domains' => 'Domains', 'lifecycle' => 'Lifecycle'] as $filterKey => $filterLabel)
                 <button
                     type="button"
                     wire:click="setFilter('{{ $filterKey }}')"
                     aria-pressed="{{ $actionFilter === $filterKey ? 'true' : 'false' }}"
-                    @class(['pill', 'is-active' => $actionFilter === $filterKey])
+                    @class(['dashboard-tab', 'is-active' => $actionFilter === $filterKey])
                 >{{ $filterLabel }}</button>
             @endforeach
         </div>
     </div>
 
     <!-- Activity Log List Card -->
-    <div class="panel p-6 rise-in" style="--i: 1">
+    <div class="dashboard-panel p-6">
         <div class="overflow-x-auto">
             <flux:table>
                 <flux:table.columns>
@@ -88,7 +77,7 @@ new class extends Component
 
                 <flux:table.rows>
                     @forelse ($logs as $log)
-                        <flux:table.row class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors duration-150">
+                        <flux:table.row class="dashboard-hover-surface transition-colors duration-150">
                             <flux:table.cell>
                                 @php
                                     $action = $log->action;
@@ -101,43 +90,43 @@ new class extends Component
                                     elseif (str_contains($action, 'update')) $color = 'zinc';
                                     elseif (str_contains($action, 'file')) $color = 'indigo';
                                 @endphp
-                                <flux:badge size="sm" :color="$color" class="font-mono text-[11px]">
+                                <x-dashboard.badge size="sm" :color="$color" class="font-mono text-[11px]">
                                     {{ str_replace('_', ' ', $log->action) }}
-                                </flux:badge>
+                                </x-dashboard.badge>
                             </flux:table.cell>
                             <flux:table.cell>
                                 @if($log->site)
-                                    <a href="/s/{{ $log->site->slug }}" target="_blank" class="font-mono text-xs text-accent dark:text-accent-content hover:underline">
+                                    <a href="/s/{{ $log->site->slug }}" target="_blank" class="font-mono text-xs dashboard-accent  hover:underline">
                                         {{ $log->site->slug }}
                                     </a>
                                 @else
-                                    <span class="text-xs text-zinc-400 font-mono">—</span>
+                                    <span class="text-xs dashboard-muted font-mono">—</span>
                                 @endif
                             </flux:table.cell>
-                            <flux:table.cell class="text-xs text-zinc-700 dark:text-zinc-300 max-w-md">
+                            <flux:table.cell class="text-xs dashboard-text max-w-md">
                                 {{ $log->description }}
                             </flux:table.cell>
-                            <flux:table.cell class="text-xs font-mono text-zinc-500 whitespace-nowrap">
+                            <flux:table.cell class="text-xs font-mono dashboard-muted whitespace-nowrap">
                                 {{ $log->ip_address ?: '127.0.0.1' }}
                             </flux:table.cell>
-                            <flux:table.cell class="text-xs text-zinc-500 text-right whitespace-nowrap font-mono" title="{{ $log->created_at->toIso8601String() }}">
+                            <flux:table.cell class="text-xs dashboard-muted text-right whitespace-nowrap font-mono" title="{{ $log->created_at->toIso8601String() }}">
                                 {{ $log->created_at->diffForHumans() }}
                             </flux:table.cell>
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="5" class="text-center py-16 text-zinc-400 text-xs">
-                                <flux:icon.magnifying-glass class="size-8 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
-                                <div class="font-semibold">No activity recorded for this filter.</div>
+                            <flux:table.cell colspan="5" class="text-center py-16 dashboard-muted text-xs">
+                                <flux:icon.magnifying-glass class="size-8 dashboard-text mx-auto mb-2" />
+                                <div class="font-medium">No activity recorded for this filter.</div>
                             </flux:table.cell>
                         </flux:table.row>
                     @endforelse
                 </flux:table.rows>
             </flux:table>
         </div>
-        
+
         @if($logs->hasPages())
-            <div class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+            <div class="mt-4 pt-4 border-t dashboard-border">
                 {{ $logs->links() }}
             </div>
         @endif

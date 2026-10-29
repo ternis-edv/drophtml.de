@@ -127,14 +127,14 @@ new #[Title('Security settings')] class extends Component {
             />
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">
+                <flux:button data-dashboard-variant="primary" variant="primary" type="submit" data-test="update-password-button">
                     {{ __('Save') }}
                 </flux:button>
             </div>
         </form>
 
         @if ($canManageTwoFactor)
-            <section class="mt-10 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40">
+            <section class="mt-10 p-5 sm:p-6 dashboard-rounded border dashboard-border dashboard-surface">
                 <flux:heading class="tracking-tight">{{ __('Two-factor authentication') }}</flux:heading>
                 <flux:subheading class="mt-1">{{ __('Manage your two-factor authentication settings') }}</flux:subheading>
 
@@ -146,7 +146,7 @@ new #[Title('Security settings')] class extends Component {
                             </flux:text>
 
                             <div class="flex justify-start">
-                                <flux:button
+                                <flux:button data-dashboard-variant="danger"
                                     variant="danger"
                                     wire:click="disable"
                                 >
@@ -163,7 +163,7 @@ new #[Title('Security settings')] class extends Component {
                             </flux:text>
 
                             <flux:modal.trigger name="two-factor-setup-modal">
-                                <flux:button
+                                <flux:button data-dashboard-variant="primary"
                                     variant="primary"
                                     wire:click="$dispatch('start-two-factor-setup')"
                                 >

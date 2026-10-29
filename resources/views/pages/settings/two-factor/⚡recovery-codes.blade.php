@@ -46,13 +46,13 @@ new class extends Component {
 }; ?>
 
 <div
-    class="py-6 space-y-6 border shadow-xs rounded-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60"
+    class="py-6 space-y-6 border dashboard-rounded dashboard-border dashboard-surface"
     wire:cloak
     x-data="{ showRecoveryCodes: false }"
 >
     <div class="px-6 space-y-2">
         <div class="flex items-center gap-2">
-            <flux:icon.lock-closed variant="outline" class="size-4 text-accent dark:text-accent-content"/>
+            <flux:icon.lock-closed variant="outline" class="size-4 dashboard-accent "/>
             <flux:heading size="lg" level="3" class="tracking-tight">{{ __('2FA recovery codes') }}</flux:heading>
         </div>
         <flux:text variant="subtle">
@@ -62,7 +62,7 @@ new class extends Component {
 
     <div class="px-6">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <flux:button
+            <flux:button data-dashboard-variant="primary"
                 x-show="!showRecoveryCodes"
                 icon="eye"
                 icon:variant="outline"
@@ -74,7 +74,7 @@ new class extends Component {
                 {{ __('View recovery codes') }}
             </flux:button>
 
-            <flux:button
+            <flux:button data-dashboard-variant="primary"
                 x-show="showRecoveryCodes"
                 icon="eye-slash"
                 icon:variant="outline"
@@ -87,7 +87,7 @@ new class extends Component {
             </flux:button>
 
             @if (filled($recoveryCodes))
-                <flux:button
+                <flux:button data-dashboard-variant="filled"
                     x-show="showRecoveryCodes"
                     icon="arrow-path"
                     variant="filled"
@@ -112,7 +112,7 @@ new class extends Component {
 
                 @if (filled($recoveryCodes))
                     <div
-                        class="grid gap-1 p-4 font-mono text-sm rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800"
+                        class="grid gap-1 p-4 font-mono text-sm dashboard-control-rounded dashboard-surface border dashboard-border"
                         role="list"
                         aria-label="{{ __('Recovery codes') }}"
                     >
@@ -120,7 +120,7 @@ new class extends Component {
                             <div
                                 role="listitem"
                                 class="select-text"
-                                wire:loading.class="opacity-50 animate-pulse"
+                                wire:loading.class="opacity-50"
                             >
                                 {{ $code }}
                             </div>
