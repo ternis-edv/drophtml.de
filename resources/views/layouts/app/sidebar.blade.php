@@ -54,6 +54,7 @@
                     <flux:sidebar.item icon="circle-stack" :href="route('settings.storage')" :current="request()->routeIs('settings.storage')" wire:navigate>
                         {{ __('Storage & Usage') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="chat-bubble-left-right" :href="route('dashboard.help')" :current="request()->routeIs('dashboard.help')" wire:navigate>AI Help</flux:sidebar.item>
                     <flux:sidebar.item icon="clock" :href="route('dashboard.activity')" :current="request()->routeIs('dashboard.activity')" wire:navigate>
                         {{ __('Activity Log') }}
                     </flux:sidebar.item>

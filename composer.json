@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.5",
         "dedoc/scramble": "^0.13.23",
+        "laravel/ai": "^0.7.2",
         "laravel/fortify": "^1.34",
         "laravel/framework": "^13.7",
         "laravel/sanctum": "^4.0",

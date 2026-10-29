@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\AgentSkillController;
+use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\Auth\TernisAuthController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\Webhooks\GithubWebhookController;
+use App\Http\Middleware\AuditAssistant;
 use App\Models\Deployment;
 use App\Models\Site;
 use App\Services\AnalyticsService;
@@ -94,6 +96,8 @@ Route::domain($appDomain)->group(function () {
     Route::post('/webhooks/github', [GithubWebhookController::class, 'handle'])->middleware('throttle:webhooks')->name('webhooks.github');
 
     Route::middleware(['auth', 'verified'])->group(function () {
+        Route::view('dashboard/help', 'dashboard.help')->name('dashboard.help');
+        Route::post('dashboard/help', AssistantController::class)->middleware(AuditAssistant::class)->name('dashboard.help.ask');
         Route::view('dashboard', 'dashboard')->name('dashboard');
         Route::view('dashboard/sites/upload', 'dashboard.sites-upload')->name('dashboard.sites.upload');
         Route::view('dashboard/sites/{site}/edit', 'dashboard.site-editor')->name('dashboard.sites.edit');
