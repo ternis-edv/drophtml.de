@@ -31,15 +31,15 @@ it('distinguishes app and hosted-site 404s and never exposes query parameters', 
     $this->get('/not-a-drophtml-route?token=private-value')->assertNotFound()
         ->assertSee('Find your next destination')->assertSee('YOU WERE LOOKING FOR')->assertDontSee('private-value');
     $this->get('/s/error-demo/missing?token=private-value')->assertNotFound()
-        ->assertSee('This page wandered off.')->assertSee('Demo website')->assertSee('Go to site home')
+        ->assertSee('A wrong turn.')->assertSee('Demo website')->assertSee('Back to site home')
         ->assertSee('http://localhost:8000/s/error-demo/', false)->assertDontSee('private-value')
         ->assertDontSee('Back to your sites')->assertHeader('X-Robots-Tag', 'noindex, nofollow');
 });
 
 it('renders missing slugs and unconnected custom domains as hosted-site errors', function () {
     foreach (['/s/unknown-site/missing', 'http://unconnected.example.test/missing'] as $url) {
-        $this->get($url)->assertNotFound()->assertSee('There is no site at this address.')
-            ->assertDontSee('Go to site home')->assertDontSee('Your sites');
+        $this->get($url)->assertNotFound()->assertSee('No destination')
+            ->assertDontSee('Back to site home')->assertDontSee('Your sites');
     }
 });
 
@@ -110,7 +110,7 @@ it('preserves status codes for unavailable sites and server failures', function 
 it('never reads a bundled error page outside the site directory', function () {
     Storage::disk('public')->put('outside-secret.html', 'do not disclose');
     symlink(Storage::disk('public')->path('outside-secret.html'), Storage::disk('public')->path('sites/error-demo/404.html'));
-    $this->get('/s/error-demo/missing')->assertNotFound()->assertDontSee('do not disclose')->assertSee('This page wandered off.');
+    $this->get('/s/error-demo/missing')->assertNotFound()->assertDontSee('do not disclose')->assertSee('A wrong turn.');
 });
 
 it('returns JSON to JSON clients and never turns a 404 into a 304', function () {
@@ -179,5 +179,5 @@ it('preserves an existing retry hint when rendering a hosted 503', function () {
     $this->mock(SiteServingService::class)->shouldReceive('serve')->once()
         ->andThrow(new HttpException(503, 'Please retry', headers: ['Retry-After' => '120']));
     $this->get('/s/error-demo/')->assertStatus(503)->assertHeader('Retry-After', '120')
-        ->assertSee('Back in a little while.');
+        ->assertSee('A little pause.');
 });
