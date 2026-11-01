@@ -2,13 +2,16 @@
 
 @section('content')
 <div class="brand-page lp-container">
+    <div class="brand-cover">
     <header class="brand-intro">
         <p class="brand-eyebrow">THE DROPHTML IDENTITY</p>
-        <h1>A small mark.<br>A world of possibilities.</h1>
+        <h1>Small file.<br>Big possibility.</h1>
         <p>Our drop bracket brings a file and a downward point together. Here’s everything you need to put DropHTML in the picture.</p>
         <a class="brand-download" href="{{ asset('brand/brand-kit.zip') }}" download>Download the brand kit <span aria-hidden="true">↓</span></a>
         <span class="brand-note">SVG logos, icons, wordmarks &amp; font license · ZIP</span>
     </header>
+    <div class="brand-specimen" aria-label="DropHTML identity specimen"><span>DROPHTML / IDENTITY NO. 001</span><img src="{{ asset('brand/icon-white.svg') }}" alt="The DropHTML drop bracket"><p>Less between<br>idea &amp; internet.</p><span>EST. FOR THE THINGS YOU MAKE ↗</span></div>
+    </div>
 
     @foreach (['logo' => ['Logos', 'The complete lockup. Our first choice wherever there’s room.'], 'wordmark' => ['Wordmarks', 'Our name, set in outlined Instrument Sans. No font installation needed.'], 'icon' => ['Icons', 'The drop bracket, on its own. For compact spaces and familiar faces.']] as $type => [$heading, $description])
         <section class="brand-section" aria-labelledby="{{ $type }}-heading">
@@ -38,6 +41,11 @@
                 <div><div class="brand-swatch" style="background: {{ $hex }}"></div><h3>{{ $name }}</h3><code>{{ $hex }}</code></div>
             @endforeach
         </div>
+    </section>
+
+    <section class="brand-section brand-type" aria-labelledby="type-heading">
+        <div class="brand-section-heading"><p class="brand-eyebrow">WORDS HAVE A SHAPE, TOO</p><h2 id="type-heading">A little character. A lot of clarity.</h2><p>Editorial serif headlines meet practical Instrument Sans. Our logo keeps its original outlined lettering.</p></div>
+        <div class="brand-type-samples"><div><span>DISPLAY / GEORGIA</span><p>Ideas deserve<br><em>an audience.</em></p></div><div><span>BODY / INSTRUMENT SANS</span><p>Make something.<br>Drop it here.<br>Send it everywhere.</p><code>HTML → ZIP → LIVE</code></div></div>
     </section>
 
     <section class="brand-section brand-guidelines" aria-labelledby="guidelines-heading">

@@ -17,10 +17,10 @@
 
             <!-- Desktop Nav Links -->
             <div class="lp-nav__links">
-                <a href="#upload">Upload</a>
-                <a href="#terminal">CLI &amp; Agents</a>
-                <a href="#features">Features</a>
-                <a href="#faq">FAQs</a>
+                <a href="{{ route('home') }}#upload">Upload</a>
+                <a href="{{ route('home') }}#terminal">CLI &amp; Agents</a>
+                <a href="{{ route('home') }}#features">Features</a>
+                <a href="{{ route('home') }}#faq">FAQs</a>
                 <a href="{{ route('docs.agents') }}">Agent Skill</a>
                 <a href="{{ url('/docs/api') }}">API Docs</a>
             </div>
@@ -100,10 +100,10 @@
         x-transition:leave-end="opacity-0 -translate-y-2"
         style="display: none;"
     >
-        <a href="#upload" @click="mobileMenuOpen = false">Upload</a>
-        <a href="#terminal" @click="mobileMenuOpen = false">CLI &amp; Agents</a>
-        <a href="#features" @click="mobileMenuOpen = false">Features</a>
-        <a href="#faq" @click="mobileMenuOpen = false">FAQs</a>
+        <a href="{{ route('home') }}#upload" @click="mobileMenuOpen = false">Upload</a>
+        <a href="{{ route('home') }}#terminal" @click="mobileMenuOpen = false">CLI &amp; Agents</a>
+        <a href="{{ route('home') }}#features" @click="mobileMenuOpen = false">Features</a>
+        <a href="{{ route('home') }}#faq" @click="mobileMenuOpen = false">FAQs</a>
         <a href="{{ route('docs.agents') }}" @click="mobileMenuOpen = false">Agent Skill</a>
         <a href="{{ url('/docs/api') }}" @click="mobileMenuOpen = false">API Documentation</a>
 

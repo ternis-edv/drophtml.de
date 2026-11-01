@@ -24,8 +24,8 @@
             <nav class="lp-footer__col" aria-labelledby="footer-product-heading">
                 <h2 id="footer-product-heading">Product</h2>
                 <ul>
-                    <li><a href="#upload">Upload &amp; Deploy</a></li>
-                    <li><a href="#features">Features</a></li>
+                    <li><a href="{{ route('home') }}#upload">Upload &amp; Deploy</a></li>
+                    <li><a href="{{ route('home') }}#features">Features</a></li>
                     <li><a href="{{ url('/docs/agents') }}">DropHTML for Agents</a></li>
                     <li><a href="{{ url('/docs/api') }}">API Documentation</a></li>
                     <li><a href="{{ route('branding') }}">Branding</a></li>

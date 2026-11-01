@@ -2,9 +2,10 @@
     <div class="lp-container">
         <div class="lp-hero__grid">
             <div class="lp-hero__copy">
-                <span class="lp-eyebrow"><span class="lp-status-dot" aria-hidden="true"></span> A simpler way to go live</span>
-                <h1 id="hero-title">Your next idea.<br />One drop away.<br /><span class="lp-hero__accent">Ship HTML in seconds.</span></h1>
-                <p class="lp-hero__sub">Turn your HTML or ZIP into a live website. Drop your files, get a link, and share what you made. No build setup. No server to manage.</p>
+                <span class="lp-eyebrow"><span class="lp-status-dot" aria-hidden="true"></span> A home for your next internet thing</span>
+                <h1 id="hero-title">Made on your laptop.<br /><span class="lp-hero__accent">Meant for the web.</span></h1>
+                <p class="lp-hero__caption">001 / FROM FILE TO FEELING REAL</p>
+                <p class="lp-hero__sub"><strong>Ship HTML in seconds.</strong> Turn your HTML or ZIP into a live website. Drop your files, get a link, and share what you made. No build setup. No server to manage.</p>
                 <div class="lp-hero__actions">
                     <a href="#upload" class="lp-btn lp-btn--primary">Deploy your site <svg class="lp-arrow lp-arrow--diagonal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg></a>
                     @auth
