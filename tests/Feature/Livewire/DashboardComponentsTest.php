@@ -348,3 +348,22 @@ test('sites overview setSort applies deterministic column and direction', functi
         ->call('setSort', 'invalid_column')
         ->assertSet('sortBy', 'views');
 });
+
+
+test('command palette explains empty searches and keeps results scoped to the current user', function () {
+    $user = User::factory()->create();
+    Site::create([
+        'user_id' => User::factory()->create()->id,
+        'slug' => 'private-project', 'original_name' => 'Private Project',
+        'path' => 'sites/private-project', 'status' => 'active',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test('dashboard.command-palette')
+        ->call('openPalette')
+        ->assertSee('Upload your first site below.')
+        ->set('search', 'private-project')
+        ->assertSee('No sites match')
+        ->assertDontSee('Private Project');
+});

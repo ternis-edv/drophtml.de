@@ -41,7 +41,7 @@
 
     {{-- Scroll reveal: fade sections in once on viewport entry --}}
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('livewire:navigated', () => {
             const targets = document.querySelectorAll('.lp-reveal');
 
             if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

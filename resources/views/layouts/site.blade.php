@@ -21,7 +21,7 @@
                         <a class="studio-button" href="{{ route('dashboard.sites.edit', $workspaceSite) }}"><flux:icon.code-bracket /><span>Open Code Studio</span></a>
                         <a class="studio-button studio-button-primary" href="{{ url('/s/'.$workspaceSite->slug) }}" target="_blank" rel="noopener">Visit site <flux:icon.arrow-top-right-on-square /></a>
                     @else
-                        <button type="button" class="studio-button" @click="$dispatch('open-command-palette')" aria-label="Search dashboard"><flux:icon.magnifying-glass />Quick search <kbd>⌘K</kbd></button>
+                        <button type="button" class="studio-button site-quick-search" @click="$dispatch('open-command-palette')" aria-label="Search dashboard"><flux:icon.magnifying-glass /><span>Quick search</span> <kbd>⌘K</kbd></button>
                     @endif
                     <button type="button" x-ref="navToggle" class="studio-icon-button site-menu-toggle" @click="navigationOpen = !navigationOpen" :aria-expanded="navigationOpen" aria-controls="dashboard-navigation" aria-label="Toggle workspace navigation"><flux:icon.bars-3 /></button>
                 </div>

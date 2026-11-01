@@ -72,3 +72,10 @@
     .site-console .studio-header-actions { gap: 6px; }
     .site-console .studio-header-actions > button.studio-button:first-child { display: inline-flex; }
 }
+
+/* Keep search reachable on touch devices where keyboard shortcuts are unavailable. */
+@media (max-width: 760px) {
+    .site-console .studio-header-actions .site-quick-search:first-child { display: inline-flex; min-width: 44px; min-height: 44px; justify-content: center; }
+    .site-console .studio-header-actions .site-quick-search svg { display: block; width: 18px; height: 18px; }
+    .site-quick-search span, .site-quick-search kbd { display: none; }
+}

@@ -62,6 +62,20 @@ return [
             'report' => false,
         ],
 
+        // Isolated from public media: database dumps and application secrets are private.
+        'backups' => [
+            'driver' => 's3',
+            'key' => env('BACKUP_R2_ACCESS_KEY_ID', env('R2_ACCESS_KEY_ID')),
+            'secret' => env('BACKUP_R2_SECRET_ACCESS_KEY', env('R2_SECRET_ACCESS_KEY')),
+            'region' => env('BACKUP_R2_DEFAULT_REGION', env('R2_DEFAULT_REGION', 'auto')),
+            'bucket' => 'drophtml-backup',
+            'endpoint' => env('BACKUP_R2_ENDPOINT', env('R2_ENDPOINT')),
+            'use_path_style_endpoint' => true,
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
         'media' => [
             'driver' => $mediaDriver,
             'root' => $mediaDriver === 'local' ? storage_path('app/public') : '',

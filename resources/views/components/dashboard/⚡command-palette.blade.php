@@ -56,6 +56,18 @@ new class extends Component
                 if (value) this.$nextTick(() => this.$refs.commandInput?.focus());
             });
         },
+        moveFocus(event) {
+            const actions = [...this.$refs.results.querySelectorAll('a[href], button:not([disabled])')]
+                .filter(element => element.getClientRects().length);
+            if (!actions.length) return;
+            event.preventDefault();
+            const index = actions.indexOf(document.activeElement);
+            if (event.key === 'ArrowUp' && index <= 0) {
+                this.$refs.commandInput.focus();
+                return;
+            }
+            actions[(index + (event.key === 'ArrowDown' ? 1 : -1) + actions.length) % actions.length].focus();
+        },
         close() {
             this.open = false;
             $wire.closePalette();
@@ -63,7 +75,9 @@ new class extends Component
     }"
     x-show="open"
     x-cloak
-    @keydown.escape.window="if (open) close()"
+    @keydown.escape.window="if (open) { $event.preventDefault(); $event.stopPropagation(); close() }"
+    @keydown.arrow-down="moveFocus($event)"
+    @keydown.arrow-up="moveFocus($event)"
     @keydown.window="if (($event.metaKey || $event.ctrlKey) && $event.key.toLowerCase() === 'k') { $event.preventDefault(); open ? close() : $wire.openPalette() }"
     x-trap.inert.noscroll="open"
     aria-label="Search dashboard"
@@ -84,7 +98,7 @@ new class extends Component
         class="dashboard-command-backdrop"
     ></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 md:p-20 flex items-start justify-center">
+    <div @click.self="close()" class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 md:p-20 flex items-start justify-center">
         <div
             x-show="open"
             x-transition:enter="ease-out duration-200"
@@ -102,10 +116,8 @@ new class extends Component
                     type="text"
                     x-ref="commandInput"
                     wire:model.live.debounce.150ms="search"
-                    placeholder="Type a command or search sites..."
+                    placeholder="Search your sites..."
                     aria-label="{{ __('Search sites and commands') }}"
-                    role="combobox"
-                    aria-expanded="true"
                     aria-controls="command-palette-results"
                     class="h-11 w-full border-0 bg-transparent pl-3.5 pr-10 text-sm dashboard-text placeholder-zinc-400  focus:outline-hidden focus:ring-0"
                 />
@@ -115,11 +127,12 @@ new class extends Component
                     aria-label="{{ __('Close command palette') }}"
                     class="dashboard-muted dashboard-hover-text p-1 rounded-md cursor-pointer"
                 >
+                    <flux:icon.x-mark class="size-5 sm:hidden" />
                     <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium dashboard-muted dashboard-raised border dashboard-border rounded">ESC</kbd>
                 </button>
             </div>
 
-            <div id="command-palette-results" class="max-h-96 scroll-py-2 overflow-y-auto p-3 text-sm dashboard-text divide-y dashboard-divide custom-scrollbar">
+            <div x-ref="results" id="command-palette-results" class="max-h-96 scroll-py-2 overflow-y-auto p-3 text-sm dashboard-text divide-y dashboard-divide custom-scrollbar">
                 <!-- Matching Sites Section -->
                 @if($matchedSites->isNotEmpty())
                     <div class="py-2">
@@ -128,7 +141,7 @@ new class extends Component
                         </div>
                         <div class="space-y-1">
                             @foreach($matchedSites as $site)
-                                <div class="flex items-center justify-between dashboard-control-rounded px-3 py-2 dashboard-text dashboard-hover-surface transition-colors group">
+                                <div class="flex flex-wrap items-center justify-between gap-2 dashboard-control-rounded px-3 py-2 dashboard-text dashboard-hover-surface transition-colors group">
                                     <a href="{{ route('dashboard.sites.edit', $site) }}" @click="close()" class="flex items-center gap-2.5 flex-1 min-w-0">
                                         <div class="size-2 rounded-full {{ $site->status === 'active' ? 'dashboard-success-solid' : 'dashboard-warning-solid' }}"></div>
                                         <div class="truncate">
@@ -141,22 +154,30 @@ new class extends Component
                                         <a href="{{ url('/s/' . $site->slug) }}" target="_blank" rel="noopener" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Live Site" aria-label="{{ __('Open live site') }}">
                                             <flux:icon.arrow-top-right-on-square class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.edit', $site) }}" @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Code Editor">
+                                        <a href="{{ route('dashboard.sites.edit', $site) }}" @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Code Editor" aria-label="Code Editor">
                                             <flux:icon.pencil-square class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.stats', $site) }}" wire:navigate @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Analytics">
+                                        <a href="{{ route('dashboard.sites.stats', $site) }}" wire:navigate @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Analytics" aria-label="Analytics">
                                             <flux:icon.chart-bar-square class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.deployments', $site) }}" wire:navigate @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Deployments">
+                                        <a href="{{ route('dashboard.sites.deployments', $site) }}" wire:navigate @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Deployments" aria-label="Deployments">
                                             <flux:icon.archive-box class="size-3.5" />
                                         </a>
-                                        <a href="{{ route('dashboard.sites.settings', $site) }}" wire:navigate @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Settings">
+                                        <a href="{{ route('dashboard.sites.settings', $site) }}" wire:navigate @click="close()" class="p-1.5 dashboard-control-rounded dashboard-muted dashboard-accent dashboard-accent-tint transition-colors" title="Settings" aria-label="Settings">
                                             <flux:icon.cog class="size-3.5" />
                                         </a>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
+                    </div>
+                @else
+                    <div class="px-3 py-5 dashboard-muted" role="status">
+                        @if(trim($search) !== '')
+                            No sites match “{{ trim($search) }}”. Try another name or slug.
+                        @else
+                            You haven't deployed any sites yet. Upload your first site below.
+                        @endif
                     </div>
                 @endif
 
@@ -192,7 +213,7 @@ new class extends Component
 
                         <a href="{{ route('profile.edit') }}" wire:navigate @click="close()" class="flex items-center gap-3 dashboard-control-rounded px-3 py-2 dashboard-text dashboard-hover-surface dashboard-hover-text transition-colors">
                             <flux:icon.cog class="size-4 dashboard-accent" />
-                            <span class="flex-1 font-medium text-xs">Account Settings & API Tokens</span>
+                            <span class="flex-1 font-medium text-xs">Account Settings</span>
                             <kbd class="text-[10px] dashboard-muted font-mono px-1.5 py-0.5 rounded dashboard-raised">API</kbd>
                         </a>
 

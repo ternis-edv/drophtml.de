@@ -12,3 +12,7 @@ Schedule::command('sites:cleanup')
     ->hourly()
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('backup:run')->dailyAt('01:30')->withoutOverlapping();
+Schedule::command('backup:clean')->dailyAt('04:00')->withoutOverlapping();
+Schedule::command('backup:monitor')->dailyAt('05:00')->withoutOverlapping();
