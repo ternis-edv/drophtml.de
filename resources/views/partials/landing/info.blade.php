@@ -102,24 +102,24 @@
     <div class="lp-container lp-faq__layout">
         <div class="lp-section-head">
             <span class="lp-eyebrow">Good to know</span>
-            <h2 id="faq-title">A few things before<br />you drop.</h2>
+            <h2 id="faq-title">A few things before you drop.</h2>
             <p>Less setup, fewer questions. Here are the essentials.</p>
         </div>
         <div class="lp-faq__list">
-            <details>
-                <summary>Do I need an account to deploy?</summary>
+            <details name="landing-faq">
+                <summary><span>Do I need an account to deploy?</span><span class="lp-faq__chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4" /></svg></span></summary>
                 <p>No. Drop an HTML file or ZIP archive to publish as a guest. Guest sites expire after 24 hours. <a href="{{ route('register') }}">Create a free account</a> to manage your sites and choose permanent hosting.</p>
             </details>
-            <details>
-                <summary>What can I upload?</summary>
+            <details name="landing-faq">
+                <summary><span>What can I upload?</span><span class="lp-faq__chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4" /></svg></span></summary>
                 <p>Upload a single .html or .htm file, or a .zip archive up to 50 MB. For a complete website, include your HTML, CSS, JavaScript, and assets in the ZIP, with an index.html as your entry page. Server-side code such as PHP is not supported.</p>
             </details>
-            <details>
-                <summary>Can I use my own domain?</summary>
+            <details name="landing-faq">
+                <summary><span>Can I use my own domain?</span><span class="lp-faq__chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4" /></svg></span></summary>
                 <p>Yes. With an account, connect your custom domain from the dashboard. You can also protect client previews with a password and deploy updates from GitHub.</p>
             </details>
-            <details>
-                <summary>What about images, videos, and other media?</summary>
+            <details name="landing-faq">
+                <summary><span>What about images, videos, and other media?</span><span class="lp-faq__chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4" /></svg></span></summary>
                 <p>Bundle assets with your website, or use dedicated cloud media storage to host images, videos, and PDFs separately. Keep your site uploads small while managing your media from the dashboard.</p>
             </details>
         </div>

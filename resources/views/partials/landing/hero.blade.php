@@ -3,7 +3,7 @@
         <div class="lp-hero__grid">
             <div class="lp-hero__copy">
                 <span class="lp-eyebrow"><span class="lp-status-dot" aria-hidden="true"></span> A home for your next internet thing</span>
-                <h1 id="hero-title">Made on your laptop.<br /><span class="lp-hero__accent">Meant for the web.</span></h1>
+                <h1 id="hero-title"><span class="lp-hero__line">Made on your laptop.</span><span class="lp-hero__line lp-hero__accent">Meant for the web.</span></h1>
                 <p class="lp-hero__caption">001 / FROM FILE TO FEELING REAL</p>
                 <p class="lp-hero__sub"><strong>Ship HTML in seconds.</strong> Turn your HTML or ZIP into a live website. Drop your files, get a link, and share what you made. No build setup. No server to manage.</p>
                 <div class="lp-hero__actions">

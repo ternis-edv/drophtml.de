@@ -31,9 +31,10 @@ it('keeps the dashboard stylesheet out of public and auth pages', function ($rou
 
 it('keeps the public uploader presentation while styling dashboard uploads separately', function () {
     Livewire::test('file-uploader')
-        ->assertSee('rounded-2xl', false)
+        ->assertSee('lp-dropzone', false)
+        ->assertSee('Your file publishes as soon as you choose it.')
         ->assertDontSee('dashboard-rounded', false);
     Livewire::test('file-uploader', ['dashboard' => true])
         ->assertSee('dashboard-rounded', false)
-        ->assertDontSee('rounded-2xl', false);
+        ->assertDontSee('lp-dropzone', false);
 });

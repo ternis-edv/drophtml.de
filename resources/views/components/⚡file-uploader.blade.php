@@ -108,11 +108,11 @@ new class extends Component
             }
         },
         uploadFiles(file) {
+            if (this.uploading || this.$wire.uploading) return;
             this.uploading = true;
             this.progress = 0;
             @this.upload('file', file, (uploadedName) => {
                 this.uploading = false;
-                @this.upload();
             }, () => {
                 this.uploading = false;
                 Flux.toast({ variant: 'danger', text: 'Upload failed.' });
@@ -172,61 +172,39 @@ new class extends Component
             </div>
         </div>
     @else
-        <!-- Upload Dropzone -->
-        <div
-            :class="{ 
-                'border-accent bg-accent/[0.05] dark:bg-accent/10 scale-[1.01] shadow-md': dragging, 
-                'border-zinc-300 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-900/60 hover:border-accent/60 dark:hover:border-accent/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40': !dragging 
-            }"
-            class="flex flex-col items-center justify-center w-full min-h-[260px] p-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200"
-            role="button"
-            tabindex="0"
+        <div class="lp-dropzone"
+            :class="{ 'is-dragging': dragging }"
+            role="button" tabindex="0"
             aria-label="Choose an HTML or ZIP file to deploy"
-            :aria-busy="uploading"
-            @keydown.enter.prevent="if (!uploading) $refs.fileInput.click()"
-            @keydown.space.prevent="if (!uploading) $refs.fileInput.click()"
-            @click="if (!uploading) $refs.fileInput.click()"
+            :aria-busy="uploading || $wire.uploading"
+            @keydown.enter.prevent="if (!uploading && !$wire.uploading) $refs.fileInput.click()"
+            @keydown.space.prevent="if (!uploading && !$wire.uploading) $refs.fileInput.click()"
+            @click="if (!uploading && !$wire.uploading) $refs.fileInput.click()"
         >
-            <template x-if="!uploading">
-                <div class="flex flex-col items-center justify-center text-center">
-                    <div class="size-14 rounded-2xl bg-accent/[0.08] dark:bg-accent/15 text-accent dark:text-brand-300 flex items-center justify-center mb-4">
-                        <flux:icon.cloud-arrow-up class="size-7" />
-                    </div>
-                    <div class="text-sm font-bold tracking-tight text-zinc-800 dark:text-zinc-200">
-                        Drop your HTML or ZIP here
-                    </div>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs">
-                        Or click to browse. Supports <code class="font-mono text-accent dark:text-brand-300 font-semibold">.html</code> files or complete <code class="font-mono text-accent dark:text-brand-300 font-semibold">.zip</code> archives up to 50MB
-                    </p>
-                    
-                    <div class="flex items-center gap-2 mt-4 text-[11px] text-zinc-500 dark:text-zinc-400">
-                        <span class="px-2 py-0.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">Instant SSL</span>
-                        <span class="px-2 py-0.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">Edge CDN</span>
-                        <span class="px-2 py-0.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">Automatic Unpack</span>
-                    </div>
+            <template x-if="!uploading && !$wire.uploading">
+                <div>
+                    <span class="lp-dropzone__icon" style="margin-inline: auto"><flux:icon.arrow-up-tray /></span>
+                    <strong>Drop your HTML or ZIP here</strong>
+                    <p>A single page or your whole static project.</p>
+                    <span class="lp-dropzone__browse">Choose a file <span aria-hidden="true">&nbsp;↗</span></span>
+                    <p>Your file publishes as soon as you choose it.</p>
                 </div>
             </template>
-
-            <template x-if="uploading">
-                <div class="flex flex-col items-center justify-center w-full max-w-sm px-4">
-                    <div class="size-12 rounded-full bg-accent/[0.08] dark:bg-accent/15 text-accent dark:text-brand-300 flex items-center justify-center mb-3 animate-spin">
-                        <flux:icon.arrow-path class="size-6" />
-                    </div>
-                    <div class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-2">Deploying package... <span x-text="progress"></span>%</div>
-                    <div class="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
-                        <div class="bg-accent h-2 transition-all duration-200 rounded-full" :style="`width: ${progress}%`"></div>
-                    </div>
+            <template x-if="uploading || $wire.uploading">
+                <div class="lp-dropzone__progress" role="status" aria-live="polite">
+                    <strong x-text="progress < 100 ? 'Uploading your files…' : 'Publishing your site…'"></strong>
+                    <p x-text="progress < 100 ? progress + '% uploaded' : 'Hang tight. Your live link is on its way.'"></p>
+                    <progress max="100" :value="progress" aria-label="File upload progress"></progress>
                 </div>
             </template>
-
-            <input type="file" class="hidden" x-ref="fileInput" @change="handleSelect($event)" accept=".html,.htm,.zip" />
+            <input type="file" class="hidden" x-ref="fileInput" @click.stop @change="handleSelect($event); $event.target.value = ''" accept=".html,.htm,.zip" />
         </div>
     @endif
 
     @if ($errorMessage)
-        <div class="mt-4 p-3.5 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-800 flex items-center justify-between text-xs">
+        <div role="alert" class="mt-4 p-3.5 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-800 flex items-center justify-between text-xs">
             <span>{{ $errorMessage }}</span>
-            <button type="button" wire:click="$set('errorMessage', '')" class="text-red-500 hover:text-red-700 dark:hover:text-red-300 cursor-pointer">
+            <button type="button" aria-label="Dismiss upload error" wire:click="$set('errorMessage', '')" class="text-red-500 hover:text-red-700 dark:hover:text-red-300 cursor-pointer">
                 <flux:icon.x-mark class="size-4" />
             </button>
         </div>
