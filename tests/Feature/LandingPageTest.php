@@ -30,6 +30,28 @@ class LandingPageTest extends TestCase
 
     }
 
+    public function test_cached_routes_keep_framework_assets_on_the_app_host(): void
+    {
+        $router = app('router');
+        $data = $router->getRoutes()->compile();
+        $routes = (new \Illuminate\Routing\CompiledRouteCollection($data['compiled'], $data['attributes']))
+            ->setRouter($router)
+            ->setContainer($this->app);
+        $host = parse_url(config('app.url'), PHP_URL_HOST);
+        $assets = array_filter($router->getRoutes()->getRoutes(), fn ($route) =>
+            str_ends_with($route->uri(), '/livewire.js') || $route->uri() === 'flux/flux.js'
+        );
+        $this->assertCount(2, $assets);
+
+        foreach ($assets as $asset) {
+            $request = \Illuminate\Http\Request::create('https://'.$host.'/'.$asset->uri());
+            $this->assertSame($asset->getActionName(), $routes->match($request)->getActionName());
+        }
+
+        $customDomain = $routes->match(\Illuminate\Http\Request::create('https://example.org/index.html'));
+        $this->assertSame(\App\Http\Controllers\SiteController::class.'@showCustomDomain', $customDomain->getActionName());
+    }
+
     public function test_landing_page_shows_dashboard_link_when_authenticated(): void
     {
         $user = User::factory()->create();

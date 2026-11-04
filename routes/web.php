@@ -26,8 +26,12 @@ if ($host && $host !== 'localhost') {
     });
 }
 
+// Compiled routes match `host./path`, while uncached routes match the host alone.
+// Accept both host boundaries so the catch-all never consumes app asset routes.
+$hostBoundary = '(?=\z|\./)';
+
 // 2. Custom domains routing (matches any non-app host domain)
-Route::domain('{custom_domain}')->where(['custom_domain' => '^(?!localhost$|127\.0\.0\.1$|'.$escapedHost.'$|.*\.'.$escapedHost.'$).*'])->group(function () {
+Route::domain('{custom_domain}')->where(['custom_domain' => '^(?!(?:localhost|127\.0\.0\.1|'.$escapedHost.'|.*\.'.$escapedHost.')'.$hostBoundary.').*'])->group(function () {
     Route::get('/{path?}', [SiteController::class, 'showCustomDomain'])->where('path', '.*');
     Route::post('/_unlock', [SiteController::class, 'unlockCustomDomain'])->middleware('throttle:site-unlock')->name('site.custom_domain.unlock');
 });
