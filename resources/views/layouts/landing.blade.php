@@ -7,9 +7,6 @@
 
     @include('partials.seo')
 
-    {{-- Mark JS availability so scroll-reveal content stays visible when JS is disabled --}}
-    <script>document.documentElement.classList.add('js');</script>
-
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -41,25 +38,36 @@
 
     {{-- Scroll reveal: fade sections in once on viewport entry --}}
     <script>
-        document.addEventListener('livewire:navigated', () => {
-            const targets = document.querySelectorAll('.lp-reveal');
+        (() => {
+            let observer;
+            const revealSections = () => {
+                observer?.disconnect();
+                const targets = document.querySelectorAll('.lp-reveal:not(.is-shown)');
 
-            if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                targets.forEach((el) => el.classList.add('is-shown'));
-                return;
+                if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    targets.forEach((el) => el.classList.add('is-shown'));
+                    return;
+                }
+
+                observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-shown');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0 });
+
+                targets.forEach((el) => observer.observe(el));
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', revealSections, { once: true });
+            } else {
+                revealSections();
             }
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('is-shown');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.12 });
-
-            targets.forEach((el) => observer.observe(el));
-        });
+            document.addEventListener('livewire:navigated', revealSections);
+        })();
     </script>
 </body>
 </html>

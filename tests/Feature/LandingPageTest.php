@@ -21,7 +21,9 @@ class LandingPageTest extends TestCase
         $response->assertSee('Good to know');
         $response->assertSee('Made something? Make it live.');
         $response->assertSee('Deploy Free');
-        $response->assertSee('Guest sites stay live for 24 hours.');
+        $response->assertSee('Want to keep it?');
+        $response->assertSee('HTML or ZIP archive');
+        $response->assertSee('Up to 50 MB');
         $response->assertSee('Choose an HTML or ZIP file to deploy');
         $response->assertSee('Skip to content');
         $response->assertDontSee('@fluxStyles');
