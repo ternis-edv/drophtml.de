@@ -1108,11 +1108,9 @@ html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-faq__chevron { transition: none; } }
 
-/* The hero gives the uploader one open, centered surface. */
-.lp-hero { padding-bottom: 2rem; }
-.lp-hero .lp-upload { max-width: 56rem; margin-inline: auto; }
-.lp-upload__heading { margin-bottom: 2rem; text-align: center; }
-.lp-hero .lp-upload__heading h1 { font-size: clamp(2.25rem, 5vw, 4rem); margin: 0; }
-.lp-upload__heading p { margin-top: 1rem; font-size: 1.0625rem; line-height: 1.6; color: var(--lp-text-muted); }
+/* Keep the upload form open within the two-column hero. */
+.lp-upload__heading { margin-bottom: 1.5rem; }
+.lp-upload__heading h2 { margin: 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -.035em; line-height: 1.25; }
+.lp-upload__heading p { margin-top: .5rem; font-size: .9375rem; line-height: 1.6; color: var(--lp-text-muted); }
 .lp-upload__formats { font-size: .75rem; }
 .lp-upload__note { margin-top: 1.5rem; font-size: .875rem; }

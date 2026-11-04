@@ -1,6 +1,6 @@
-<div id="upload" class="lp-upload" aria-labelledby="hero-title">
+<div id="upload" class="lp-upload" aria-labelledby="upload-title">
     <header class="lp-upload__heading">
-        <h1 id="hero-title">Drop a site. Make it live.</h1>
+        <h2 id="upload-title">Drop a site. Make it live.</h2>
         <p>Your next live link starts here.</p>
     </header>
     <div class="lp-upload__stage"><livewire:file-uploader /></div>
