@@ -507,7 +507,7 @@ html:not(.js) .lp-reveal {
 }
 
 .lp-section-head {
-    max-width: 40rem;
+    max-width: 64rem;
     margin: 0 auto 2.5rem;
     text-align: center;
 
@@ -879,7 +879,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
 .lp-skip-link:focus { transform: none; }
 .lp-features__card { padding: 1.75rem 1.5rem; background: var(--lp-bg-subtle); }
 .lp-section-head h2 { letter-spacing: -0.04em; font-weight: 600; }
-.lp-faq__layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 5rem; }
+.lp-faq__layout { display: grid; grid-template-columns: 1.15fr 1.4fr; gap: 3rem; }
 .lp-faq .lp-section-head { margin: 0; text-align: left; }
 .lp-faq__list { border-top: 1px solid var(--lp-border); }
 .lp-faq details { border-bottom: 1px solid var(--lp-border); }
@@ -1067,7 +1067,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
 .lp-features__card:hover { box-shadow: none; background: var(--lp-accent-soft); }
 
 /* Native disclosures preserve keyboard controls and work without JavaScript. */
-.lp-faq .lp-section-head h2 { max-width: 9em; }
+.lp-faq .lp-section-head h2 { max-width: none; }
 .lp-faq__list { border: 0; display: grid; gap: .75rem; align-content: start; }
 .lp-faq details { border: 1px solid var(--lp-border); border-radius: 6px; background: var(--lp-surface); }
 .lp-faq details[open] { border-color: var(--lp-accent-border); }
@@ -1107,3 +1107,12 @@ html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
     .lp-upload__toolbar { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-faq__chevron { transition: none; } }
+
+/* The hero gives the uploader one open, centered surface. */
+.lp-hero { padding-bottom: 2rem; }
+.lp-hero .lp-upload { max-width: 56rem; margin-inline: auto; }
+.lp-upload__heading { margin-bottom: 2rem; text-align: center; }
+.lp-hero .lp-upload__heading h1 { font-size: clamp(2.25rem, 5vw, 4rem); margin: 0; }
+.lp-upload__heading p { margin-top: 1rem; font-size: 1.0625rem; line-height: 1.6; color: var(--lp-text-muted); }
+.lp-upload__formats { font-size: .75rem; }
+.lp-upload__note { margin-top: 1.5rem; font-size: .875rem; }
