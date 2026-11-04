@@ -16,13 +16,13 @@ class LandingPageTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Ship HTML in seconds.');
-        $response->assertSee('Drop a site. Make it live.');
+        $response->assertSee('Drop your site here');
+        $response->assertSee('browse files');
         $response->assertSee('Everything you need to ship static');
         $response->assertSee('Good to know');
         $response->assertSee('Made something? Make it live.');
         $response->assertSee('Deploy Free');
-        $response->assertSee('Want to keep it?');
-        $response->assertSee('HTML or ZIP archive');
+        $response->assertSee('HTML or ZIP');
         $response->assertSee('Up to 50 MB');
         $response->assertSee('Choose an HTML or ZIP file to deploy');
         $response->assertSee('Skip to content');

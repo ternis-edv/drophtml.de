@@ -1075,13 +1075,14 @@ html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
 .lp-upload__panel { box-shadow: 6px 6px 0 var(--lp-accent-border); }
 .lp-upload__body { padding: 1.5rem; }
 .lp-upload__body > p { margin-bottom: 1.25rem; }
-.lp-upload__stage .lp-dropzone { display: flex; width: 100%; min-height: 235px; padding: 1.5rem; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed var(--lp-border-strong); border-radius: 4px; background: var(--lp-bg); color: var(--lp-text); cursor: pointer; text-align: center; transition: background-color 150ms ease, border-color 150ms ease; }
+.lp-upload__stage .lp-dropzone { display: flex; width: 100%; min-height: 260px; padding: 2rem; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed var(--lp-border-strong); border-radius: 12px; background: var(--lp-bg); color: var(--lp-text); cursor: pointer; text-align: center; transition: background-color 150ms ease, border-color 150ms ease; }
 .lp-upload__stage .lp-dropzone:is(:hover, .is-dragging) { background: var(--lp-accent-soft); border-color: var(--lp-accent); }
-.lp-dropzone__icon { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 1rem; color: var(--lp-accent); background: var(--lp-accent-soft); border: 1px solid var(--lp-accent-border); border-radius: 8px; }
+.lp-dropzone__icon { display: grid; place-items: center; margin: 0 auto 1.25rem; color: var(--lp-text-muted); }
 .lp-dropzone__icon svg { width: 25px; height: 25px; }
 .lp-dropzone strong { display: block; font-size: 1rem; font-weight: 600; }
 .lp-dropzone p { margin-top: .5rem; color: var(--lp-text-muted); font-size: .8125rem; line-height: 1.6; }
-.lp-dropzone__browse { display: inline-flex; margin-top: 1.25rem; padding: .65rem 1rem; border: 1px solid var(--lp-border-strong); border-radius: 4px; background: var(--lp-surface); color: var(--lp-accent); font-size: .8125rem; font-weight: 600; }
+.lp-dropzone__browse { color: var(--lp-accent); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.lp-upload__stage .lp-dropzone:focus-visible { outline: 2px solid var(--lp-accent); outline-offset: 4px; }
 .lp-dropzone__progress { width: min(100%, 280px); }
 .lp-dropzone progress { display: block; width: 100%; height: 6px; margin-top: 1rem; accent-color: var(--lp-accent-solid); }
 .lp-dropzone[aria-busy="true"] { cursor: wait; }
@@ -1097,9 +1098,5 @@ html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-faq__chevron { transition: none; } }
 
-/* Keep the upload form open within the two-column hero. */
-.lp-upload__heading { margin-bottom: 1.5rem; }
-.lp-upload__heading h2 { margin: 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -.035em; line-height: 1.25; }
-.lp-upload__heading p { margin-top: .5rem; font-size: .9375rem; line-height: 1.6; color: var(--lp-text-muted); }
-.lp-upload__formats { font-size: .75rem; }
-.lp-upload__note { margin-top: 1.5rem; font-size: .875rem; }
+/* Keep supporting details quiet beneath the single upload surface. */
+.lp-upload__formats { justify-content: center; flex-wrap: wrap; gap: .5rem; margin: .875rem 0 0; font-family: var(--lp-font-sans); font-size: .6875rem; line-height: 1.6; text-align: center; }

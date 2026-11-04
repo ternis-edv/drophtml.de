@@ -183,11 +183,9 @@ new class extends Component
         >
             <template x-if="!uploading && !$wire.uploading">
                 <div>
-                    <span class="lp-dropzone__icon" style="margin-inline: auto"><flux:icon.arrow-up-tray /></span>
-                    <strong>Drop your HTML or ZIP here</strong>
-                    <p>A single page or your whole static project.</p>
-                    <span class="lp-dropzone__browse">Choose a file <span aria-hidden="true">&nbsp;↗</span></span>
-                    <p>Your file publishes as soon as you choose it.</p>
+                    <span class="lp-dropzone__icon" aria-hidden="true"><flux:icon.arrow-up-tray /></span>
+                    <strong>Drop your site here</strong>
+                    <p>or <span class="lp-dropzone__browse">browse files</span></p>
                 </div>
             </template>
             <template x-if="uploading || $wire.uploading">
