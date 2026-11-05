@@ -29,8 +29,10 @@
             <div class="site-console-grid">
                 <button type="button" class="site-navigation-backdrop" x-cloak x-show="navigationOpen" @click="navigationOpen = false" aria-label="Close navigation"></button>
                 <aside id="dashboard-navigation" class="site-sidebar" x-trap.inert.noscroll="navigationOpen && window.innerWidth <= 760" :class="{ 'is-open': navigationOpen }">
-                    <div class="site-sidebar-label">{{ $workspaceSite ? 'MANAGE SITE' : 'WORKSPACE' }}</div>
-                    <x-site-navigation :site="$workspaceSite" />
+                    <div class="site-sidebar-scroll">
+                        <div class="site-sidebar-label">{{ $workspaceSite ? 'MANAGE SITE' : 'WORKSPACE' }}</div>
+                        <x-site-navigation :site="$workspaceSite" />
+                    </div>
                     <div class="site-sidebar-bottom">
                         @if($workspaceSite)
                             <div class="site-sidebar-status"><i class="{{ $workspaceSite->status === 'active' ? 'is-active' : '' }}"></i>{{ ucfirst($workspaceSite->status) }}<span>{{ $workspaceSite->is_permanent ? 'Permanent' : 'Temporary' }}</span></div>
