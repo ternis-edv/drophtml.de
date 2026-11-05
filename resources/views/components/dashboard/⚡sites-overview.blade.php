@@ -31,6 +31,13 @@ new class extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->search = '';
+        $this->statusFilter = 'all';
+        $this->resetPage();
+    }
+
     public function setFilter($filter)
     {
         $this->statusFilter = in_array($filter, ['all', 'active', 'suspended', 'permanent', 'expiring'], true) ? $filter : 'all';
@@ -449,6 +456,9 @@ new class extends Component
                     <button type="button" wire:click="setFilter('permanent')" aria-pressed="{{ $statusFilter === 'permanent' ? 'true' : 'false' }}" class="dashboard-tab">
                         Permanent
                     </button>
+                    <button type="button" wire:click="setFilter('suspended')" aria-pressed="{{ $statusFilter === 'suspended' ? 'true' : 'false' }}" class="dashboard-tab">
+                        Suspended
+                    </button>
                     <button type="button" wire:click="setFilter('expiring')" aria-pressed="{{ $statusFilter === 'expiring' ? 'true' : 'false' }}" class="dashboard-tab">
                         Expiring
                         @if($expiringCount > 0)
@@ -478,8 +488,8 @@ new class extends Component
                     ];
                 @endphp
                 <flux:dropdown position="bottom" align="end">
-                    <flux:button data-dashboard-variant="ghost" variant="ghost" size="sm" icon="bars-arrow-down" title="{{ __('Sort sites') }}">
-                        <span class="hidden sm:inline">Sort</span>
+                    <flux:button data-dashboard-variant="ghost" variant="ghost" size="sm" icon="bars-arrow-down" aria-label="{{ __('Sort sites') }}" title="{{ __('Sort sites') }}">
+                        <span class="hidden sm:inline">{{ collect($sortOptions)->first(fn ($option) => $option[0] === $sortBy && $option[1] === $sortDir)[2] ?? 'Sort' }}</span>
                     </flux:button>
                     <flux:menu>
                         <flux:menu.heading>Sort sites by</flux:menu.heading>
@@ -512,6 +522,21 @@ new class extends Component
                 </flux:modal.trigger>
             </div>
         </div>
+
+        @if($search !== '' || $statusFilter !== 'all')
+            <div class="dashboard-results-summary" role="status" aria-live="polite" aria-atomic="true">
+                <p>
+                    {{ number_format($sites->total()) }} {{ \Illuminate\Support\Str::plural('site', $sites->total()) }} found
+                    @if($search !== '')
+                        for <strong>“{{ $search }}”</strong>
+                    @endif
+                    @if($statusFilter !== 'all')
+                        · {{ ucfirst($statusFilter) }}
+                    @endif
+                </p>
+                <button type="button" wire:click="resetFilters" class="dashboard-button">Clear filters</button>
+            </div>
+        @endif
 
         <!-- In-flight request indicator -->
         <div wire:loading class="dashboard-meter is-indeterminate mb-5" role="progressbar" aria-label="{{ __('Loading sites') }}">
@@ -586,7 +611,7 @@ new class extends Component
                     <p class="text-xs sm:text-sm dashboard-muted max-w-sm mt-1 mb-6 leading-relaxed">
                         We couldn't find any sites matching '{{ $search }}'. Check for typos or reset your filter.
                     </p>
-                    <flux:button data-dashboard-variant="outline" wire:click="$set('search', '')" variant="outline" size="sm">Clear Search</flux:button>
+                    <flux:button data-dashboard-variant="outline" wire:click="resetFilters" variant="outline" size="sm">Clear filters</flux:button>
                 @elseif($statusFilter !== 'all')
                     <h3 class="dashboard-section-title   ">No sites in this view</h3>
                     <p class="text-xs sm:text-sm dashboard-muted max-w-sm mt-1 mb-6 leading-relaxed">

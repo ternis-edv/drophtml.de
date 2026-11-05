@@ -349,6 +349,24 @@ test('sites overview setSort applies deterministic column and direction', functi
         ->assertSet('sortBy', 'views');
 });
 
+test('clearing site filters restores results and pagination while preserving sorting', function () {
+    $this->actingAs(User::factory()->create());
+
+    Livewire::test('dashboard.sites-overview')
+        ->call('setSort', 'original_name', 'asc')
+        ->set('search', 'missing-site')
+        ->call('setFilter', 'suspended')
+        ->assertSee('Clear filters')
+        ->call('setPage', 3)
+        ->call('resetFilters')
+        ->assertSet('search', '')
+        ->assertSet('statusFilter', 'all')
+        ->assertSet('paginators.page', 1)
+        ->assertSet('sortBy', 'original_name')
+        ->assertSet('sortDir', 'asc')
+        ->assertSee('No static sites deployed yet');
+});
+
 
 test('command palette explains empty searches and keeps results scoped to the current user', function () {
     $user = User::factory()->create();
